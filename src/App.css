@@ -1,0 +1,968 @@
+.App {
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro",
+    "游ゴシック", "Yu Gothic", "Meiryo", sans-serif;
+  padding: clamp(12px, 2vw, 28px);
+  width: min(80vw, 1200px);
+  min-height: 90vh;
+  margin: 3vh auto;
+  box-sizing: border-box;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* タイトルは中央 */
+.App-title {
+  text-align: center;
+  font-size: clamp(16px, 4vw, 28px);
+  margin: 8px 0 12px;
+}
+
+/* 本文は両端揃え */
+.App-text {
+  text-align: justify;
+  line-height: 1.8;
+  word-break: keep-all;
+  white-space: pre-line;
+}
+
+/* ボタンを中央寄せ */
+.App-button-wrapper {
+  text-align: center;
+  margin-top: clamp(16px, 4vh, 48px);
+}
+
+.App-button {
+  padding: clamp(10px, 1.5vh, 16px) clamp(16px, 2vw, 24px);
+  font-size: clamp(14px, 1.4vw, 18px);
+  border-radius: 1vw;
+  cursor: pointer;
+}
+
+/* Home layout */
+.App.home {
+  min-height: auto;
+  margin: 16px auto 48px;
+}
+.home-hero {
+  padding: clamp(16px, 3.5vw, 28px);
+  border-radius: 18px;
+  border: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  background:
+    radial-gradient(900px 220px at 10% 0%, rgba(123, 198, 227, 0.26), transparent 60%),
+    radial-gradient(900px 220px at 90% 0%, rgba(169, 225, 201, 0.24), transparent 60%),
+    color-mix(in oklab, canvas 96%, transparent);
+}
+.home-title {
+  margin: 0 0 6px;
+  font-size: clamp(18px, 4.2vw, 28px);
+  letter-spacing: 0.02em;
+}
+.home-sub {
+  margin: 0;
+  opacity: 0.85;
+  line-height: 1.7;
+  font-size: clamp(13px, 2.8vw, 15px);
+}
+.home-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.home-card {
+  text-align: left;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in oklab, canvastext 14%, transparent);
+  background: color-mix(in oklab, canvas 98%, transparent);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.home-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, canvastext 22%, transparent);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+.home-card-kicker {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  opacity: 0.65;
+}
+.home-card-title {
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: clamp(15px, 3.4vw, 18px);
+}
+.home-card-desc {
+  margin-top: 6px;
+  opacity: 0.8;
+  line-height: 1.6;
+  font-size: clamp(12px, 2.7vw, 14px);
+}
+.home-card-cta {
+  margin-top: 12px;
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklab, canvastext 18%, transparent);
+  background: color-mix(in oklab, canvastext 4%, canvas);
+  font-weight: 700;
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .home-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .App {
+    margin: 1vh auto;
+    min-height: 96vh;
+    padding: 12px;
+    width: 100vw;
+  }
+  .App-button {
+    width: 100%;
+  }
+}
+
+/* ナビゲーション */
+.nav-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  position: sticky;
+  top: 0;
+  background: var(--nav-bg, rgba(250,250,250,.75));
+  backdrop-filter: saturate(1.2) blur(6px);
+  z-index: 5;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  position: sticky;
+  /* dropdown positioning */
+  overflow: visible;
+}
+
+.nav-hamburger {
+  display: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(128,128,128,.2);
+  background: color-mix(in oklab, canvas 94%, transparent);
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.nav-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.nav-link {
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid rgba(128,128,128,.2);
+}
+
+.nav-link.active {
+  background: rgba(128,128,128,.15);
+}
+
+@media (max-width: 540px) {
+  .nav-hamburger { display: inline-flex; align-items: center; justify-content: center; }
+  .nav-links {
+    display: none; /* collapsed by default on mobile */
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: calc(100% + 8px);
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(128,128,128,.18);
+    background: color-mix(in oklab, canvas 96%, transparent);
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  }
+  .nav-links.open { display: flex; }
+}
+
+/* NotFound ページ */
+.notfound {
+  padding: 16px;
+}
+
+.notfound-title {
+  margin-top: 0;
+}
+
+.notfound-link {
+  color: blue;
+}
+
+/* ===== IncomeCalc layout ===== */
+/* --- global sizing to avoid overflow --- */
+*, *::before, *::after { box-sizing: border-box; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 2.5vw, 24px);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .grid2 { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: color-mix(in oklab, canvas 96%, transparent);
+  border: 1px solid color-mix(in oklab, canvastext 14%, transparent);
+  border-radius: 14px;
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr; /* 入力側を広めに */
+  gap: clamp(8px, 2vw, 16px);
+  align-items: center;
+  margin: 0.6em 0;
+}
+.row > label {
+  opacity: .85;
+  padding-inline-end: 0.3em;
+  font-size: clamp(12px, 2.6vw, 16px);
+  text-align: right;
+}
+
+/* Card headings */
+.card h2 {
+  margin: 0 0 5px;
+  font-size: clamp(13px, 2.8vw, 16px);
+  line-height: 1.3;
+}
+
+/* inputs: allow shrinking inside grid cell, keep within cell width */
+.row input, .row select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;           /* Grid/Flex のデフォ最小幅(内容幅)を打ち消す */
+  padding: 0.55em 0.7em;  /* 相対単位で余白 */
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, canvastext 18%, transparent);
+  background: canvas;
+  color: canvastext;
+  font-size: 15px;
+  text-align: right;
+}
+.row select {
+  height: 38px;
+}
+
+.primary-btn {
+  padding: 10px 18px;
+  background: #5c6bc0; /* 少し柔らかい青 */
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.primary-btn.primary-btn-lg {
+  padding: 14px 26px;
+  font-size: clamp(14px, 2.8vw, 18px);
+  border-radius: 14px;
+  min-width: min(420px, 100%);
+}
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+.footer-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 30px 12px;
+  background: color-mix(in oklab, canvas 96%, transparent);
+  border-top: 1px solid color-mix(in oklab, canvastext 14%, transparent);
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.06);
+  z-index: 100;
+  box-sizing: border-box;
+}
+.footer-fixed .footer-inner {
+  width: min(80vw, 1200px); /* .App と揃える */
+  margin-inline: auto;
+}
+.footer-fixed .footer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+.footer-fixed .footer-label {
+  font-size: clamp(12px, 2.6vw, 16px);
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.footer-fixed .footer-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(80%, 900px);
+}
+@media (max-width: 540px) {
+  .footer-fixed .footer-inner { width: 100%; }
+  .footer-fixed .footer-slider { width: 100%; }
+}
+
+/* スマホで固定フッターと被らないよう、下側に余白を確保（inputs タブ用） */
+.deduction-graph .footer-spacer { height: 0; }
+.welfare-sim .footer-spacer { height: 0; }
+.footer-spacer-fixed { height: 140px; }
+@media (max-width: 540px) {
+  .deduction-graph .footer-spacer { height: 160px; }
+  .welfare-sim .footer-spacer { height: 160px; }
+  .footer-spacer-fixed { height: 190px; }
+}
+
+/* focus 視認性（任意だが編集時に便利） */
+.row input:focus, .row select:focus {
+  outline: 2px solid color-mix(in oklab, #2684ff 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* table look */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* prevent tables from "bleeding" outside cards on mobile */
+  -webkit-overflow-scrolling: touch;
+}
+.result-table { width: 100%; border-collapse: collapse; }
+.deduction-graph .result-table { table-layout: fixed; }
+.result-table th, .result-table td {
+  padding: 8px;
+  border-bottom: 1px dashed color-mix(in oklab, canvastext 12%, transparent);
+}
+.deduction-graph .result-table th,
+.deduction-graph .result-table td { text-align: center; }
+.deduction-graph .result-table th:first-child,
+.deduction-graph .result-table td:first-child { text-align: left; }
+
+/* S1/S2/S3 column tinting (DeductionGraph only) */
+.deduction-graph .result-table th:nth-child(2),
+.deduction-graph .result-table td:nth-child(2) {
+  background: color-mix(in oklab, #607d8b 10%, transparent); /* S1 */
+}
+.deduction-graph .result-table th:nth-child(3),
+.deduction-graph .result-table td:nth-child(3) {
+  background: color-mix(in oklab, #3f51b5 10%, transparent); /* S2 */
+}
+.deduction-graph .result-table th:nth-child(4),
+.deduction-graph .result-table td:nth-child(4) {
+  background: color-mix(in oklab, #e91e63 10%, transparent); /* S3 */
+}
+.deduction-graph .neg { color: #d32f2f; }
+.result-table tfoot td { font-weight: 700; }
+.result-table.tight th, .result-table.tight td { padding: 4px 6px; font-size: 12px; }
+.muted { opacity: .75; font-size: .9em; }
+
+/* ===== Enhancements for IncomeCalc mobile overflow & tables ===== */
+
+/* page wrapper (used by IncomeCalc) */
+.page { padding: 12px; }
+
+/* Horizontal scroll wrapper for wide tables (children list) */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Generic table used in the children editor */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;         /* Keep cells within available width */
+  min-width: 300px;            /* Prevent cramped cells on mobile; adjust if needed */
+}
+.table th, .table td {
+  padding: 8px;
+  border-bottom: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  vertical-align: middle;
+  word-break: break-word;
+}
+.table th:nth-child(1) { width: 3.5rem; }  /* # */
+.table th:nth-child(2) { width: 6rem; }    /* 年齢 */
+.table th:nth-child(3) { width: 8rem; }    /* 年収 */
+.table th:nth-child(4) { width: 8rem; }    /* 障害 */
+.table th:nth-child(5) { width: 5rem; }    /* 同居 */
+
+/* Inputs inside table cells should fit the cell */
+.table input[type="number"],
+.table select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 8px;
+  border-radius: 0.5em;
+  border: 1px solid color-mix(in oklab, canvastext 18%, transparent);
+  background: canvas;
+  color: canvastext;
+}
+
+/* Utility layout helpers */
+.flex { display: flex; gap: 8px; flex-wrap: wrap; }
+.mt   { margin-top: 12px; }
+.mb   { margin-bottom: 12px; }
+.text-right { text-align: right; }
+
+/* Badge-like statuses used in allowance results */
+.ok {
+  color: color-mix(in oklab, #0a7f26 85%, canvastext 15%);
+  font-weight: 700;
+}
+.ng {
+  color: color-mix(in oklab, #b00020 85%, canvastext 15%);
+  font-weight: 700;
+}
+
+/* Divider */
+.hr {
+  height: 1px;
+  background: color-mix(in oklab, canvastext 14%, transparent);
+  margin: 12px 0;
+}
+
+/* Responsive tweaks for very small screens */
+@media (max-width: 480px) {
+  .grid2 { grid-template-columns: 1fr; }  /* already single column, ensure */
+  .table { min-width: 420px; }            /* allow narrower table on small phones */
+  .App-title { font-size: clamp(22px, 6vw, 28px); }
+  .row { grid-template-columns: 1fr 1.2fr; }
+  .row input, .row select { padding: 0.5em 0.6em; }
+}
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.grid4 > .row { margin: 0; }
+@media (max-width: 900px) {
+  .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 540px) {
+  .grid4 { grid-template-columns: 1fr; }
+}
+
+.split2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .split2 { grid-template-columns: 1fr; }
+}
+.panel {
+  border: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  border-radius: 12px;
+  padding: 12px;
+}
+.panel-title {
+  font-weight: bold;
+  margin: 0 0 8px;
+  font-size: clamp(12px, 2.6vw, 14px);
+  opacity: 0.9;
+}
+.panel-normal {
+  background: color-mix(in oklab, #E9F2FF 25%, canvas 75%);
+}
+.panel-disability {
+  background: color-mix(in oklab, #FFE9F1 25%, canvas 75%);
+}
+
+.grid3-compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 12px 16px;
+  align-items: start;
+}
+.grid3-compact > .row { margin: 0; }
+@media (max-width: 720px) {
+  .grid3-compact { grid-template-columns: 1fr; }
+}
+
+/* alias: grid2-compact (same as current grid3-compact) */
+.grid2-compact { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 12px 16px; align-items: start; }
+.grid2-compact > .row { margin: 0; }
+@media (max-width: 720px) { .grid2-compact { grid-template-columns: 1fr; } }
+
+.grid1-compact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px 16px;
+  align-items: start;
+}
+.grid1-compact > .row { margin: 0; }
+
+.slider-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: clamp(12px, 2.6vw, 16px);
+  opacity: 0.85;
+  white-space: nowrap; /* 2行にならないように */
+}
+.slider-field .slider-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.slider-field .slider-value {
+  margin-top: 4px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(12px, 2.6vw, 14px);
+  opacity: 0.85;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 320px));
+  gap: 12px;
+  justify-content: center;
+}
+.grid3 > .row { margin: 0; }
+@media (max-width: 540px) {
+  .grid3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+/* ===== Recharts axis typography (shared) ===== */
+.deduction-graph .recharts-cartesian-axis-tick-value,
+.welfare-sim .recharts-cartesian-axis-tick-value {
+  font-size: clamp(10px, 1.5vh, 15px);
+}
+.deduction-graph .recharts-label,
+.welfare-sim .recharts-label {
+  font-size: clamp(10px, 1.5vh, 15px);
+}
+.deduction-graph .chart-legend-item,
+.welfare-sim .chart-legend-item {
+  font-size: clamp(10px, 1.5vh, 15px);
+}
+
+/* ===== Welfare Simulator: result tables (mobile-friendly) ===== */
+.welfare-sim .table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.welfare-sim .note {
+  margin: 0;
+  line-height: 1.6;
+  opacity: 0.82;
+  font-size: clamp(11px, 2.4vw, 13px);
+}
+
+/* ===== Welfare Simulator: mobile (no horizontal scroll) ===== */
+.welfare-sim .mobile-persons {
+  display: grid;
+  gap: 12px;
+}
+.welfare-sim details.mobile-details {
+  border: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  border-radius: 12px;
+  background: color-mix(in oklab, canvas 98%, transparent);
+  overflow: hidden;
+}
+.welfare-sim details.mobile-details > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: clamp(13px, 3vw, 15px);
+  background: color-mix(in oklab, canvas 94%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+}
+.welfare-sim details.mobile-details > summary::-webkit-details-marker { display: none; }
+
+/* generic toggle card (used for non-mobile sections too) */
+.welfare-sim details.toggle-card > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: clamp(13px, 3vw, 16px);
+  margin: -12px -12px 12px; /* align with .card padding without adding extra wrappers */
+  background: color-mix(in oklab, canvas 94%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.welfare-sim details.inner-toggle > summary {
+  /* inner toggles inside an existing .card: avoid negative margins that cause overflow */
+  margin: 0 0 12px;
+  border-radius: 12px;
+}
+.welfare-sim .calc-note {
+  padding: 8px 0 0;
+}
+.welfare-sim .calc-note-title {
+  font-weight: 700;
+  font-size: clamp(12px, 2.8vw, 14px);
+  margin: 4px 0 8px;
+  opacity: 0.92;
+}
+.welfare-sim .formula-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 1fr; /* reduce vertical length on wider screens */
+}
+.welfare-sim .formula-person-title {
+  font-weight: 700;
+  margin: 6px 0 8px;
+}
+.welfare-sim .formula-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.welfare-sim .formula-col {
+  min-width: 0; /* allow tables to shrink inside the grid */
+}
+@media (max-width: 900px) {
+  .welfare-sim .formula-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  /* very small screens: keep readability over compactness */
+  .welfare-sim .formula-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* tighter key/value tables inside the 2-col formula area */
+.welfare-sim .formula-two-col .breakdown-table.mobile-kv td {
+  padding: 6px 8px;
+  font-size: clamp(11px, 2.7vw, 13px);
+}
+.welfare-sim .formula-two-col .breakdown-table.mobile-kv td:first-child {
+  width: 60%;
+}
+.welfare-sim .formula-two-col .breakdown-table.mobile-kv td:last-child {
+  width: 40%;
+}
+.welfare-sim details.toggle-card > summary::-webkit-details-marker { display: none; }
+.welfare-sim details.toggle-card > summary::after {
+  content: "▼";
+  opacity: 0.75;
+  font-size: 0.95em;
+}
+.welfare-sim details.toggle-card[open] > summary::after {
+  content: "▲";
+}
+
+/* key/value table for mobile cards */
+.welfare-sim .breakdown-table.mobile-kv {
+  min-width: 0; /* override desktop min-width */
+}
+.welfare-sim .breakdown-table.mobile-kv td {
+  font-size: clamp(12px, 2.9vw, 14px);
+  padding: 8px 10px;
+}
+.welfare-sim .breakdown-table.mobile-kv td:first-child {
+  width: 66%;
+  white-space: normal;
+}
+.welfare-sim .breakdown-table.mobile-kv td:last-child {
+  width: 34%;
+  white-space: nowrap;
+  text-align: right;
+}
+.welfare-sim .breakdown-table.mobile-kv .indent {
+  padding-left: 44px !important;
+}
+.welfare-sim .breakdown-table.mobile-kv .indent::before {
+  left: 22px;
+}
+
+/* make toggle smaller inside mobile tables */
+.welfare-sim .breakdown-table.mobile-kv .group-toggle {
+  width: 26px;
+  height: 26px;
+  margin-right: 6px;
+}
+
+/* KV blocks for welfare allowance recipients (PC/mobile) */
+.welfare-sim .recipient-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .welfare-sim .recipient-kv-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.welfare-sim .recipient-kv {
+  border: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  border-radius: 12px;
+  padding: 10px;
+  background: color-mix(in oklab, canvas 98%, transparent);
+  min-width: 0;
+}
+.welfare-sim .recipient-kv-title {
+  font-weight: 700;
+  margin: 2px 0 10px;
+  font-size: clamp(12px, 2.8vw, 14px);
+}
+
+/* money display: stack monthly/annual to reduce width */
+.welfare-sim .money-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  gap: 2px;
+  white-space: nowrap; /* keep each line intact */
+  font-weight: inherit;
+}
+
+.welfare-sim .breakdown-table {
+  width: 100%;
+  min-width: 520px; /* avoid unreadably narrow tables on phones */
+  border-collapse: collapse;
+}
+.welfare-sim .breakdown-table.no-minwidth {
+  min-width: 0;
+}
+.welfare-sim .breakdown-table th,
+.welfare-sim .breakdown-table td {
+  padding: 8px 10px;
+  border-bottom: 1px dashed color-mix(in oklab, canvastext 12%, transparent);
+  font-size: clamp(12px, 2.8vw, 14px);
+  line-height: 1.35;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+.welfare-sim .breakdown-table thead th {
+  background: color-mix(in oklab, canvas 96%, transparent);
+}
+
+/* Row-level fill (opt-in) */
+.welfare-sim .breakdown-table.row-fill tbody tr:nth-child(odd) td {
+  background: color-mix(in oklab, canvastext 4%, canvas);
+}
+.welfare-sim .breakdown-table.breakdown-wide-firstcol th:first-child,
+.welfare-sim .breakdown-table.breakdown-wide-firstcol td:first-child {
+  /* Give the "項目" column more room, but keep the table scrollable instead of squeezing columns */
+  width: 40%;
+  min-width: 220px;
+}
+.welfare-sim .breakdown-table.breakdown-wide-firstcol th:not(:first-child),
+.welfare-sim .breakdown-table.breakdown-wide-firstcol td:not(:first-child) {
+  width: auto;
+  min-width: 96px; /* prevent columns from collapsing and visually "overlapping" */
+}
+.welfare-sim .breakdown-table.breakdown-wide-firstcol th,
+.welfare-sim .breakdown-table.breakdown-wide-firstcol td {
+  /* Prevent long text/numbers from visually spilling into neighbor cells (seen as "overlap") */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.welfare-sim .breakdown-table.breakdown-wide-firstcol th:not(:first-child) {
+  /* Headers like "世帯主/配偶者/子ども..." should stay on one line and clip if needed */
+  white-space: nowrap;
+}
+.welfare-sim .breakdown-table th:first-child,
+.welfare-sim .breakdown-table td:first-child {
+  text-align: left;
+  white-space: normal; /* allow long labels to wrap */
+}
+.welfare-sim .breakdown-table th:not(:first-child),
+.welfare-sim .breakdown-table td:not(:first-child) {
+  white-space: nowrap; /* keep numbers and short labels on one line */
+}
+/* For 2-col mobile tables where the right column can be long (e.g., "xx円/月（yy円/年）"), allow wrapping */
+.welfare-sim .breakdown-table.wrap-values th:not(:first-child),
+.welfare-sim .breakdown-table.wrap-values td:not(:first-child) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+/* row striping is intentionally disabled; sections use background colors instead */
+.welfare-sim .breakdown-table tr.group-head td {
+  background: color-mix(in oklab, #5c6bc0 10%, canvas 90%);
+}
+.welfare-sim .breakdown-table tr.sec-income td {
+  background: color-mix(in oklab, #E3F2FD 25%, canvas 75%);
+}
+.welfare-sim .breakdown-table tr.sec-ded td {
+  background: color-mix(in oklab, #E8F5E9 22%, canvas 78%);
+}
+.welfare-sim .breakdown-table tr.sec-tax td {
+  background: color-mix(in oklab, #FFF3E0 22%, canvas 78%);
+}
+.welfare-sim .breakdown-table tr.sec-allow td {
+  background: color-mix(in oklab, #F3E5F5 18%, canvas 82%);
+}
+.welfare-sim .breakdown-table tr.sec-service td {
+  background: color-mix(in oklab, #FBE9E7 18%, canvas 82%);
+}
+.welfare-sim .breakdown-table tr.sec-final td {
+  background: color-mix(in oklab, #ECEFF1 26%, canvas 74%);
+}
+.welfare-sim .breakdown-table tr.tcca-conclusion td {
+  background: color-mix(in oklab, #fffde7 70%, canvas 30%); /* soft highlight for conclusion rows */
+  border-bottom: 1px solid color-mix(in oklab, canvastext 14%, transparent);
+}
+.welfare-sim .group-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklab, canvastext 18%, transparent);
+  background: color-mix(in oklab, canvas 98%, transparent);
+  margin-right: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.welfare-sim .indent {
+  padding-left: 64px !important; /* ensure it wins over base cell padding */
+  opacity: 0.95;
+  position: relative;
+}
+.welfare-sim .indent::before {
+  content: "";
+  position: absolute;
+  left: 34px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: color-mix(in oklab, canvastext 12%, transparent);
+}
+.welfare-sim .table-sep td {
+  padding: 0;
+  height: 14px;
+  border-bottom: none;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, canvastext 10%, transparent),
+    transparent
+  );
+}
+@media (max-width: 540px) {
+  .welfare-sim .breakdown-table th,
+  .welfare-sim .breakdown-table td {
+    padding: 6px 8px;
+  }
+  .welfare-sim .breakdown-table { min-width: 460px; }
+  .welfare-sim .indent { padding-left: 56px !important; }
+  .welfare-sim .indent::before { left: 28px; }
+}
+
+/* ===== Page tabs (shared) ===== */
+.deduction-graph .tab-bar,
+.welfare-sim .tab-bar {
+  display: grid;
+  /* タブ数に応じて自動で等分割（例: 2なら2列 / 3なら3列） */
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 10px 0 10px;
+}
+.deduction-graph .tab-btn,
+.welfare-sim .tab-btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, canvastext 18%, transparent);
+  background: color-mix(in oklab, canvas 94%, transparent);
+  color: canvastext;
+  font-size: clamp(12px, 2.6vw, 14px);
+  cursor: pointer;
+}
+.deduction-graph .tab-btn.active,
+.welfare-sim .tab-btn.active {
+  background: #5c6bc0; /* 少し柔らかい青 */
+  color: #fff;
+  border-color: transparent;
+}
+.deduction-graph .scenario-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  margin: 0 0 12px;
+  border: 1px solid color-mix(in oklab, canvastext 12%, transparent);
+  border-radius: 12px;
+  background: color-mix(in oklab, canvas 98%, transparent);
+  font-size: clamp(12px, 2.6vw, 14px);
+}
+
+/* inputs tab cards centered and consistent width */
+.deduction-graph .inputs-wrap,
+.welfare-sim .inputs-wrap {
+  /* .App 自体が中央寄せ & 80vw なので、ここは絞り過ぎない（=二重で80%になって狭くなるのを防ぐ） */
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .deduction-graph .inputs-wrap,
+  .welfare-sim .inputs-wrap { width: 100%; }
+}
+.deduction-graph .inputs-actions,
+.welfare-sim .inputs-actions {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 6px;
+}
+
+/* keep space for the fixed footer on mobile (shared) */
+.welfare-sim .footer-spacer { height: 0; }
+@media (max-width: 900px) {
+  .welfare-sim .footer-spacer { height: 120px; }
+}

@@ -1,0 +1,20 @@
+{
+  "dependent_total_income_max_wan": 58,
+  "bands": [
+    {
+      "name": "general",
+      "age_ranges": [
+        { "min_age": 16, "max_age": 18 },
+        { "min_age": 23, "max_age": 69 }
+      ],
+      "amount_it_wan": 38,
+      "amount_lt_wan": 33
+    },
+    {
+      "name": "special",
+      "age_ranges": [{ "min_age": 19, "max_age": 22 }],
+      "amount_it_wan": 63,
+      "amount_lt_wan": 45
+    }
+  ]
+}

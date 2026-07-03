@@ -1,0 +1,9 @@
+{
+  "spouse_total_income_max_wan": 58,
+  "head_total_income_bands_wan": [
+    { "min_wan": 0, "max_wan": 900, "amount_wan": 38 },
+    { "min_wan": 901, "max_wan": 950, "amount_wan": 26 },
+    { "min_wan": 951, "max_wan": 1000, "amount_wan": 13 }
+  ]
+}
+

@@ -1,0 +1,54 @@
+{
+  "name": "visualize-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.1",
+    "react-scripts": "5.0.1",
+    "recharts": "^3.2.0",
+    "web-vitals": "^2.1.4"
+  },
+  "homepage": "https://design-for-changes.github.io/visualization/calc-001",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "gen:basic": "node scripts/gen_basic_json.js",
+    "gen:social": "node scripts/gen_social_json.js",
+    "gen:data": "npm run gen:basic && npm run gen:social",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build -b gh-pages -r https://github.com/design-for-changes/visualization.git",
+    "sync": "rsync -av --delete build/ \"/Users/yashizawa/Library/CloudStorage/Dropbox/GitHub/visualization/calc-001/\"",
+    "build:deploy": "npm run build && npm run sync",
+    "postbuild": "npm run sync"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

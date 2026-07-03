@@ -1,0 +1,13 @@
+{
+  "child_total_income_bands_wan": [
+    { "min_wan": 59, "max_wan": 85, "amount_wan": 45 },
+    { "min_wan": 86, "max_wan": 90, "amount_wan": 45 },
+    { "min_wan": 91, "max_wan": 95, "amount_wan": 45 },
+    { "min_wan": 96, "max_wan": 100, "amount_wan": 41 },
+    { "min_wan": 101, "max_wan": 105, "amount_wan": 31 },
+    { "min_wan": 106, "max_wan": 110, "amount_wan": 21 },
+    { "min_wan": 111, "max_wan": 115, "amount_wan": 11 },
+    { "min_wan": 116, "max_wan": 120, "amount_wan": 6 },
+    { "min_wan": 121, "max_wan": 123, "amount_wan": 3 }
+  ]
+}

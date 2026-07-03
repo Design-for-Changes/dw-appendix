@@ -1,0 +1,51 @@
+{
+  "applies_when_spouse_deduction_is_zero": true,
+  "head_total_income_bands_wan": [
+    {
+      "head_min_wan": 0,
+      "head_max_wan": 900,
+      "spouse_bands_wan": [
+        { "spouse_min_wan": 58, "spouse_max_wan": 95, "amount_wan": 33 },
+        { "spouse_min_wan": 96, "spouse_max_wan": 100, "amount_wan": 33 },
+        { "spouse_min_wan": 101, "spouse_max_wan": 105, "amount_wan": 31 },
+        { "spouse_min_wan": 106, "spouse_max_wan": 110, "amount_wan": 26 },
+        { "spouse_min_wan": 111, "spouse_max_wan": 115, "amount_wan": 21 },
+        { "spouse_min_wan": 116, "spouse_max_wan": 120, "amount_wan": 16 },
+        { "spouse_min_wan": 121, "spouse_max_wan": 125, "amount_wan": 11 },
+        { "spouse_min_wan": 126, "spouse_max_wan": 130, "amount_wan": 6 },
+        { "spouse_min_wan": 131, "spouse_max_wan": 133, "amount_wan": 3 }
+      ]
+    },
+    {
+      "head_min_wan": 901,
+      "head_max_wan": 950,
+      "spouse_bands_wan": [
+        { "spouse_min_wan": 58, "spouse_max_wan": 95, "amount_wan": 22 },
+        { "spouse_min_wan": 96, "spouse_max_wan": 100, "amount_wan": 22 },
+        { "spouse_min_wan": 101, "spouse_max_wan": 105, "amount_wan": 21 },
+        { "spouse_min_wan": 106, "spouse_max_wan": 110, "amount_wan": 18 },
+        { "spouse_min_wan": 111, "spouse_max_wan": 115, "amount_wan": 14 },
+        { "spouse_min_wan": 116, "spouse_max_wan": 120, "amount_wan": 11 },
+        { "spouse_min_wan": 121, "spouse_max_wan": 125, "amount_wan": 8 },
+        { "spouse_min_wan": 126, "spouse_max_wan": 130, "amount_wan": 4 },
+        { "spouse_min_wan": 131, "spouse_max_wan": 133, "amount_wan": 2 }
+      ]
+    },
+    {
+      "head_min_wan": 951,
+      "head_max_wan": 1000,
+      "spouse_bands_wan": [
+        { "spouse_min_wan": 58, "spouse_max_wan": 95, "amount_wan": 11 },
+        { "spouse_min_wan": 96, "spouse_max_wan": 100, "amount_wan": 11 },
+        { "spouse_min_wan": 101, "spouse_max_wan": 105, "amount_wan": 11 },
+        { "spouse_min_wan": 106, "spouse_max_wan": 110, "amount_wan": 9 },
+        { "spouse_min_wan": 111, "spouse_max_wan": 115, "amount_wan": 7 },
+        { "spouse_min_wan": 116, "spouse_max_wan": 120, "amount_wan": 6 },
+        { "spouse_min_wan": 121, "spouse_max_wan": 125, "amount_wan": 4 },
+        { "spouse_min_wan": 126, "spouse_max_wan": 130, "amount_wan": 2 },
+        { "spouse_min_wan": 131, "spouse_max_wan": 133, "amount_wan": 1 }
+      ]
+    }
+  ]
+}
+

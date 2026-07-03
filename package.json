@@ -15,7 +15,7 @@
     "recharts": "^3.2.0",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://design-for-changes.github.io/visualization/calc-001",
+  "homepage": "https://design-for-changes.github.io/dw-appendix",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -25,10 +25,7 @@
     "gen:social": "node scripts/gen_social_json.js",
     "gen:data": "npm run gen:basic && npm run gen:social",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build -b gh-pages -r https://github.com/design-for-changes/visualization.git",
-    "sync": "rsync -av --delete build/ \"/Users/yashizawa/Library/CloudStorage/Dropbox/GitHub/visualization/calc-001/\"",
-    "build:deploy": "npm run build && npm run sync",
-    "postbuild": "npm run sync"
+    "deploy": "gh-pages -d build -b gh-pages -r https://github.com/Design-for-Changes/dw-appendix.git"
   },
   "eslintConfig": {
     "extends": [

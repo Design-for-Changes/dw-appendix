@@ -15,8 +15,8 @@ import { computeSeries, buildHousehold } from "../calc/computePoint";
 import { explainCliffCauses } from "../calc/cliffCauseAnalysis";
 import { useStaticTables } from "../hooks/useStaticTables";
 
-const X_MIN = 0;
-const X_MAX = 1500;
+const X_MIN = 200;
+const X_MAX = 1400;
 const COLORS = ["#2358a6", "#8f3d67", "#2f6f5e"];
 
 const CONFIDENCE = {
@@ -31,6 +31,10 @@ const CONFIDENCE = {
   provisional: {
     label: "暫定",
     note: "N04は住宅扶助・生活扶助・需要額調書・控除扱いの未確定点を残す代表設定。",
+  },
+  scope: {
+    label: "表示帯",
+    note: "表示帯200万〜1400万は、社保近似の有効域（最低等級の床・加入閾値を上回る帯）に限定している。",
   },
 };
 
@@ -296,7 +300,7 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
   };
   const selected = data.find((d) => d.id === selectedId);
   const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
-  const xTicks = [0, 250, 500, 750, 1000, 1250, 1500];
+  const xTicks = [200, 400, 600, 800, 1000, 1200, 1400];
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) / 5) * i);
 
   const moveLine = (event) => {
@@ -405,7 +409,7 @@ function CliffTable({ cliffs }) {
                 <td className="appendix-mono">{fmt(Math.abs(c.drop), 1)}万</td>
                 <td className="appendix-mono">{qWidth == null ? "—" : `${fmt(qWidth)}万`}</td>
                 <td className="appendix-mono">
-                  {rWidth == null ? `1500万でも回復せず・不足${fmt(c.unrecoveredShortfall, 1)}万` : `${fmt(rWidth)}万`}
+                  {rWidth == null ? `${X_MAX}万でも回復せず・不足${fmt(c.unrecoveredShortfall, 1)}万` : `${fmt(rWidth)}万`}
                 </td>
                 <td>
                   {confidences.map((confidence) => {
@@ -586,7 +590,7 @@ export default function AppendixCliffMap() {
         <h1>部分最適な所得制限が、束になると可処分所得を逆転させる</h1>
         <p>
           給与を1万円刻みで掃引し、計算コアが返す手取り・手当・利用料・制度判定をそのまま表示する。
-          グラフは崖の位置関係を示し、縦ラインは選んだ給与での計算過程を展開する。
+          表示帯は200万〜1400万（1201点）に限定し、グラフは崖の位置関係を示し、縦ラインは選んだ給与での計算過程を展開する。
         </p>
       </section>
 

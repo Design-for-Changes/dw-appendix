@@ -7,6 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "public", "data");
 const CONFIG_DIR = path.join(ROOT, "src", "config");
+const DISPLAY_X_MIN = 200;
+const DISPLAY_X_MAX = 1400;
 
 function loadJSON(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -77,7 +79,7 @@ function printText(reports) {
       const ineffective = cliff.ineffectiveWidthManyen == null ? "—" : `${fmt(cliff.ineffectiveWidthManyen, 0)}万`;
       const recovery =
         cliff.recoveryWidthManyen == null
-          ? `1500万でも回復せず・不足${fmt(cliff.unrecoveredShortfallWan, 1)}万`
+          ? `${DISPLAY_X_MAX}万でも回復せず・不足${fmt(cliff.unrecoveredShortfallWan, 1)}万`
           : `${fmt(cliff.recoveryWidthManyen, 0)}万`;
       console.log(
         `| ${fmt(cliff.salaryManyen, 0)}万 | ${causes} | ${whatHappened} | ${fmt(cliff.dropManyen, 1)}万 | ${ineffective} | ${recovery} | ${confidence} |`
@@ -104,7 +106,7 @@ async function main() {
       id: c.id,
       label: c.label,
       minDropManyen,
-      cliffs: analysis.detectCliffCauseRows(series, { minDropManyen }),
+      cliffs: analysis.detectCliffCauseRows(series, { minDropManyen, xMin: DISPLAY_X_MIN, xMax: DISPLAY_X_MAX }),
     });
   }
 

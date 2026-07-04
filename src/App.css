@@ -342,6 +342,11 @@
   color: #705229;
 }
 
+.confidence-pill.scope {
+  background: #e8f3ee;
+  color: #2f6f5e;
+}
+
 .appendix-table-wrap {
   overflow-x: auto;
   border: 1px solid #dce5e9;
@@ -390,7 +395,7 @@
 
 .appendix-notes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin-top: 12px;
 }

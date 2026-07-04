@@ -1,6 +1,12 @@
 import { rowAtKeyInt, interpTableValue } from "../pages/disabilityWelfare/utils.js";
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
+export const M01_KENSHIN_ANNUAL_YEN_DEFAULT = 149531;
+export const M01_KENSHIN_ANNUAL_YEN_RANGE = { min: 149531, max: 167929 };
+export const M01_LEVY_CUTOFF_YEN = 235000;
+export const N04_SHOGAKU_ANNUAL_YEN = { first: 72945, second: 36473, third: 0 };
+export const N04_BOUNDARY_1_2_SALARY_MANYEN = 747;
+export const N04_BOUNDARY_2_3_SALARY_MANYEN = 1055;
 
 function normalizeScenario(scenario) {
   const s = String(scenario || "s2");
@@ -19,6 +25,7 @@ export function buildHousehold(caseHousehold = {}) {
   const headInput = caseHousehold.head || {};
   const spouseInput = caseHousehold.spouse || {};
   const childrenInput = Array.isArray(caseHousehold.children) ? caseHousehold.children : [];
+  const programsInput = caseHousehold.programs || {};
 
   const head = {
     age: toNumber(headInput.age, 40),
@@ -68,6 +75,11 @@ export function buildHousehold(caseHousehold = {}) {
     spouseEnabled: Boolean(caseHousehold.spouseEnabled),
     spouse,
     children,
+    programs: {
+      m01: Boolean(caseHousehold.m01 || caseHousehold.m01Enabled || programsInput.m01 || programsInput.m01Enabled),
+      m01AnnualYen: toNumber(programsInput.m01AnnualYen, M01_KENSHIN_ANNUAL_YEN_DEFAULT),
+      n04: Boolean(caseHousehold.n04 || caseHousehold.n04Enabled || programsInput.n04 || programsInput.n04Enabled),
+    },
   };
 }
 
@@ -674,6 +686,25 @@ function calcWelfareAllowanceLimitObligorYen(fuyoCount) {
   return base5 + 213000 * (n - 5);
 }
 
+function calcM01AnnualWan(ctx, householdLevySumWan) {
+  if (!ctx.programs?.m01) return 0;
+  const configured = toNumber(ctx.programs?.m01AnnualYen, M01_KENSHIN_ANNUAL_YEN_DEFAULT);
+  const annualYen = Math.min(
+    M01_KENSHIN_ANNUAL_YEN_RANGE.max,
+    Math.max(M01_KENSHIN_ANNUAL_YEN_RANGE.min, configured)
+  );
+  const householdLevyYen = toNumber(householdLevySumWan, 0) * 10000;
+  return householdLevyYen < M01_LEVY_CUTOFF_YEN ? annualYen / 10000 : 0;
+}
+
+function calcN04AnnualWan(ctx, salaryManyen) {
+  if (!ctx.programs?.n04) return 0;
+  const x = toNumber(salaryManyen, 0);
+  if (x < N04_BOUNDARY_1_2_SALARY_MANYEN) return N04_SHOGAKU_ANNUAL_YEN.first / 10000;
+  if (x < N04_BOUNDARY_2_3_SALARY_MANYEN) return N04_SHOGAKU_ANNUAL_YEN.second / 10000;
+  return N04_SHOGAKU_ANNUAL_YEN.third / 10000;
+}
+
 function computePoint(ctx, x) {
   const rows = buildRows(ctx, x);
   const dep = calcDependentDeductionFromRows(ctx, rows);
@@ -917,12 +948,17 @@ function computePoint(ctx, x) {
     return (monthly * 12) / 10000;
   })();
 
+  const m01AnnualWan = calcM01AnnualWan(ctx, householdLevySumWan);
+  const n04AnnualWan = calcN04AnnualWan(ctx, x);
+
   const allowanceWanTotal =
     toNumber(basicPensionWan, 0) +
     toNumber(tccaAnnualWan, 0) +
     toNumber(welfareAnnualWan, 0) +
     toNumber(childSupportAnnualWan, 0) +
-    toNumber(childAllowanceAnnualWan, 0);
+    toNumber(childAllowanceAnnualWan, 0) +
+    toNumber(m01AnnualWan, 0) +
+    toNumber(n04AnnualWan, 0);
 
   const grossWan = rows.reduce((a, r) => a + toNumber(r.salaryWan, 0) + toNumber(r.otherIncomeWan, 0), 0);
   const takeHomeWan = grossWan - toNumber(socialWanTotal, 0) - toNumber(taxWanTotal, 0);
@@ -936,6 +972,8 @@ function computePoint(ctx, x) {
     x,
     gross: grossWan,
     allowance: allowanceWanTotal,
+    m01: m01AnnualWan,
+    n04: n04AnnualWan,
     takeHome: takeHomeWan,
     disposable: disposableWan,
     householdLevySumWan,

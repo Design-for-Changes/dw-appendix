@@ -12,6 +12,7 @@ import singleParentDeductionCfg from "../config/single_parent_deduction.json";
 import workingStudentDeductionCfg from "../config/working_student_deduction.json";
 import disabilityDeductionCfg from "../config/disability_deduction.json";
 import { computeSeries, buildHousehold } from "../calc/computePoint";
+import { explainCliffCauses } from "../calc/cliffCauseAnalysis";
 import { useStaticTables } from "../hooks/useStaticTables";
 
 const X_MIN = 0;
@@ -220,22 +221,6 @@ function confidenceBadge(kind) {
   return CONFIDENCE[kind] || CONFIDENCE.strict;
 }
 
-function causeFor(caseDef, x, drop) {
-  const expected = caseDef.causes || [];
-  let best = null;
-  let bestDist = Infinity;
-  for (const cause of expected) {
-    const dist = Math.abs(Number(cause.x) - Number(x));
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = cause;
-    }
-  }
-  if (best && bestDist <= 3) return best;
-  const label = Math.abs(drop) < 6 ? "小規模な制度境界" : "制度境界";
-  return { x, label, confidence: "strict" };
-}
-
 function findQ(series, cliffIndex, yAfter) {
   for (let i = cliffIndex - 1; i >= 0; i -= 1) {
     const point = series[i];
@@ -254,12 +239,10 @@ function findR(series, cliffIndex, yBefore) {
 
 function detectCliffs(series, caseDef) {
   const rows = [];
-  const causeXs = Array.isArray(caseDef.causes) && caseDef.causes.length ? new Set(caseDef.causes.map((c) => Number(c.x))) : null;
   for (let i = 1; i < series.length; i += 1) {
     const prev = series[i - 1];
     const cur = series[i];
     if (cur.x < X_MIN || cur.x > X_MAX) continue;
-    if (causeXs && !causeXs.has(Number(cur.x))) continue;
     const delta = Number(cur.disposable) - Number(prev.disposable);
     if (delta > -Number(caseDef.minDropManyen || 3)) continue;
 
@@ -268,15 +251,14 @@ function detectCliffs(series, caseDef) {
     const q = findQ(series, i, yAfter);
     const r = findR(series, i, yBefore);
     const yAtMax = Number(series.find((p) => p.x === X_MAX)?.disposable ?? series[series.length - 1]?.disposable);
-    const cause = causeFor(caseDef, cur.x, delta);
+    const causes = explainCliffCauses(prev, cur);
     rows.push({
       index: rows.length + 1,
       x: Number(cur.x),
       yBefore,
       yAfter,
       drop: delta,
-      cause: cause.label,
-      confidence: cause.confidence || "strict",
+      causes,
       q,
       r,
       unrecoveredShortfall: r ? 0 : Math.max(0, yBefore - yAtMax),
@@ -391,41 +373,50 @@ function CliffTable({ cliffs }) {
       <table className="appendix-table">
         <thead>
           <tr>
-            <th>崖</th>
-            <th>制度</th>
-            <th>確度</th>
-            <th>P:給与</th>
-            <th>崖直前→直後の可処分</th>
+            <th>崖の給与</th>
+            <th>原因</th>
+            <th>何が起きたか</th>
             <th>落差</th>
-            <th>Q:後退先</th>
             <th>実質無効幅</th>
-            <th>R:回復点</th>
             <th>要追加年収</th>
+            <th>確度</th>
           </tr>
         </thead>
         <tbody>
           {cliffs.map((c) => {
             const qWidth = c.q ? c.x - c.q.x : null;
             const rWidth = c.r ? c.r.x - c.x : null;
-            const confidence = confidenceBadge(c.confidence);
+            const confidences = [...new Set((c.causes || []).map((cause) => cause.confidence || "strict"))];
             return (
               <tr key={c.index}>
-                <td className="appendix-mono">P{c.index}/Q{c.index}/R{c.index}</td>
-                <td>{c.cause}</td>
                 <td>
-                  <span className={`confidence-pill ${c.confidence}`}>{confidence.label}</span>
+                  <span className="appendix-mono">{fmt(c.x)}万</span>
                 </td>
-                <td className="appendix-mono">{fmt(c.x)}万</td>
-                <td className="appendix-mono">
-                  {fmt(c.yBefore, 1)}→{fmt(c.yAfter, 1)}
+                <td>
+                  {(c.causes || []).map((cause) => (
+                    <div key={`${c.index}-${cause.cause}`}>{cause.cause}</div>
+                  ))}
+                </td>
+                <td>
+                  {(c.causes || []).map((cause) => (
+                    <div key={`${c.index}-${cause.cause}-${cause.whatHappened}`}>{cause.whatHappened}</div>
+                  ))}
                 </td>
                 <td className="appendix-mono">{fmt(Math.abs(c.drop), 1)}万</td>
-                <td className="appendix-mono">{c.q ? `${fmt(c.q.x)}万` : "なし"}</td>
                 <td className="appendix-mono">{qWidth == null ? "—" : `${fmt(qWidth)}万`}</td>
                 <td className="appendix-mono">
-                  {c.r ? `${fmt(c.r.x)}万` : `1500万でも回復せず（不足${fmt(c.unrecoveredShortfall, 1)}万）`}
+                  {rWidth == null ? `1500万でも回復せず・不足${fmt(c.unrecoveredShortfall, 1)}万` : `${fmt(rWidth)}万`}
                 </td>
-                <td className="appendix-mono">{rWidth == null ? "到達不能" : `${fmt(rWidth)}万`}</td>
+                <td>
+                  {confidences.map((confidence) => {
+                    const cInfo = confidenceBadge(confidence);
+                    return (
+                      <span key={confidence} className={`confidence-pill ${confidence}`}>
+                        {cInfo.label}
+                      </span>
+                    );
+                  })}
+                </td>
               </tr>
             );
           })}

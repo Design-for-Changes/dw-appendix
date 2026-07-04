@@ -4,6 +4,7 @@ const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
 export const M01_KENSHIN_ANNUAL_YEN_DEFAULT = 149531;
 export const M01_KENSHIN_ANNUAL_YEN_RANGE = { min: 149531, max: 167929 };
 export const M01_LEVY_CUTOFF_YEN = 235000;
+export const RAW_TSUSHO_CHILD_MONTHLY_YEN = 10406;
 export const N04_SHOGAKU_ANNUAL_YEN = { first: 72945, second: 36473, third: 0 };
 export const N04_BOUNDARY_1_2_SALARY_MANYEN = 747;
 export const N04_BOUNDARY_2_3_SALARY_MANYEN = 1055;
@@ -916,7 +917,8 @@ function computePoint(ctx, x) {
     if (levyYen <= 0) return 0;
     if (a >= 18) return levyYen < 160000 ? 9300 : 37200;
     if (a >= 3 && a <= 5) return 0;
-    return levyYen < 280000 ? 4600 : 37200;
+    const upperLimitYen = levyYen < 280000 ? 4600 : 37200;
+    return Math.min(RAW_TSUSHO_CHILD_MONTHLY_YEN, upperLimitYen);
   };
   const serviceType = (sumLevyWan, age) => {
     const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
@@ -926,6 +928,12 @@ function computePoint(ctx, x) {
     if (a >= 18) return levyYen < 160000 ? "一般1" : "一般2";
     return levyYen < 280000 ? "一般1" : "一般2";
   };
+  const serviceConfidence = (sumLevyWan, age) => {
+    const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
+    const a = toNumber(age, 0);
+    if (a < 18 && !(a >= 3 && a <= 5) && levyYen >= 280000) return "representative";
+    return "strict";
+  };
   let serviceFeeMonthlyYenTotal = 0;
   const serviceFeeDetails = [];
   for (const r of rows) {
@@ -934,6 +942,7 @@ function computePoint(ctx, x) {
     const monthlyYen = monthlyFeeYen(levyWan, r.age);
     const age = toNumber(r.age, 0);
     const type = serviceType(levyWan, age);
+    const confidence = serviceConfidence(levyWan, age);
     serviceFeeMonthlyYenTotal = Math.max(serviceFeeMonthlyYenTotal, monthlyYen);
     serviceFeeDetails.push({
       who: String(r.who),
@@ -943,9 +952,11 @@ function computePoint(ctx, x) {
       type,
       monthlyUpperYen: monthlyYen,
       annualFeeWan: (monthlyYen * 12) / 10000,
-      confidence: "strict",
+      rawMonthlyYen: age < 18 && !(age >= 3 && age <= 5) ? RAW_TSUSHO_CHILD_MONTHLY_YEN : null,
+      confidence,
     });
   }
+  const serviceConfidenceOverall = serviceFeeDetails.some((d) => d.confidence === "representative") ? "representative" : "strict";
   const serviceFeeWanTotal = (serviceFeeMonthlyYenTotal * 12) / 10000;
 
   const basicPensionWan = (() => {
@@ -1257,7 +1268,7 @@ function computePoint(ctx, x) {
         tcca: tccaDetail,
         welfareAllowance: welfareAllowanceDetail,
         service: {
-          confidence: "strict",
+          confidence: serviceConfidenceOverall,
           householdLevySumWan,
           details: serviceFeeDetails,
           monthlyTotalYen: serviceFeeMonthlyYenTotal,

@@ -21,7 +21,8 @@
     "gen:basic": "node scripts/gen_basic_json.js",
     "gen:social": "node scripts/gen_social_json.js",
     "gen:data": "npm run gen:basic && npm run gen:social",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "report:cliff-causes": "node scripts/report-cliff-causes.mjs"
   },
   "eslintConfig": {
     "extends": [

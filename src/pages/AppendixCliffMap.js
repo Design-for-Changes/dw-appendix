@@ -430,16 +430,7 @@ function CliffTable({ cliffs }) {
   );
 }
 
-function FormulaRow({ label, value, tone }) {
-  return (
-    <div className={`formula-row ${tone || ""}`}>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
-function ProgramCard({ title, confidence, children }) {
+function CalculationTable({ title, confidence, rows }) {
   const c = confidenceBadge(confidence);
   return (
     <section className="formula-card">
@@ -447,7 +438,34 @@ function ProgramCard({ title, confidence, children }) {
         <h3>{title}</h3>
         <span className={`confidence-pill ${confidence}`}>{c.label}</span>
       </div>
-      <dl>{children}</dl>
+      <div className="formula-table-wrap">
+        <table className="formula-table">
+          <thead>
+            <tr>
+              <th>ラベル</th>
+              <th>値</th>
+              <th>計算式</th>
+              <th>確度</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const rowConfidence = row.confidence || confidence;
+              const rowBadge = confidenceBadge(rowConfidence);
+              return (
+                <tr key={row.label} className={row.tone || ""}>
+                  <th scope="row">{row.label}</th>
+                  <td className="formula-value">{row.value}</td>
+                  <td className="formula-expression">{row.formula}</td>
+                  <td>
+                    <span className={`confidence-pill ${rowConfidence}`}>{rowBadge.label}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -461,77 +479,144 @@ function BreakdownPanel({ point }) {
   const m01 = b.programs.m01;
   const n04 = b.programs.n04;
   const mainService = service.details[0];
+  const salaryRow = b.rows[0] || {};
 
   return (
     <div className="formula-grid">
-      <ProgramCard title="手取り" confidence="strict">
-        <FormulaRow
-          label="給与所得"
-          value={`${fmtWan(b.rows[0]?.salaryWan, 0)} − 給与所得控除 ${fmtWan(b.rows[0]?.employmentIncomeDeductionWan)} = ${fmtWan(b.rows[0]?.employmentIncomeWan)}`}
-        />
-        <FormulaRow
-          label="手取り"
-          value={`${fmtWan(b.takeHome.salaryWan, 0)} − 社会保険料 ${fmtWan(b.takeHome.socialWan)} − 税 ${fmtWan(b.takeHome.taxWan)} = ${fmtWan(b.takeHome.takeHomeWan)}`}
-        />
-        <FormulaRow
-          label="住民税所得割"
-          value={`${fmtWan(b.tax.residentIncomeLevyWan, 2)}（通所/M01判定に使用）`}
-        />
-      </ProgramCard>
+      <CalculationTable
+        title="手取り"
+        confidence="strict"
+        rows={[
+          {
+            label: "給与所得",
+            value: fmtWan(salaryRow.employmentIncomeWan),
+            formula: `${fmtWan(salaryRow.salaryWan, 0)} − 給与所得控除 ${fmtWan(salaryRow.employmentIncomeDeductionWan)} = ${fmtWan(salaryRow.employmentIncomeWan)}`,
+          },
+          {
+            label: "手取り",
+            value: fmtWan(b.takeHome.takeHomeWan),
+            formula: `${fmtWan(b.takeHome.salaryWan, 0)} − 社会保険料 ${fmtWan(b.takeHome.socialWan)} − 税 ${fmtWan(b.takeHome.taxWan)} = ${fmtWan(b.takeHome.takeHomeWan)}`,
+          },
+          {
+            label: "住民税所得割",
+            value: fmtWan(b.tax.residentIncomeLevyWan, 2),
+            formula: `${fmtWan(b.tax.residentIncomeLevyWan, 2)}（通所/M01判定に使用）`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="特別児童扶養手当" confidence="strict">
-        <FormulaRow
-          label="本人判定"
-          value={`${fmtYen(tcca.headAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.headLimitYen)} → ${tcca.eligible ? "支給" : "不支給"}`}
-        />
-        <FormulaRow
-          label="扶養義務者判定"
-          value={`${fmtYen(tcca.familyMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.familyLimitYen)} → ${tcca.eligible ? "通過" : "停止"}`}
-        />
-        <FormulaRow label="支給額" value={`${fmtYen(tcca.monthlyYen)}/月、${fmtWan(tcca.annualWan)}/年`} />
-      </ProgramCard>
+      <CalculationTable
+        title="特別児童扶養手当"
+        confidence="strict"
+        rows={[
+          {
+            label: "本人判定",
+            value: tcca.eligible ? "支給" : "不支給",
+            formula: `${fmtYen(tcca.headAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.headLimitYen)} → ${tcca.eligible ? "支給" : "不支給"}`,
+          },
+          {
+            label: "扶養義務者判定",
+            value: tcca.eligible ? "通過" : "停止",
+            formula: `${fmtYen(tcca.familyMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.familyLimitYen)} → ${tcca.eligible ? "通過" : "停止"}`,
+          },
+          {
+            label: "支給額",
+            value: fmtWan(tcca.annualWan),
+            formula: `${fmtYen(tcca.monthlyYen)}/月、${fmtWan(tcca.annualWan)}/年`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="障害児福祉手当" confidence="strict">
-        <FormulaRow
-          label="扶養義務者"
-          value={`${fmtYen(welfare.obligorMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(welfare.obligorLimitYen)} → ${welfare.obligorOk ? "通過" : "停止"}`}
-        />
-        <FormulaRow label="対象者" value={`${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人 支給`} />
-        <FormulaRow label="支給額" value={`${fmtYen(welfare.monthlyYen)}/月、${fmtWan(welfare.annualWan)}/年`} />
-      </ProgramCard>
+      <CalculationTable
+        title="障害児福祉手当"
+        confidence="strict"
+        rows={[
+          {
+            label: "扶養義務者",
+            value: welfare.obligorOk ? "通過" : "停止",
+            formula: `${fmtYen(welfare.obligorMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(welfare.obligorLimitYen)} → ${welfare.obligorOk ? "通過" : "停止"}`,
+          },
+          {
+            label: "対象者",
+            value: `${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人`,
+            formula: `${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人 支給`,
+          },
+          {
+            label: "支給額",
+            value: fmtWan(welfare.annualWan),
+            formula: `${fmtYen(welfare.monthlyYen)}/月、${fmtWan(welfare.annualWan)}/年`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="障害児通所支援" confidence="strict">
-        <FormulaRow
-          label="区分"
-          value={`所得割 ${fmtWan(mainService?.householdLevyWan, 2)} ${Number(mainService?.householdLevyWan || 0) >= 28 ? "≥" : "<"} 28万 → ${mainService?.type || "対象外"}`}
-        />
-        <FormulaRow label="月額上限" value={`${fmtYen(service.monthlyTotalYen)}（年額 ${fmtWan(service.annualWan)}）`} />
-      </ProgramCard>
+      <CalculationTable
+        title="障害児通所支援"
+        confidence="strict"
+        rows={[
+          {
+            label: "区分",
+            value: mainService?.type || "対象外",
+            formula: `所得割 ${fmtWan(mainService?.householdLevyWan, 2)} ${Number(mainService?.householdLevyWan || 0) >= 28 ? "≥" : "<"} 28万 → ${mainService?.type || "対象外"}`,
+          },
+          {
+            label: "月額上限",
+            value: fmtYen(service.monthlyTotalYen),
+            formula: `${fmtYen(service.monthlyTotalYen)}（年額 ${fmtWan(service.annualWan)}）`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="M01 重心医療費助成" confidence="representative">
-        <FormulaRow
-          label="判定"
-          value={`所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} ${fmtWan(m01.cutoffWan, 1)} → ${m01.status}`}
-        />
-        <FormulaRow label="助成額" value={`${m01.count}人 × ${fmtYen(m01.annualYenPerRecipient || 0)} = ${fmtWan(m01.annualWan)}`} />
-      </ProgramCard>
+      <CalculationTable
+        title="M01 重心医療費助成"
+        confidence="representative"
+        rows={[
+          {
+            label: "判定",
+            value: m01.status,
+            formula: `所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} ${fmtWan(m01.cutoffWan, 1)} → ${m01.status}`,
+          },
+          {
+            label: "助成額",
+            value: fmtWan(m01.annualWan),
+            formula: `${m01.count}人 × ${fmtYen(m01.annualYenPerRecipient || 0)} = ${fmtWan(m01.annualWan)}`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="N04 就学奨励費" confidence="provisional">
-        <FormulaRow
-          label="区分"
-          value={`給与 ${fmtWan(point.x, 0)}、境界 ${fmt(n04.boundaries?.firstToSecondManyen)}万 / ${fmt(n04.boundaries?.secondToThirdManyen)}万 → ${n04.supportClass}`}
-        />
-        <FormulaRow label="補助額" value={`${n04.count || 0}人 × ${fmtYen(n04.annualYenPerRecipient || 0)} = ${fmtWan(n04.annualWan)}`} />
-      </ProgramCard>
+      <CalculationTable
+        title="N04 就学奨励費"
+        confidence="provisional"
+        rows={[
+          {
+            label: "区分",
+            value: n04.supportClass,
+            formula: `給与 ${fmtWan(point.x, 0)}、境界 ${fmt(n04.boundaries?.firstToSecondManyen)}万 / ${fmt(n04.boundaries?.secondToThirdManyen)}万 → ${n04.supportClass}`,
+          },
+          {
+            label: "補助額",
+            value: fmtWan(n04.annualWan),
+            formula: `${n04.count || 0}人 × ${fmtYen(n04.annualYenPerRecipient || 0)} = ${fmtWan(n04.annualWan)}`,
+          },
+        ]}
+      />
 
-      <ProgramCard title="可処分所得" confidence="strict">
-        <FormulaRow label="手当合計" value={`${fmtWan(b.allowance.totalWan)}（特児・福祉手当・M01・N04等）`} />
-        <FormulaRow
-          label="可処分所得"
-          value={`${fmtWan(b.disposable.takeHomeWan)} + 手当 ${fmtWan(b.disposable.allowanceWan)} − 利用料 ${fmtWan(b.disposable.serviceFeeWan)} = ${fmtWan(b.disposable.disposableWan)}`}
-          tone="strong"
-        />
-      </ProgramCard>
+      <CalculationTable
+        title="可処分所得"
+        confidence="strict"
+        rows={[
+          {
+            label: "手当合計",
+            value: fmtWan(b.allowance.totalWan),
+            formula: `${fmtWan(b.allowance.totalWan)}（特児・福祉手当・M01・N04等）`,
+          },
+          {
+            label: "可処分所得",
+            value: fmtWan(b.disposable.disposableWan),
+            formula: `${fmtWan(b.disposable.takeHomeWan)} + 手当 ${fmtWan(b.disposable.allowanceWan)} − 利用料 ${fmtWan(b.disposable.serviceFeeWan)} = ${fmtWan(b.disposable.disposableWan)}`,
+            tone: "strong",
+          },
+        ]}
+      />
     </div>
   );
 }

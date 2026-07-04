@@ -275,44 +275,64 @@
   font-size: 15px;
 }
 
-.formula-card dl {
-  display: grid;
-  gap: 7px;
-  margin: 0;
+.formula-table-wrap {
+  overflow-x: auto;
 }
 
-.formula-row {
-  display: grid;
-  grid-template-columns: minmax(110px, 0.38fr) minmax(0, 1fr);
-  gap: 10px;
+.formula-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.formula-table th,
+.formula-table td {
   border-top: 1px solid #e5ecef;
-  padding-top: 7px;
+  padding: 8px 8px 8px 0;
+  text-align: left;
+  vertical-align: top;
 }
 
-.formula-row:first-child {
+.formula-table thead th {
   border-top: 0;
-  padding-top: 0;
-}
-
-.formula-row dt,
-.formula-row dd {
-  margin: 0;
-}
-
-.formula-row dt {
   color: #52636b;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
-.formula-row dd {
+.formula-table tbody th {
+  width: 24%;
+  color: #33444c;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.formula-table .formula-value,
+.formula-table .formula-expression {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   line-height: 1.55;
 }
 
-.formula-row.strong dd {
+.formula-table .formula-value {
+  width: 22%;
+  white-space: nowrap;
+}
+
+.formula-table .formula-expression {
+  width: 40%;
+}
+
+.formula-table td:last-child {
+  width: 14%;
+  padding-right: 0;
+}
+
+.formula-table tr.strong .formula-value,
+.formula-table tr.strong .formula-expression {
   color: #173f7a;
   font-weight: 900;
 }
@@ -447,9 +467,8 @@
     min-height: 280px;
   }
 
-  .formula-row {
-    grid-template-columns: 1fr;
-    gap: 3px;
+  .formula-table {
+    min-width: 640px;
   }
 }
 

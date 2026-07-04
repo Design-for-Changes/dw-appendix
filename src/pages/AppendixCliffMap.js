@@ -183,7 +183,6 @@ function makeTables(staticTables) {
     basicLT: staticTables.basicLTStatic,
     socialU40: staticTables.socialU40Static,
     socialO40: staticTables.socialO40Static,
-    taxTable: staticTables.taxTableStatic,
     configs: {
       spouseDeductionITCfg,
       spouseDeductionLTCfg,
@@ -565,8 +564,7 @@ export default function AppendixCliffMap() {
     staticTables.basicITStatic?.length &&
     staticTables.basicLTStatic?.length &&
     staticTables.socialU40Static?.length &&
-    staticTables.socialO40Static?.length &&
-    staticTables.taxTableStatic?.length;
+    staticTables.socialO40Static?.length;
 
   const data = useMemo(() => {
     if (!ready) return [];

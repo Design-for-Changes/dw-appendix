@@ -98,7 +98,6 @@ function getRequiredTables(tables = {}) {
     basicLTStatic: tables.basicLT || tables.basicLTStatic || [],
     socialU40Static: tables.socialU40 || tables.socialU40Static || [],
     socialO40Static: tables.socialO40 || tables.socialO40Static || [],
-    taxTableStatic: tables.taxTable || tables.taxTableStatic || [],
     dependentDeductionCfg: getConfig(tables, "dependentDeductionCfg"),
     spouseDeductionITCfg: getConfig(tables, "spouseDeductionITCfg"),
     spouseDeductionLTCfg: getConfig(tables, "spouseDeductionLTCfg"),
@@ -438,14 +437,48 @@ function getTaxable(ctx, col, kind, rows, headDedCommonWithKin) {
   return Math.max(0, total - basic - social - ws - dis - toNumber(headDedCommonWithKin, 0));
 }
 
-function getTax(ctx, taxableWan, kind) {
-  return interpTableValue(ctx.taxTableStatic, "taxable", taxableWan, kind === "it" ? "tax_it" : "tax_lt");
+function floorTaxableWanToThousandYen(taxableWan) {
+  const yen = Math.max(0, Math.floor(toNumber(taxableWan, 0) * 10000));
+  return Math.floor(yen / 1000) * 1000;
 }
 
-function getResidentIncomeLevyWan(taxLTWan) {
-  const rate = 0.6;
-  const incomeLevy10 = Math.max(0, toNumber(taxLTWan, 0) - 0.5);
-  return Math.round(incomeLevy10 * rate * 10000) / 10000;
+function getIncomeTaxWan(taxableWan) {
+  const taxableYen = floorTaxableWanToThousandYen(taxableWan);
+  const bands = [
+    { max: 1950000, rate: 0.05, deductionYen: 0 },
+    { max: 3300000, rate: 0.1, deductionYen: 97500 },
+    { max: 6950000, rate: 0.2, deductionYen: 427500 },
+    { max: 9000000, rate: 0.23, deductionYen: 636000 },
+    { max: 18000000, rate: 0.33, deductionYen: 1536000 },
+    { max: 40000000, rate: 0.4, deductionYen: 2796000 },
+    { max: Infinity, rate: 0.45, deductionYen: 4796000 },
+  ];
+  const band = bands.find((b) => taxableYen <= b.max) || bands[bands.length - 1];
+  const taxYen = Math.max(0, taxableYen * band.rate - band.deductionYen);
+  return Math.round(taxYen) / 10000;
+}
+
+function getResidentTaxParts(taxableWan) {
+  const taxableYen = floorTaxableWanToThousandYen(taxableWan);
+  const rawIncomeLevyYen = taxableYen * 0.1;
+  const adjustmentDeductionYen = rawIncomeLevyYen > 0 ? 5000 : 0;
+  const incomeLevyYen = Math.max(0, rawIncomeLevyYen - adjustmentDeductionYen);
+  const municipalIncomeLevyYen = Math.max(0, incomeLevyYen * 0.6);
+  const perCapitaWan = incomeLevyYen > 0 ? 0.5 : 0;
+  const incomeLevyWan = Math.round(incomeLevyYen) / 10000;
+  return {
+    taxableWan: taxableYen / 10000,
+    incomeLevyWan,
+    municipalIncomeLevyWan: Math.round(municipalIncomeLevyYen) / 10000,
+    adjustmentDeductionWan: adjustmentDeductionYen / 10000,
+    perCapitaWan,
+    totalWan: incomeLevyWan + perCapitaWan,
+  };
+}
+
+function getTax(taxableWan, kind) {
+  if (kind === "it") return getIncomeTaxWan(taxableWan);
+  return getResidentTaxParts(taxableWan).totalWan;
 }
 
 function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
@@ -817,10 +850,11 @@ function computePoint(ctx, x) {
     socialWanTotal += toNumber(r.socialWan, 0);
     const taxableIT = getTaxable(ctx, r, "it", rows, headDedCommonITWithKin);
     const taxableLT = getTaxable(ctx, r, "lt", rows, headDedCommonLTWithKin);
-    const taxIT = getTax(ctx, taxableIT, "it");
-    const taxLT = getTax(ctx, taxableLT, "lt");
-    const residentIncomeLevyWan = getResidentIncomeLevyWan(taxLT);
-    const residentPerCapitaWan = toNumber(taxLT, 0) > 0 ? 0.5 : 0;
+    const taxIT = getTax(taxableIT, "it");
+    const residentTax = getResidentTaxParts(taxableLT);
+    const taxLT = residentTax.totalWan;
+    const residentIncomeLevyWan = residentTax.municipalIncomeLevyWan;
+    const residentPerCapitaWan = residentTax.perCapitaWan;
     taxWanTotal += toNumber(taxIT, 0) + toNumber(taxLT, 0);
     levyByWho.set(String(r.who), {
       who: String(r.who),
@@ -835,11 +869,12 @@ function computePoint(ctx, x) {
         taxWan: toNumber(taxIT, 0),
       },
       residentTax: {
-        taxableWan: taxableLT,
+        taxableWan: residentTax.taxableWan,
         computedTaxWan: toNumber(taxLT, 0),
         incomeLevyWan: residentIncomeLevyWan,
         perCapitaWan: residentPerCapitaWan,
-        adjustmentDeductionWan: null,
+        adjustmentDeductionWan: residentTax.adjustmentDeductionWan,
+        municipalIncomeLevyWan: residentTax.municipalIncomeLevyWan,
       },
       deductions: {
         basicITWan: toNumber(r.basicITWan, 0),

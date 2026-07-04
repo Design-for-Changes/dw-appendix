@@ -26,11 +26,11 @@ const CONFIDENCE = {
   },
   representative: {
     label: "代表値",
-    note: "M01の高さは伊勢原市H29決算の代表値。感度レンジ 149,531〜167,929円/年。",
+    note: "重心医療費助成の高さは伊勢原市H29決算の代表値。感度レンジ 149,531〜167,929円/年。",
   },
   provisional: {
     label: "暫定",
-    note: "N04は住宅扶助・生活扶助・需要額調書・控除扱いの未確定点を残す代表設定。",
+    note: "就学奨励費は住宅扶助・生活扶助・需要額調書・控除扱いの未確定点を残す代表設定。",
   },
   scope: {
     label: "表示帯",
@@ -72,21 +72,12 @@ const PRESENTATION_CASES = [
         },
       ],
     },
-    causes: [
-      { x: 260, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
-      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
-      { x: 782, label: "特別児童扶養手当", confidence: "strict" },
-      { x: 842, label: "M01 重心医療費助成", confidence: "representative" },
-      { x: 928, label: "障害児福祉手当", confidence: "strict" },
-      { x: 932, label: "障害児通所支援", confidence: "strict" },
-      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
-    ],
   },
   {
     id: "case2",
     label: "ケース2",
     shortLabel: "子2人・混合",
-    description: "11歳1級特別＋7歳2級一般。福祉手当・M01・N04は1人分",
+    description: "11歳1級特別＋7歳2級一般。福祉手当・重心医療費助成・就学奨励費は1人分",
     minDropManyen: 2.5,
     household: {
       ...COMMON_HOUSEHOLD,
@@ -116,21 +107,12 @@ const PRESENTATION_CASES = [
         },
       ],
     },
-    causes: [
-      { x: 307, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
-      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
-      { x: 854, label: "特別児童扶養手当", confidence: "strict" },
-      { x: 873, label: "M01 重心医療費助成", confidence: "representative" },
-      { x: 950, label: "障害児福祉手当", confidence: "strict" },
-      { x: 963, label: "障害児通所支援", confidence: "strict" },
-      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
-    ],
   },
   {
     id: "case3",
     label: "ケース3",
     shortLabel: "子2人・重複",
-    description: "11歳・7歳とも特児1級・特別障害。福祉手当・M01・N04は2人分",
+    description: "11歳・7歳とも特児1級・特別障害。福祉手当・重心医療費助成・就学奨励費は2人分",
     minDropManyen: 2.5,
     household: {
       ...COMMON_HOUSEHOLD,
@@ -161,15 +143,6 @@ const PRESENTATION_CASES = [
         },
       ],
     },
-    causes: [
-      { x: 356, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
-      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
-      { x: 867, label: "特別児童扶養手当", confidence: "strict" },
-      { x: 906, label: "M01 重心医療費助成", confidence: "representative" },
-      { x: 990, label: "障害児福祉手当", confidence: "strict" },
-      { x: 995, label: "障害児通所支援", confidence: "strict" },
-      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
-    ],
   },
 ];
 
@@ -223,6 +196,14 @@ function fmtYen(n) {
 
 function confidenceBadge(kind) {
   return CONFIDENCE[kind] || CONFIDENCE.strict;
+}
+
+function tintWhite(hex, whiteRatio) {
+  const h = String(hex || "").replace("#", "");
+  if (h.length !== 6) return "#ffffff";
+  const ch = (i) => parseInt(h.substring(i, i + 2), 16);
+  const mix = (c) => Math.round(c + (255 - c) * whiteRatio);
+  return `rgb(${mix(ch(0))}, ${mix(ch(2))}, ${mix(ch(4))})`;
 }
 
 function findQ(series, cliffIndex, yAfter) {
@@ -350,15 +331,25 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
         <path
           key={d.id}
           d={buildPath(d.series, xScale, yScale)}
-          className={`appendix-line ${d.id === selectedId ? "selected" : ""}`}
+          className="appendix-line"
           stroke={d.color}
         />
       ))}
 
+      <g className="appendix-inlegend">
+        {data.map((d, i) => (
+          <g key={d.id} transform={`translate(${pad.left + 14} ${pad.top + 16 + i * 22})`}>
+            <circle cx="0" cy="-4" r="5" fill={d.color} />
+            <text x="13" y="0" fill={d.color}>
+              {d.label}
+            </text>
+          </g>
+        ))}
+      </g>
+
       {selectedPoint ? (
         <g className="appendix-cursor">
           <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
-          <circle cx={xScale(selectedPoint.x)} cy={yScale(selectedPoint.disposable)} r="5" />
           <text x={xScale(selectedPoint.x) + 8} y={pad.top + 18}>
             {fmt(selectedPoint.x)}万
           </text>
@@ -377,9 +368,9 @@ function CliffTable({ cliffs }) {
       <table className="appendix-table">
         <thead>
           <tr>
-            <th>崖の給与</th>
+            <th>給与収入</th>
             <th>原因</th>
-            <th>何が起きたか</th>
+            <th>変化内容</th>
             <th>落差</th>
             <th>実質無効幅</th>
             <th>要追加年収</th>
@@ -430,12 +421,15 @@ function CliffTable({ cliffs }) {
   );
 }
 
-function CalculationTable({ title, confidence, rows }) {
+function CalculationTable({ title, subtitle, confidence, rows, note, wide }) {
   const c = confidenceBadge(confidence);
   return (
-    <section className="formula-card">
+    <section className={`formula-card${wide ? " wide" : ""}`}>
       <div className="formula-card-head">
-        <h3>{title}</h3>
+        <h3>
+          {title}
+          {subtitle ? <small className="formula-subtitle"> {subtitle}</small> : null}
+        </h3>
         <span className={`confidence-pill ${confidence}`}>{c.label}</span>
       </div>
       <div className="formula-table-wrap">
@@ -453,7 +447,7 @@ function CalculationTable({ title, confidence, rows }) {
               const rowConfidence = row.confidence || confidence;
               const rowBadge = confidenceBadge(rowConfidence);
               return (
-                <tr key={row.label} className={row.tone || ""}>
+                <tr key={row.key || row.label} className={row.tone || ""}>
                   <th scope="row">{row.label}</th>
                   <td className="formula-value">{row.value}</td>
                   <td className="formula-expression">{row.formula}</td>
@@ -466,153 +460,379 @@ function CalculationTable({ title, confidence, rows }) {
           </tbody>
         </table>
       </div>
+      {note ? <p className="formula-note">{note}</p> : null}
     </section>
+  );
+}
+
+function itLt(itWan, ltWan) {
+  return `所${fmtWan(itWan)}／住${fmtWan(ltWan)}`;
+}
+
+function incomeRowsFor(r) {
+  return [
+    {
+      key: "salary",
+      label: "給与収入",
+      value: fmtWan(r.salaryWan, 0),
+      formula: r.otherIncomeWan ? `＋その他所得 ${fmtWan(r.otherIncomeWan)}` : "掃引給与（世帯主は縦ラインの値）",
+    },
+    {
+      key: "empBase",
+      label: "給与所得控除（基礎）",
+      value: fmtWan(r.employmentIncomeBaseDeductionWan),
+      formula: "給与収入テーブルから引く基礎額",
+    },
+    {
+      key: "incomeAdj",
+      label: "所得金額調整控除",
+      value: fmtWan(r.incomeAdjustmentDeductionWan),
+      formula: "給与850万超・対象者のみ（最大15万）",
+    },
+    {
+      key: "empDed",
+      label: "給与所得控除（計）",
+      value: fmtWan(r.employmentIncomeDeductionWan),
+      formula: `基礎 ${fmtWan(r.employmentIncomeBaseDeductionWan)} ＋ 調整 ${fmtWan(r.incomeAdjustmentDeductionWan)}`,
+    },
+    {
+      key: "empIncome",
+      label: "給与所得",
+      value: fmtWan(r.employmentIncomeWan),
+      formula: `${fmtWan(r.salaryWan, 0)} − 給与所得控除 ${fmtWan(r.employmentIncomeDeductionWan)}`,
+    },
+    {
+      key: "total",
+      label: "総所得",
+      value: fmtWan(r.totalIncomeWan),
+      formula: `給与所得 ${fmtWan(r.employmentIncomeWan)} ＋ その他所得 ${fmtWan(r.otherIncomeWan)}`,
+    },
+    {
+      key: "social",
+      label: "社会保険料",
+      value: fmtWan(r.socialInsuranceWan),
+      formula: "年収ベース近似式（総額のみ・内訳なし）",
+    },
+  ];
+}
+
+function childDisabilityLabel(c) {
+  if (c?.specialDisabled) return "特別障害者";
+  if (c?.disabled) return "一般障害者";
+  return "障害なし";
+}
+
+function childTccaLabel(c) {
+  const g = String(c?.tccaGrade || "not");
+  return g === "not" ? "対象外" : `${g}級`;
+}
+
+function CaseConditions({ caseDef }) {
+  const h = caseDef?.household || {};
+  const children = Array.isArray(h.children) ? h.children : [];
+  return (
+    <div className="case-conditions">
+      <ul className="case-cond-list">
+        <li>
+          <b>世帯主</b>：{h.head?.age ?? "—"}歳
+        </li>
+        {h.spouseEnabled ? (
+          <li>
+            <b>配偶者</b>：{h.spouse?.age ?? "—"}歳（給与収入なし）
+          </li>
+        ) : (
+          <li>
+            <b>配偶者</b>：なし
+          </li>
+        )}
+        <li>
+          <b>子ども</b>：{children.length}人
+        </li>
+      </ul>
+
+      <div className="formula-table-wrap">
+        <table className="case-cond-table">
+          <thead>
+            <tr>
+              <th>子</th>
+              <th>年齢</th>
+              <th>障害区分</th>
+              <th>特別児童扶養手当</th>
+              <th>同居</th>
+              <th>障害児福祉手当</th>
+            </tr>
+          </thead>
+          <tbody>
+            {children.map((c, i) => (
+              <tr key={`child-${i}`}>
+                <th scope="row">子ども{i + 1}</th>
+                <td>{fmt(c.age)}歳</td>
+                <td>{childDisabilityLabel(c)}</td>
+                <td>{childTccaLabel(c)}</td>
+                <td>{c.cohabit !== false ? "同居" : "別居"}</td>
+                <td>{c.childWelfareAllowance ? "あり" : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
 function BreakdownPanel({ point }) {
   if (!point?.breakdown) return <div className="appendix-empty">計算内訳を読み込んでいます。</div>;
   const b = point.breakdown;
-  const tcca = b.programs.tcca;
-  const welfare = b.programs.welfareAllowance;
-  const service = b.programs.service;
-  const m01 = b.programs.m01;
-  const n04 = b.programs.n04;
-  const mainService = service.details[0];
-  const salaryRow = b.rows[0] || {};
+  const rows = b.rows || [];
+  const ded = b.deductions || {};
+  const ws = ded.widowSingleParent || { widow: {}, singleParent: {} };
+  const si = b.socialInsurance || { byWho: [] };
+  const tax = b.tax || { byWho: [] };
+  const programs = b.programs || {};
+  const tcca = programs.tcca || {};
+  const welfare = programs.welfareAllowance || { recipients: [] };
+  const service = programs.service || { details: [] };
+  const m01 = programs.m01 || {};
+  const n04 = programs.n04 || {};
+  const allowance = b.allowance || {};
+  const disposable = b.disposable || {};
+
+  const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
+  const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
+  const serviceUpperYens = (service.details || []).map((d) => d.monthlyUpperYen);
 
   return (
     <div className="formula-grid">
+      {/* ① 収入・控除（各人） */}
+      {rows.map((r) => (
+        <CalculationTable
+          key={`income-${r.who}`}
+          title={`① 収入・控除：${r.who}`}
+          subtitle={`${fmt(r.age)}歳${r.disabled ? `・障害(${r.disabilityKind})` : ""}`}
+          confidence="strict"
+          rows={incomeRowsFor(r)}
+        />
+      ))}
+
+      {/* ② 所得控除（所得税IT・住民税LT別） */}
       <CalculationTable
-        title="手取り"
+        title="② 所得控除（所得税IT／住民税LT別）"
         confidence="strict"
+        note="所得税と住民税で額が異なる控除は両方を併記（所＝所得税、住＝住民税）。"
         rows={[
-          {
-            label: "給与所得",
-            value: fmtWan(salaryRow.employmentIncomeWan),
-            formula: `${fmtWan(salaryRow.salaryWan, 0)} − 給与所得控除 ${fmtWan(salaryRow.employmentIncomeDeductionWan)} = ${fmtWan(salaryRow.employmentIncomeWan)}`,
-          },
-          {
-            label: "手取り",
-            value: fmtWan(b.takeHome.takeHomeWan),
-            formula: `${fmtWan(b.takeHome.salaryWan, 0)} − 社会保険料 ${fmtWan(b.takeHome.socialWan)} − 税 ${fmtWan(b.takeHome.taxWan)} = ${fmtWan(b.takeHome.takeHomeWan)}`,
-          },
-          {
-            label: "住民税所得割",
-            value: fmtWan(b.tax.residentIncomeLevyWan, 2),
-            formula: `${fmtWan(b.tax.residentIncomeLevyWan, 2)}（通所/M01判定に使用）`,
-          },
+          { key: "dependent", label: "扶養控除", value: itLt(ded.dependent?.itWan, ded.dependent?.ltWan), formula: "子の年齢・所得帯で判定" },
+          { key: "specialKin", label: "特定扶養（19–22歳）", value: itLt(ded.specialKin?.itWan, ded.specialKin?.ltWan), formula: "19〜22歳・扶養上限超の所得帯" },
+          { key: "spouse", label: "配偶者控除", value: itLt(ded.spouse?.itWan, ded.spouse?.ltWan), formula: "配偶者所得×世帯主所得帯" },
+          { key: "spouseSpecial", label: "配偶者特別控除", value: itLt(ded.spouseSpecial?.itWan, ded.spouseSpecial?.ltWan), formula: "配偶者控除が0のとき適用" },
+          { key: "widow", label: "寡婦控除", value: itLt(ws.widow?.itWan, ws.widow?.ltWan), formula: "世帯主所得500万以下・条件付き" },
+          { key: "singleParent", label: "ひとり親控除", value: itLt(ws.singleParent?.itWan, ws.singleParent?.ltWan), formula: "世帯主所得500万以下・条件付き" },
         ]}
       />
 
+      {/* ③ 社会保険（総額・近似式） */}
       <CalculationTable
-        title="特別児童扶養手当"
+        title="③ 社会保険料（総額・近似式）"
+        confidence="strict"
+        note="★内訳（健保／介護／年金／雇用／子育て拠出）はコアが算定せず null。年収ベースの近似式で総額のみを求めており、標準報酬等級表による内訳割りは行っていない。"
+        rows={[
+          ...(si.byWho || []).map((s) => ({
+            key: `si-${s.who}`,
+            label: s.who,
+            value: fmtWan(s.totalWan),
+            formula: "健保/介護/年金/雇用/子育拠出＝内訳なし（null）",
+          })),
+          { key: "si-total", label: "社保 総額", value: fmtWan(si.totalWan), formula: "各人の合計", tone: "strong" },
+        ]}
+      />
+
+      {/* ④ 税（人別内訳） */}
+      <CalculationTable
+        title="④ 税：人別内訳"
+        wide
+        confidence="strict"
+        rows={(tax.byWho || []).flatMap((t) => [
+          {
+            key: `it-${t.who}`,
+            label: `${t.who}・所得税`,
+            value: fmtWan(t.incomeTax?.taxWan),
+            formula: `課税所得 ${fmtWan(t.incomeTax?.taxableWan)} → 所得税 ${fmtWan(t.incomeTax?.taxWan)}`,
+          },
+          {
+            key: `lt-${t.who}`,
+            label: `${t.who}・住民税`,
+            value: fmtWan(t.residentTax?.computedTaxWan),
+            formula: `課税 ${fmtWan(t.residentTax?.taxableWan)} → 所得割 ${fmtWan(t.residentTax?.incomeLevyWan, 2)}（内 市町村分 ${fmtWan(t.residentTax?.municipalIncomeLevyWan, 2)}）＋ 均等割 ${fmtWan(t.residentTax?.perCapitaWan, 2)}`,
+          },
+        ])}
+      />
+
+      {/* ④ 税（集計） */}
+      <CalculationTable
+        title="④ 税：集計"
         confidence="strict"
         rows={[
+          { key: "incomeTax", label: "所得税 合計", value: fmtWan(tax.incomeTaxWan), formula: "各人の所得税を合算" },
+          { key: "residentTax", label: "住民税 合計", value: fmtWan(tax.residentTaxWan), formula: "各人の住民税（所得割＋均等割）を合算" },
+          { key: "levy", label: "住民税所得割（市町村分）", value: fmtWan(tax.residentIncomeLevyWan, 2), formula: "★通所・重心医療費助成の該当判定に使う値" },
+          { key: "tax-total", label: "税 合計", value: fmtWan(tax.totalWan), formula: "所得税 ＋ 住民税", tone: "strong" },
+        ]}
+      />
+
+      {/* ⑤ 特別児童扶養手当（特児） */}
+      <CalculationTable
+        title="⑤ 特別児童扶養手当（特児）"
+        confidence="strict"
+        rows={[
+          { key: "fuyo", label: "扶養人数", value: `${fmt(tcca.fuyoCount)}人`, formula: `限度額の法定加算 ${fmtYen(tcca.statutoryAddYen)}` },
           {
+            key: "head",
             label: "本人判定",
-            value: tcca.eligible ? "支給" : "不支給",
-            formula: `${fmtYen(tcca.headAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.headLimitYen)} → ${tcca.eligible ? "支給" : "不支給"}`,
+            value: tccaHeadOk ? "通過" : "停止",
+            formula: `判定所得 ${fmtYen(tcca.headAdjustedIncomeYen)} ${tccaHeadOk ? "≤" : ">"} 限度 ${fmtYen(tcca.headLimitYen)}`,
           },
           {
+            key: "family",
             label: "扶養義務者判定",
-            value: tcca.eligible ? "通過" : "停止",
-            formula: `${fmtYen(tcca.familyMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.familyLimitYen)} → ${tcca.eligible ? "通過" : "停止"}`,
+            value: tccaFamilyOk ? "通過" : "停止",
+            formula: `家族最大 ${fmtYen(tcca.familyMaxAdjustedIncomeYen)} ${tccaFamilyOk ? "≤" : ">"} 限度 ${fmtYen(tcca.familyLimitYen)}`,
           },
-          {
-            label: "支給額",
-            value: fmtWan(tcca.annualWan),
-            formula: `${fmtYen(tcca.monthlyYen)}/月、${fmtWan(tcca.annualWan)}/年`,
-          },
+          { key: "elig", label: "支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "本人 ∧ 扶養義務者 の両方通過で支給" },
+          { key: "amt", label: "支給額", value: fmtWan(tcca.annualWan), formula: `${fmtYen(tcca.monthlyYen)}/月 × 12` },
         ]}
       />
 
+      {/* ⑤ 障害児福祉手当 */}
       <CalculationTable
-        title="障害児福祉手当"
+        title="⑤ 障害児福祉手当"
         confidence="strict"
         rows={[
+          { key: "fuyo", label: "扶養人数", value: `${fmt(welfare.fuyoCount)}人`, formula: "扶養義務者限度額の算定基礎" },
           {
-            label: "扶養義務者",
+            key: "obligor",
+            label: "扶養義務者判定",
             value: welfare.obligorOk ? "通過" : "停止",
-            formula: `${fmtYen(welfare.obligorMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(welfare.obligorLimitYen)} → ${welfare.obligorOk ? "通過" : "停止"}`,
+            formula: `判定所得(最大) ${fmtYen(welfare.obligorMaxAdjustedIncomeYen)} ${welfare.obligorOk ? "≤" : ">"} 限度 ${fmtYen(welfare.obligorLimitYen)}`,
           },
-          {
-            label: "対象者",
-            value: `${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人`,
-            formula: `${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人 支給`,
-          },
-          {
-            label: "支給額",
-            value: fmtWan(welfare.annualWan),
-            formula: `${fmtYen(welfare.monthlyYen)}/月、${fmtWan(welfare.annualWan)}/年`,
-          },
+          ...((welfare.recipients || []).length
+            ? welfare.recipients.map((rc) => ({
+                key: `wf-${rc.who}`,
+                label: `${rc.who}・本人判定`,
+                value: rc.ok ? "支給" : "不支給",
+                formula: `本人所得 ${fmtYen(rc.selfYen)} vs 限度 ${fmtYen(rc.selfLimitYen)}（本人${rc.selfOk ? "○" : "×"}・義務者${rc.obligorOk ? "○" : "×"}）`,
+              }))
+            : [{ key: "wf-none", label: "対象者", value: "なし", formula: "受給対象者が存在しない" }]),
+          { key: "amt", label: "支給額", value: fmtWan(welfare.annualWan), formula: `${fmtYen(welfare.monthlyYen)}/月 × 12` },
         ]}
       />
 
+      {/* ⑤ 障害児通所支援（世帯上限） */}
       <CalculationTable
-        title="障害児通所支援"
+        title="⑤ 障害児通所支援（世帯上限）"
+        wide
         confidence="strict"
+        note="負担上限月額は世帯単位。複数児でも合算せず、該当する上限のうち最も高い1つを採用（児福法施行令24条・27条の2）。人数倍しない。"
         rows={[
           {
-            label: "区分",
-            value: mainService?.type || "対象外",
-            formula: `所得割 ${fmtWan(mainService?.householdLevyWan, 2)} ${Number(mainService?.householdLevyWan || 0) >= 28 ? "≥" : "<"} 28万 → ${mainService?.type || "対象外"}`,
+            key: "levySum",
+            label: "世帯 所得割合計",
+            value: fmtWan(service.householdLevySumWan, 2),
+            formula: "各人の住民税所得割（市町村分）を合算 → 区分判定に使用",
           },
+          ...(service.details || []).map((d) => ({
+            key: `svc-${d.who}`,
+            label: `${d.who}（${fmt(d.age)}歳）`,
+            value: d.type,
+            confidence: d.confidence,
+            formula: `所得割 ${fmtYen(d.householdLevyYen)} → 区分 ${d.type} → 上限 ${fmtYen(d.monthlyUpperYen)}/月`,
+          })),
           {
-            label: "月額上限",
+            key: "svc-adopt",
+            label: "世帯採用上限",
             value: fmtYen(service.monthlyTotalYen),
-            formula: `${fmtYen(service.monthlyTotalYen)}（年額 ${fmtWan(service.annualWan)}）`,
+            formula: `max(${serviceUpperYens.map((y) => fmtYen(y)).join(", ") || "—"}) = ${fmtYen(service.monthlyTotalYen)}（人数倍なし）`,
+            tone: "strong",
           },
+          { key: "svc-annual", label: "年額負担", value: fmtWan(service.annualWan), formula: `${fmtYen(service.monthlyTotalYen)}/月 × 12` },
         ]}
       />
 
+      {/* ⑤ 重心医療費助成 */}
       <CalculationTable
-        title="M01 重心医療費助成"
+        title="⑤ 重心医療費助成"
         confidence="representative"
         rows={[
           {
+            key: "judge",
             label: "判定",
             value: m01.status,
-            formula: `所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} ${fmtWan(m01.cutoffWan, 1)} → ${m01.status}`,
+            formula: `所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} 上限 ${fmtWan(m01.cutoffWan, 2)}`,
           },
           {
+            key: "amt",
             label: "助成額",
             value: fmtWan(m01.annualWan),
-            formula: `${m01.count}人 × ${fmtYen(m01.annualYenPerRecipient || 0)} = ${fmtWan(m01.annualWan)}`,
+            formula: `1人あたり ${fmtYen(m01.annualYenPerRecipient || 0)} × ${fmt(m01.count)}人（1人ずつ助成＝人数倍が正）`,
+          },
+          {
+            key: "sens",
+            label: "感度レンジ",
+            value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`,
+            formula: "伊勢原市H29決算の代表値レンジ",
           },
         ]}
       />
 
+      {/* ⑤ 就学奨励費 */}
       <CalculationTable
-        title="N04 就学奨励費"
+        title="⑤ 就学奨励費"
         confidence="provisional"
         rows={[
           {
+            key: "class",
             label: "区分",
             value: n04.supportClass,
-            formula: `給与 ${fmtWan(point.x, 0)}、境界 ${fmt(n04.boundaries?.firstToSecondManyen)}万 / ${fmt(n04.boundaries?.secondToThirdManyen)}万 → ${n04.supportClass}`,
+            formula: `給与 ${fmt(n04.salaryManyen)}万、境界 ${fmt(n04.boundaries?.firstToSecondManyen)} / ${fmt(n04.boundaries?.secondToThirdManyen)}万`,
           },
           {
+            key: "amt",
             label: "補助額",
             value: fmtWan(n04.annualWan),
-            formula: `${n04.count || 0}人 × ${fmtYen(n04.annualYenPerRecipient || 0)} = ${fmtWan(n04.annualWan)}`,
+            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（1人ずつ補助＝人数倍が正）`,
           },
         ]}
       />
 
+      {/* ⑥ 手当合計（7内訳） */}
       <CalculationTable
-        title="可処分所得"
+        title="⑥ 手当合計（全内訳）"
+        wide
+        confidence="strict"
+        note="7内訳の合計＝手当合計（totalWan）。畳まず全内訳を出すことで内訳計と合計が一致する。"
+        rows={[
+          { key: "pension", label: "基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人・配偶者の基礎年金" },
+          { key: "tcca", label: "特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "⑤特児より" },
+          { key: "welfare", label: "障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "⑤福祉手当より" },
+          { key: "childSupport", label: "児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親世帯のみ" },
+          { key: "childAllowance", label: "児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "18歳未満・出生順で加算" },
+          { key: "m01", label: "重心医療費助成", value: fmtWan(allowance.m01Wan), formula: "⑤重心医療費助成より", confidence: "representative" },
+          { key: "n04", label: "就学奨励費", value: fmtWan(allowance.n04Wan), formula: "⑤就学奨励費より", confidence: "provisional" },
+          { key: "allowance-total", label: "手当合計", value: fmtWan(allowance.totalWan), formula: "上記7内訳の合計", tone: "strong" },
+        ]}
+      />
+
+      {/* ⑥ 可処分所得 */}
+      <CalculationTable
+        title="⑥ 可処分所得"
         confidence="strict"
         rows={[
+          { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与総額 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
+          { key: "allowance", label: "手当", value: fmtWan(disposable.allowanceWan), formula: "⑥手当合計より（＋）" },
+          { key: "serviceFee", label: "通所利用料", value: fmtWan(disposable.serviceFeeWan), formula: "⑤通所の年額負担より（−）" },
           {
-            label: "手当合計",
-            value: fmtWan(b.allowance.totalWan),
-            formula: `${fmtWan(b.allowance.totalWan)}（特児・福祉手当・M01・N04等）`,
-          },
-          {
+            key: "disposable",
             label: "可処分所得",
-            value: fmtWan(b.disposable.disposableWan),
-            formula: `${fmtWan(b.disposable.takeHomeWan)} + 手当 ${fmtWan(b.disposable.allowanceWan)} − 利用料 ${fmtWan(b.disposable.serviceFeeWan)} = ${fmtWan(b.disposable.disposableWan)}`,
+            value: fmtWan(disposable.disposableWan),
+            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 手当 ${fmtWan(disposable.allowanceWan)} − 利用料 ${fmtWan(disposable.serviceFeeWan)}`,
             tone: "strong",
           },
         ]}
@@ -667,76 +887,76 @@ export default function AppendixCliffMap() {
 
   const selected = data.find((d) => d.id === selectedId) || data[0];
   const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
+  const caseAccent = selected?.color || "#9aa7ad";
+  const caseSectionStyle = {
+    "--case-accent": caseAccent,
+    "--case-bg": tintWhite(caseAccent, 0.86),
+    "--case-card": tintWhite(caseAccent, 0.96),
+  };
 
   return (
     <main className="App appendix-page">
       <section className="appendix-hero">
         <p className="appendix-kicker">WEB APPENDIX</p>
-        <h1>部分最適な所得制限が、束になると可処分所得を逆転させる</h1>
-        <p>
-          給与を1万円刻みで掃引し、計算コアが返す手取り・手当・利用料・制度判定をそのまま表示する。
-          表示帯は200万〜1400万（1201点）に限定し、グラフは崖の位置関係を示し、縦ラインは選んだ給与での計算過程を展開する。
-        </p>
+        <h1>モデル世帯による給付・負担構造</h1>
       </section>
 
-      <section className="appendix-controls" aria-label="表示ケース">
-        {[...PRESENTATION_CASES, IDEAL_CASE].map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
-            aria-pressed={selectedId === c.id}
-            onClick={() => {
-              if (!c.pending) setSelectedId(c.id);
-            }}
-          >
-            <span>{c.label}</span>
-            <small>{c.shortLabel}</small>
-          </button>
-        ))}
-      </section>
-
-      <section className="appendix-panel">
+      <section className="appendix-panel appendix-panel-open">
         {!ready ? (
           <div className="appendix-empty">計算テーブルを読み込んでいます。</div>
         ) : (
           <>
-            <div className="appendix-section-head">
-              <div>
-                <h2>{selected?.label}</h2>
-                <p>{selected?.description}</p>
-              </div>
-              <div className="salary-control">
-                <label htmlFor="salary-range">縦ライン: {fmt(selectedSalary)}万円</label>
-                <input
-                  id="salary-range"
-                  type="range"
-                  min={X_MIN}
-                  max={X_MAX}
-                  step="1"
-                  value={selectedSalary}
-                  onChange={(e) => setSelectedSalary(Number(e.target.value))}
-                />
-              </div>
-            </div>
             <Graph data={data} selectedId={selected?.id} selectedSalary={selectedSalary} onSalaryChange={setSelectedSalary} />
-            <div className="appendix-legend" aria-label="ケース凡例">
-              {data.map((d) => (
-                <span key={d.id} className={d.id === selected?.id ? "active" : ""}>
-                  <i style={{ background: d.color }} aria-hidden="true" />
-                  {d.label}：{d.shortLabel}
-                </span>
-              ))}
-            </div>
           </>
         )}
       </section>
 
-      <section className="appendix-panel">
+      <section className="appendix-controls" aria-label="表示ケース">
+        {[...PRESENTATION_CASES, IDEAL_CASE].map((c) => {
+          const caseColor = data.find((d) => d.id === c.id)?.color || "#9aa7ad";
+          return (
+            <button
+              key={c.id}
+              type="button"
+              className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
+              style={{ "--case-color": caseColor }}
+              aria-pressed={selectedId === c.id}
+              onClick={() => {
+                if (!c.pending) setSelectedId(c.id);
+              }}
+            >
+              {c.label}
+            </button>
+          );
+        })}
+      </section>
+
+      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+        <div className="appendix-section-head">
+          <div>
+            <h2>モデルケースの条件</h2>
+          </div>
+        </div>
+        <CaseConditions caseDef={selected} />
+      </section>
+
+      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+        <div className="appendix-section-head">
+          <div>
+            <h2>可処分所得の変化点</h2>
+            <p>Pは変化点、Qは変化後の水準まで戻る左側の給与、Rは変化前の水準へ回復する右側の給与。</p>
+          </div>
+        </div>
+        <CliffTable cliffs={selected?.cliffs || []} />
+      </section>
+
+      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
         <div className="appendix-section-head">
           <div>
             <h2>選択給与での計算過程</h2>
-            <p>フロントでは税・社保を再計算せず、computeSeriesの各点が持つ内訳を式として表示する。</p>
+            <p>
+              {selected?.label}：{selected?.description}
+            </p>
           </div>
           <div className="appendix-big-number">
             <span>{fmt(selectedPoint?.x)}万円</span>
@@ -744,16 +964,6 @@ export default function AppendixCliffMap() {
           </div>
         </div>
         <BreakdownPanel point={selectedPoint} />
-      </section>
-
-      <section className="appendix-panel">
-        <div className="appendix-section-head">
-          <div>
-            <h2>P/Q/R 表</h2>
-            <p>Pは崖点、Qは崖後の水準まで戻る左側の給与、Rは崖前の水準へ回復する右側の給与。</p>
-          </div>
-        </div>
-        <CliffTable cliffs={selected?.cliffs || []} />
       </section>
 
       <ConfidenceNotes />

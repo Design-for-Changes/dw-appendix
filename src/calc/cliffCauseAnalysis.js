@@ -60,19 +60,35 @@ function compareService(out, before, after) {
   const a = after?.programs?.service || {};
   const beforeDetails = new Map((b.details || []).map((d) => [detailKey(d), d]));
   const afterDetails = new Map((a.details || []).map((d) => [detailKey(d), d]));
-  const pieces = [];
+  const changes = [];
   for (const [who, next] of afterDetails) {
     const prev = beforeDetails.get(who) || {};
     if (!changed(prev.type, next.type) && !changed(prev.monthlyUpperYen, next.monthlyUpperYen)) continue;
-    pieces.push(
-      `${who}: ${prev.type || "対象外"}→${next.type || "対象外"}、月額上限 ${yen(prev.monthlyUpperYen)}→${yen(next.monthlyUpperYen)}`
-    );
+    changes.push({
+      who,
+      prevType: prev.type || "対象外",
+      nextType: next.type || "対象外",
+      prevYen: prev.monthlyUpperYen,
+      nextYen: next.monthlyUpperYen,
+    });
   }
-  if (changed(b.monthlyTotalYen, a.monthlyTotalYen)) {
-    pieces.push(`世帯上限 ${yen(b.monthlyTotalYen)}→${yen(a.monthlyTotalYen)}`);
+  if (!changes.length && !changed(b.annualWan, a.annualWan)) return;
+
+  const describe = (c) => `${c.prevType}→${c.nextType}、月額上限 ${yen(c.prevYen)}→${yen(c.nextYen)}`;
+  const signature = (c) => `${c.prevType}→${c.nextType}|${yen(c.prevYen)}→${yen(c.nextYen)}`;
+  let text;
+  if (!changes.length) {
+    text = `年額利用料 ${wan(b.annualWan)}→${wan(a.annualWan)}`;
+  } else if (changes.every((c) => signature(c) === signature(changes[0]))) {
+    // 全児で変化内容が同一なら畳む（児童名・世帯上限行は重複なので省く）
+    text = describe(changes[0]);
+  } else {
+    const pieces = changes.map((c) => `${c.who}: ${describe(c)}`);
+    if (changed(b.monthlyTotalYen, a.monthlyTotalYen)) {
+      pieces.push(`世帯上限 ${yen(b.monthlyTotalYen)}→${yen(a.monthlyTotalYen)}`);
+    }
+    text = pieces.join(" / ");
   }
-  if (!pieces.length && !changed(b.annualWan, a.annualWan)) return;
-  const text = pieces.length ? pieces.join(" / ") : `年額利用料 ${wan(b.annualWan)}→${wan(a.annualWan)}`;
   pushCause(out, "障害児通所支援", a.confidence || b.confidence || "strict", text);
 }
 
@@ -85,7 +101,7 @@ function compareM01(out, before, after) {
     : `${b.status || "不明"}→${a.status || "不明"}`;
   pushCause(
     out,
-    "M01 重心医療費助成",
+    "重心医療費助成",
     a.confidence || b.confidence || "representative",
     `${status}、助成年額 ${wan(b.annualWan)}→${wan(a.annualWan)}`
   );
@@ -97,7 +113,7 @@ function compareN04(out, before, after) {
   if (!changed(b.annualWan, a.annualWan) && !changed(b.supportClass, a.supportClass)) return;
   pushCause(
     out,
-    "N04 就学奨励費",
+    "就学奨励費",
     a.confidence || b.confidence || "provisional",
     `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、補助年額 ${wan(b.annualWan)}→${wan(a.annualWan)}`
   );

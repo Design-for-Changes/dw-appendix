@@ -23,6 +23,13 @@ export default function Home() {
           <div className="home-card-desc">手当・所得制限・サービス利用料をまとめて確認。</div>
           <div className="home-card-cta">開く</div>
         </button>
+
+        <button className="home-card" type="button" onClick={() => navigate("/appendix")}>
+          <div className="home-card-kicker">APPENDIX</div>
+          <div className="home-card-title">崖の可視化</div>
+          <div className="home-card-desc">P/Q/R点で、所得制限後の後退幅と回復点を確認。</div>
+          <div className="home-card-cta">開く</div>
+        </button>
       </section>
     </div>
   );

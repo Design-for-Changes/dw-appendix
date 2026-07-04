@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Home from "./pages/Home";
 import DeductionGraph from "./pages/DeductionGraph";
 import DisabilityWelfareSimulator from "./pages/DisabilityWelfareSimulator";
+import AppendixCliffMap from "./pages/AppendixCliffMap";
 import "./App.css";
 
 // Scroll to top when route (hash path) changes
@@ -45,6 +46,9 @@ function Nav() {
         <NavLink to="/disability-welfare" className="nav-link">
           障害福祉負担シミュレーター
         </NavLink>
+        <NavLink to="/appendix" className="nav-link">
+          Web Appendix
+        </NavLink>
       </div>
     </nav>
   );
@@ -72,6 +76,7 @@ function App() {
         <Route path="/income-calc" element={<Navigate to="/deduction-graph" replace />} />
         <Route path="/deduction-graph" element={<DeductionGraph />} />
         <Route path="/disability-welfare" element={<DisabilityWelfareSimulator />} />
+        <Route path="/appendix" element={<AppendixCliffMap />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

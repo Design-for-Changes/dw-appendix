@@ -445,7 +445,7 @@ function getTax(ctx, taxableWan, kind) {
 function getResidentIncomeLevyWan(taxLTWan) {
   const rate = 0.6;
   const incomeLevy10 = Math.max(0, toNumber(taxLTWan, 0) - 0.5);
-  return incomeLevy10 * rate;
+  return Math.round(incomeLevy10 * rate * 10000) / 10000;
 }
 
 function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
@@ -876,12 +876,20 @@ function computePoint(ctx, x) {
     return householdLevySumWan;
   };
   const monthlyFeeYen = (sumLevyWan, age) => {
-    const s = toNumber(sumLevyWan, 0);
+    const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
     const a = toNumber(age, 0);
-    if (s <= 0) return 0;
-    if (a >= 18) return s < 16 ? 9300 : 37200;
+    if (levyYen <= 0) return 0;
+    if (a >= 18) return levyYen < 160000 ? 9300 : 37200;
     if (a >= 3 && a <= 5) return 0;
-    return s < 28 ? 4600 : 37200;
+    return levyYen < 280000 ? 4600 : 37200;
+  };
+  const serviceType = (sumLevyWan, age) => {
+    const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
+    const a = toNumber(age, 0);
+    if (a >= 3 && a <= 5) return "無償化";
+    if (levyYen <= 0) return "非課税";
+    if (a >= 18) return levyYen < 160000 ? "一般1" : "一般2";
+    return levyYen < 280000 ? "一般1" : "一般2";
   };
   let serviceFeeMonthlyYenTotal = 0;
   const serviceFeeDetails = [];
@@ -890,12 +898,13 @@ function computePoint(ctx, x) {
     const levyWan = levySumWanFor(r.who);
     const monthlyYen = monthlyFeeYen(levyWan, r.age);
     const age = toNumber(r.age, 0);
-    const type = age >= 18 ? (levyWan < 16 ? "一般1" : "一般2") : age >= 3 && age <= 5 ? "無償化" : levyWan < 28 ? "一般1" : "一般2";
+    const type = serviceType(levyWan, age);
     serviceFeeMonthlyYenTotal += monthlyYen;
     serviceFeeDetails.push({
       who: String(r.who),
       age,
       householdLevyWan: levyWan,
+      householdLevyYen: Math.max(0, Math.round(toNumber(levyWan, 0) * 10000)),
       type,
       monthlyUpperYen: monthlyYen,
       annualFeeWan: (monthlyYen * 12) / 10000,

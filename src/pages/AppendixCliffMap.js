@@ -17,7 +17,6 @@ import { useStaticTables } from "../hooks/useStaticTables";
 const X_MIN = 0;
 const X_MAX = 1500;
 const COLORS = ["#2358a6", "#8f3d67", "#2f6f5e"];
-const MARKER_COLORS = ["#1f5fbf", "#9a3d6f", "#2d7765", "#a2521d", "#5d4ca0", "#6d5c2e"];
 
 const CONFIDENCE = {
   strict: {
@@ -69,6 +68,7 @@ const PRESENTATION_CASES = [
       ],
     },
     causes: [
+      { x: 260, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
       { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
       { x: 782, label: "特別児童扶養手当", confidence: "strict" },
       { x: 842, label: "M01 重心医療費助成", confidence: "representative" },
@@ -112,6 +112,7 @@ const PRESENTATION_CASES = [
       ],
     },
     causes: [
+      { x: 307, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
       { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
       { x: 854, label: "特別児童扶養手当", confidence: "strict" },
       { x: 873, label: "M01 重心医療費助成", confidence: "representative" },
@@ -156,6 +157,7 @@ const PRESENTATION_CASES = [
       ],
     },
     causes: [
+      { x: 356, label: "障害児通所支援 非課税→一般1", confidence: "strict" },
       { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
       { x: 867, label: "特別児童扶養手当", confidence: "strict" },
       { x: 906, label: "M01 重心医療費助成", confidence: "representative" },
@@ -367,23 +369,6 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
           stroke={d.color}
         />
       ))}
-
-      {selected?.cliffs.map((cliff, i) => {
-        const color = MARKER_COLORS[i % MARKER_COLORS.length];
-        const points = [
-          { key: "P", x: cliff.x, y: cliff.yAfter, label: `P${cliff.index}` },
-          cliff.q ? { key: "Q", x: cliff.q.x, y: cliff.q.disposable, label: `Q${cliff.index}` } : null,
-          cliff.r ? { key: "R", x: cliff.r.x, y: cliff.r.disposable, label: `R${cliff.index}` } : null,
-        ].filter(Boolean);
-        return points.map((p) => (
-          <g key={`${cliff.index}-${p.key}`} className="appendix-marker-group">
-            <circle className="appendix-marker" cx={xScale(p.x)} cy={yScale(p.y)} r="6" fill={color} />
-            <text className="appendix-marker-label" x={xScale(p.x) + 9} y={yScale(p.y) - 9} fill={color}>
-              {p.label}
-            </text>
-          </g>
-        ));
-      })}
 
       {selectedPoint ? (
         <g className="appendix-cursor">

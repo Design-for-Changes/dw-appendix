@@ -9,6 +9,8 @@
 // - Apply the "fixed amount up to annual income bands -> rate calc from 100万円/年" rule
 //   for S1/S2/S3. The fixed amounts are interpreted as *annual* employee
 //   contributions (yen).
+// - Store yen-rounded values in 万円. Avoid 0.1万円 rounding because it creates
+//   visual sawtooth artifacts in the appendix disposable-income curve.
 //
 // Usage:
 //   node scripts/gen_social_json.js
@@ -33,7 +35,7 @@ const SH_FIXED_MONTHLY = {
     o40: [137339, 144360, 151380],
   },
 };
-const toWan1 = (yen) => Math.round((yen / WAN) * 10) / 10;
+const toWanFromRoundedYen = (yen) => Math.round(Number(yen) || 0) / WAN;
 
 // Upper-band rules (annual, employee contributions in yen).
 // - 762万円以上1626万円以下: income * rate + 713,700 yen
@@ -91,9 +93,9 @@ function genRows(age) {
     const incomeYen = x * WAN;
     out.push({
       x,
-      social_s1: toWan1(getSocialEmpYen(incomeYen, "s1", age)),
-      social_s2: toWan1(getSocialEmpYen(incomeYen, "s2", age)),
-      social_s3: toWan1(getSocialEmpYen(incomeYen, "s3", age)),
+      social_s1: toWanFromRoundedYen(getSocialEmpYen(incomeYen, "s1", age)),
+      social_s2: toWanFromRoundedYen(getSocialEmpYen(incomeYen, "s2", age)),
+      social_s3: toWanFromRoundedYen(getSocialEmpYen(incomeYen, "s3", age)),
     });
   }
   return out;

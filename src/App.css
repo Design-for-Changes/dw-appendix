@@ -200,20 +200,6 @@
   stroke-width: 3;
 }
 
-.appendix-marker {
-  stroke: #ffffff;
-  stroke-width: 2;
-}
-
-.appendix-marker-label {
-  font-size: 14px;
-  font-weight: 900;
-  paint-order: stroke;
-  stroke: #ffffff;
-  stroke-linejoin: round;
-  stroke-width: 4px;
-}
-
 .appendix-cursor line {
   stroke: #1c2529;
   stroke-dasharray: 6 5;

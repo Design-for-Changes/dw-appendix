@@ -938,6 +938,8 @@ function computePoint(ctx, x) {
     allowance: allowanceWanTotal,
     takeHome: takeHomeWan,
     disposable: disposableWan,
+    householdLevySumWan,
+    levyByWho: Array.from(levyByWho.values()),
     expTax,
     expSocial,
     expService,

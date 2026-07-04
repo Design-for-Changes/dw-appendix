@@ -934,7 +934,7 @@ function computePoint(ctx, x) {
     const monthlyYen = monthlyFeeYen(levyWan, r.age);
     const age = toNumber(r.age, 0);
     const type = serviceType(levyWan, age);
-    serviceFeeMonthlyYenTotal += monthlyYen;
+    serviceFeeMonthlyYenTotal = Math.max(serviceFeeMonthlyYenTotal, monthlyYen);
     serviceFeeDetails.push({
       who: String(r.who),
       age,

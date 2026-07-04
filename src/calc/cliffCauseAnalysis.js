@@ -68,6 +68,9 @@ function compareService(out, before, after) {
       `${who}: ${prev.type || "対象外"}→${next.type || "対象外"}、月額上限 ${yen(prev.monthlyUpperYen)}→${yen(next.monthlyUpperYen)}`
     );
   }
+  if (changed(b.monthlyTotalYen, a.monthlyTotalYen)) {
+    pieces.push(`世帯上限 ${yen(b.monthlyTotalYen)}→${yen(a.monthlyTotalYen)}`);
+  }
   if (!pieces.length && !changed(b.annualWan, a.annualWan)) return;
   const text = pieces.length ? pieces.join(" / ") : `年額利用料 ${wan(b.annualWan)}→${wan(a.annualWan)}`;
   pushCause(out, "障害児通所支援", a.confidence || b.confidence || "strict", text);

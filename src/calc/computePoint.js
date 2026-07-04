@@ -1,4 +1,4 @@
-import { rowAtKeyInt, interpTableValue } from "../pages/disabilityWelfare/utils.js";
+import { rowAtKeyInt, interpTableValue } from "./tableUtils.js";
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
 export const M01_KENSHIN_ANNUAL_YEN_DEFAULT = 149531;
@@ -78,7 +78,11 @@ export function buildHousehold(caseHousehold = {}) {
     programs: {
       m01: Boolean(caseHousehold.m01 || caseHousehold.m01Enabled || programsInput.m01 || programsInput.m01Enabled),
       m01AnnualYen: toNumber(programsInput.m01AnnualYen, M01_KENSHIN_ANNUAL_YEN_DEFAULT),
+      m01Count: Math.max(1, Math.trunc(toNumber(programsInput.m01Count, 1))),
       n04: Boolean(caseHousehold.n04 || caseHousehold.n04Enabled || programsInput.n04 || programsInput.n04Enabled),
+      n04Count: Math.max(1, Math.trunc(toNumber(programsInput.n04Count, 1))),
+      n04Boundary12SalaryManyen: toNumber(programsInput.n04Boundary12SalaryManyen, N04_BOUNDARY_1_2_SALARY_MANYEN),
+      n04Boundary23SalaryManyen: toNumber(programsInput.n04Boundary23SalaryManyen, N04_BOUNDARY_2_3_SALARY_MANYEN),
     },
   };
 }
@@ -518,8 +522,9 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   if (!cols || cols.length === 0) return null;
   const headRow = cols.find((r) => r.who === "世帯主");
   const spouseRow = cols.find((r) => r.who === "配偶者");
-  const headTotalWan = toNumber(headRow?.totalIncomeWan, 0);
-  const spouseTotalWan = toNumber(spouseRow?.totalIncomeWan, 0);
+  const allowanceIncomeWan = (row) => toNumber(row?.totalIncomeWan, 0) + toNumber(row?.incomeAdjWan, 0);
+  const headTotalWan = allowanceIncomeWan(headRow);
+  const spouseTotalWan = allowanceIncomeWan(spouseRow);
 
   const incomeLimitYen = (kind, fuyoCount, statutoryAddYen = 0) => {
     const n = Math.max(0, Math.trunc(toNumber(fuyoCount, 0)));
@@ -622,7 +627,7 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   for (const r of cols) {
     const who = String(r?.who || "");
     if (!who.startsWith("子ども")) continue;
-    addFamily(who, toNumber(r?.totalIncomeWan, 0), Boolean(r?.workingStudent) ? 27 : 0, isChildDep(who) ? 0 : tccaDisWan(who));
+    addFamily(who, allowanceIncomeWan(r), Boolean(r?.workingStudent) ? 27 : 0, isChildDep(who) ? 0 : tccaDisWan(who));
   }
   const familyTargets = Array.from(familyByWho.values());
   const familyMaxAdjustedYen = familyTargets.length ? Math.max(...familyTargets.map((x) => x.adjustedYen)) : 0;
@@ -686,23 +691,91 @@ function calcWelfareAllowanceLimitObligorYen(fuyoCount) {
   return base5 + 213000 * (n - 5);
 }
 
-function calcM01AnnualWan(ctx, householdLevySumWan) {
-  if (!ctx.programs?.m01) return 0;
+function calcM01Detail(ctx, householdLevySumWan) {
+  if (!ctx.programs?.m01) {
+    return {
+      enabled: false,
+      status: "対象外",
+      householdLevyWan: toNumber(householdLevySumWan, 0),
+      cutoffWan: M01_LEVY_CUTOFF_YEN / 10000,
+      eligible: false,
+      count: 0,
+      annualWan: 0,
+      confidence: "representative",
+    };
+  }
   const configured = toNumber(ctx.programs?.m01AnnualYen, M01_KENSHIN_ANNUAL_YEN_DEFAULT);
-  const annualYen = Math.min(
+  const annualYenPerRecipient = Math.min(
     M01_KENSHIN_ANNUAL_YEN_RANGE.max,
     Math.max(M01_KENSHIN_ANNUAL_YEN_RANGE.min, configured)
   );
   const householdLevyYen = toNumber(householdLevySumWan, 0) * 10000;
-  return householdLevyYen < M01_LEVY_CUTOFF_YEN ? annualYen / 10000 : 0;
+  const eligible = householdLevyYen < M01_LEVY_CUTOFF_YEN;
+  const count = Math.max(1, Math.trunc(toNumber(ctx.programs?.m01Count, 1)));
+  const annualWan = eligible ? (annualYenPerRecipient * count) / 10000 : 0;
+  return {
+    enabled: true,
+    status: eligible ? "該当" : "非該当",
+    householdLevyWan: toNumber(householdLevySumWan, 0),
+    cutoffWan: M01_LEVY_CUTOFF_YEN / 10000,
+    eligible,
+    count,
+    annualYenPerRecipient,
+    annualWan,
+    sensitivityRangeWan: {
+      min: (M01_KENSHIN_ANNUAL_YEN_RANGE.min * count) / 10000,
+      max: (M01_KENSHIN_ANNUAL_YEN_RANGE.max * count) / 10000,
+    },
+    confidence: "representative",
+  };
+}
+
+function calcM01AnnualWan(ctx, householdLevySumWan) {
+  return calcM01Detail(ctx, householdLevySumWan).annualWan;
+}
+
+function calcN04Detail(ctx, salaryManyen) {
+  if (!ctx.programs?.n04) {
+    return {
+      enabled: false,
+      status: "対象外",
+      salaryManyen: toNumber(salaryManyen, 0),
+      supportClass: "対象外",
+      annualWan: 0,
+      confidence: "provisional",
+    };
+  }
+  const x = toNumber(salaryManyen, 0);
+  const b12 = toNumber(ctx.programs?.n04Boundary12SalaryManyen, N04_BOUNDARY_1_2_SALARY_MANYEN);
+  const b23 = toNumber(ctx.programs?.n04Boundary23SalaryManyen, N04_BOUNDARY_2_3_SALARY_MANYEN);
+  const count = Math.max(1, Math.trunc(toNumber(ctx.programs?.n04Count, 1)));
+  const supportClass = x < b12 ? "第1区分" : x < b23 ? "第2区分" : "第3区分";
+  const annualYenPerRecipient =
+    supportClass === "第1区分"
+      ? N04_SHOGAKU_ANNUAL_YEN.first
+      : supportClass === "第2区分"
+        ? N04_SHOGAKU_ANNUAL_YEN.second
+        : N04_SHOGAKU_ANNUAL_YEN.third;
+  return {
+    enabled: true,
+    status: supportClass,
+    salaryManyen: x,
+    supportClass,
+    count,
+    annualYenPerRecipient,
+    annualWan: (annualYenPerRecipient * count) / 10000,
+    boundaries: {
+      firstToSecondManyen: b12,
+      secondToThirdManyen: b23,
+    },
+    needAmountWan: null,
+    ratio: null,
+    confidence: "provisional",
+  };
 }
 
 function calcN04AnnualWan(ctx, salaryManyen) {
-  if (!ctx.programs?.n04) return 0;
-  const x = toNumber(salaryManyen, 0);
-  if (x < N04_BOUNDARY_1_2_SALARY_MANYEN) return N04_SHOGAKU_ANNUAL_YEN.first / 10000;
-  if (x < N04_BOUNDARY_2_3_SALARY_MANYEN) return N04_SHOGAKU_ANNUAL_YEN.second / 10000;
-  return N04_SHOGAKU_ANNUAL_YEN.third / 10000;
+  return calcN04Detail(ctx, salaryManyen).annualWan;
 }
 
 function computePoint(ctx, x) {
@@ -738,6 +811,7 @@ function computePoint(ctx, x) {
   let socialWanTotal = 0;
   let taxWanTotal = 0;
   const levyByWho = new Map();
+  const taxByWho = [];
   const byWho = new Map(rows.map((r) => [String(r.who), r]));
   for (const r of rows) {
     socialWanTotal += toNumber(r.socialWan, 0);
@@ -745,11 +819,39 @@ function computePoint(ctx, x) {
     const taxableLT = getTaxable(ctx, r, "lt", rows, headDedCommonLTWithKin);
     const taxIT = getTax(ctx, taxableIT, "it");
     const taxLT = getTax(ctx, taxableLT, "lt");
+    const residentIncomeLevyWan = getResidentIncomeLevyWan(taxLT);
+    const residentPerCapitaWan = toNumber(taxLT, 0) > 0 ? 0.5 : 0;
     taxWanTotal += toNumber(taxIT, 0) + toNumber(taxLT, 0);
     levyByWho.set(String(r.who), {
       who: String(r.who),
       age: toNumber(r.age, 0),
-      levyWan: getResidentIncomeLevyWan(taxLT),
+      levyWan: residentIncomeLevyWan,
+    });
+    taxByWho.push({
+      who: String(r.who),
+      age: toNumber(r.age, 0),
+      incomeTax: {
+        taxableWan: taxableIT,
+        taxWan: toNumber(taxIT, 0),
+      },
+      residentTax: {
+        taxableWan: taxableLT,
+        computedTaxWan: toNumber(taxLT, 0),
+        incomeLevyWan: residentIncomeLevyWan,
+        perCapitaWan: residentPerCapitaWan,
+        adjustmentDeductionWan: null,
+      },
+      deductions: {
+        basicITWan: toNumber(r.basicITWan, 0),
+        basicLTWan: toNumber(r.basicLTWan, 0),
+        socialWan: toNumber(r.socialWan, 0),
+        workingStudentITWan: Boolean(r.workingStudent) ? ctx.wsAmtIT : 0,
+        workingStudentLTWan: Boolean(r.workingStudent) ? ctx.wsAmtLT : 0,
+        disabilityITWan: getDisabilityDeductionForTaxpayerWan(ctx, r, "it", rows),
+        disabilityLTWan: getDisabilityDeductionForTaxpayerWan(ctx, r, "lt", rows),
+        commonITWan: String(r.who) === "世帯主" ? headDedCommonITWithKin : 0,
+        commonLTWan: String(r.who) === "世帯主" ? headDedCommonLTWithKin : 0,
+      },
     });
   }
 
@@ -782,9 +884,23 @@ function computePoint(ctx, x) {
     return s < 28 ? 4600 : 37200;
   };
   let serviceFeeMonthlyYenTotal = 0;
+  const serviceFeeDetails = [];
   for (const r of rows) {
     if (!Boolean(byWho.get(String(r.who))?.disabled)) continue;
-    serviceFeeMonthlyYenTotal += monthlyFeeYen(levySumWanFor(r.who), r.age);
+    const levyWan = levySumWanFor(r.who);
+    const monthlyYen = monthlyFeeYen(levyWan, r.age);
+    const age = toNumber(r.age, 0);
+    const type = age >= 18 ? (levyWan < 16 ? "一般1" : "一般2") : age >= 3 && age <= 5 ? "無償化" : levyWan < 28 ? "一般1" : "一般2";
+    serviceFeeMonthlyYenTotal += monthlyYen;
+    serviceFeeDetails.push({
+      who: String(r.who),
+      age,
+      householdLevyWan: levyWan,
+      type,
+      monthlyUpperYen: monthlyYen,
+      annualFeeWan: (monthlyYen * 12) / 10000,
+      confidence: "strict",
+    });
   }
   const serviceFeeWanTotal = (serviceFeeMonthlyYenTotal * 12) / 10000;
 
@@ -819,12 +935,15 @@ function computePoint(ctx, x) {
       let sum = 0;
       if (ctx.spouseEnabled && isDepLike("配偶者")) {
         const rr = rows.find((xx) => String(xx?.who || "") === "配偶者");
-        sum += toNumber(rr?.welfareDisWan, 0);
+        if (ctx.spouse.childWelfareAllowance || ctx.spouse.tokubetsuAllowance) sum += toNumber(rr?.welfareDisWan, 0);
       }
       for (const rr of rows) {
         const w = String(rr?.who || "");
         if (!w.startsWith("子ども")) continue;
         if (!isDepLike(w)) continue;
+        const idx = Number(w.replace("子ども", "")) - 1;
+        const child = ctx.children?.[idx];
+        if (!child?.childWelfareAllowance && !child?.tokubetsuAllowance) continue;
         sum += toNumber(rr?.welfareDisWan, 0);
       }
       return sum;
@@ -894,7 +1013,18 @@ function computePoint(ctx, x) {
       const selfOk = selfYen <= limitSelfYen;
       const ok = selfOk && obligorOk;
       const monthlyYen = ok ? (type === "child" ? WELFARE_CHILD_MONTHLY_YEN : TOKUBETSU_MONTHLY_YEN) : 0;
-      return { type, ok, monthlyYen };
+      return {
+        who,
+        type,
+        ok,
+        selfYen,
+        selfLimitYen: limitSelfYen,
+        selfOk,
+        obligorMaxYen,
+        obligorLimitYen: limitObligorYen,
+        obligorOk,
+        monthlyYen,
+      };
     })
     .filter(Boolean);
   const welfareMonthly = recipients.reduce((a, r) => a + toNumber(r.monthlyYen, 0), 0);
@@ -948,8 +1078,10 @@ function computePoint(ctx, x) {
     return (monthly * 12) / 10000;
   })();
 
-  const m01AnnualWan = calcM01AnnualWan(ctx, householdLevySumWan);
-  const n04AnnualWan = calcN04AnnualWan(ctx, x);
+  const m01Detail = calcM01Detail(ctx, householdLevySumWan);
+  const n04Detail = calcN04Detail(ctx, x);
+  const m01AnnualWan = m01Detail.annualWan;
+  const n04AnnualWan = n04Detail.annualWan;
 
   const allowanceWanTotal =
     toNumber(basicPensionWan, 0) +
@@ -967,6 +1099,79 @@ function computePoint(ctx, x) {
   const expSocial = -toNumber(socialWanTotal, 0);
   const expService = -toNumber(serviceFeeWanTotal, 0);
   const totalPlusWan = toNumber(grossWan, 0) + toNumber(allowanceWanTotal, 0);
+  const allowanceBreakdown = {
+    basicDisabilityPensionWan: toNumber(basicPensionWan, 0),
+    tccaWan: toNumber(tccaAnnualWan, 0),
+    welfareAllowanceWan: toNumber(welfareAnnualWan, 0),
+    childSupportWan: toNumber(childSupportAnnualWan, 0),
+    childAllowanceWan: toNumber(childAllowanceAnnualWan, 0),
+    m01Wan: toNumber(m01AnnualWan, 0),
+    n04Wan: toNumber(n04AnnualWan, 0),
+  };
+  const rowsDetail = rows.map((r) => ({
+    who: String(r.who),
+    age: toNumber(r.age, 0),
+    salaryWan: toNumber(r.salaryWan, 0),
+    otherIncomeWan: toNumber(r.otherIncomeWan, 0),
+    employmentIncomeDeductionWan: toNumber(r.empWan, 0),
+    employmentIncomeBaseDeductionWan: toNumber(r.empBaseWan, 0),
+    incomeAdjustmentDeductionWan: toNumber(r.incomeAdjWan, 0),
+    employmentIncomeWan: toNumber(r.incomeWan, 0),
+    totalIncomeWan: toNumber(r.totalIncomeWan, 0),
+    socialInsuranceWan: toNumber(r.socialWan, 0),
+    socialInsuranceBreakdown: {
+      totalWan: toNumber(r.socialWan, 0),
+      healthWan: null,
+      careWan: null,
+      pensionWan: null,
+      employmentWan: null,
+      childSupportContributionWan: null,
+    },
+    disabled: Boolean(r.disabled),
+    disabilityKind: r.tccaSpecial ? "special" : r.disabled ? "disabled" : "none",
+    cohabit: Boolean(r.cohabit),
+  }));
+  const tccaDetail = {
+    confidence: "strict",
+    fuyoCount: toNumber(tcca?.fuyoCount, 0),
+    statutoryAddYen: toNumber(tcca?.limitFuyoStatutoryAddYen, 0),
+    headAdjustedIncomeYen: toNumber(tcca?.head?.adjustedYen, 0),
+    headLimitYen: toNumber(tcca?.limits?.headLimitYen, 0),
+    familyMaxAdjustedIncomeYen: toNumber(tcca?.familyMaxAdjustedYen, 0),
+    familyLimitYen: toNumber(tcca?.limits?.familyLimitYen, 0),
+    eligible:
+      toNumber(tcca?.head?.adjustedYen, 0) <= toNumber(tcca?.limits?.headLimitYen, 0) &&
+      toNumber(tcca?.familyMaxAdjustedYen, 0) <= toNumber(tcca?.limits?.familyLimitYen, 0),
+    monthlyYen: toNumber(tcca?.totalMonthlyYen, 0),
+    annualWan: toNumber(tccaAnnualWan, 0),
+    head: tcca?.head || null,
+    family: Array.from(tcca?.familyByWho?.values?.() || []),
+  };
+  const welfareAllowanceDetail = {
+    confidence: "strict",
+    fuyoCount: fuyo,
+    obligorLimitYen: limitObligorYen,
+    obligorMaxAdjustedIncomeYen: obligorMaxYen,
+    obligorOk,
+    selfLimitYen: limitSelfYen,
+    recipients,
+    monthlyYen: welfareMonthly,
+    annualWan: welfareAnnualWan,
+  };
+  const taxDetail = {
+    byWho: taxByWho,
+    incomeTaxWan: taxByWho.reduce((a, r) => a + toNumber(r.incomeTax.taxWan, 0), 0),
+    residentTaxWan: taxByWho.reduce((a, r) => a + toNumber(r.residentTax.computedTaxWan, 0), 0),
+    residentIncomeLevyWan: householdLevySumWan,
+    totalWan: toNumber(taxWanTotal, 0),
+  };
+  const deductionsDetail = {
+    dependent: dep,
+    specialKin: kin,
+    spouse: { itWan: spIT, ltWan: spLT },
+    spouseSpecial: { itWan: spSpIT, ltWan: spSpLT },
+    widowSingleParent: ws,
+  };
 
   return {
     x,
@@ -985,5 +1190,48 @@ function computePoint(ctx, x) {
     tax: toNumber(taxWanTotal, 0),
     social: toNumber(socialWanTotal, 0),
     totalPlus: totalPlusWan,
+    breakdown: {
+      salaryWan: grossWan,
+      rows: rowsDetail,
+      deductions: deductionsDetail,
+      socialInsurance: {
+        totalWan: toNumber(socialWanTotal, 0),
+        byWho: rowsDetail.map((r) => ({
+          who: r.who,
+          totalWan: r.socialInsuranceWan,
+          ...r.socialInsuranceBreakdown,
+        })),
+      },
+      tax: taxDetail,
+      takeHome: {
+        salaryWan: grossWan,
+        socialWan: toNumber(socialWanTotal, 0),
+        taxWan: toNumber(taxWanTotal, 0),
+        takeHomeWan,
+      },
+      programs: {
+        tcca: tccaDetail,
+        welfareAllowance: welfareAllowanceDetail,
+        service: {
+          confidence: "strict",
+          householdLevySumWan,
+          details: serviceFeeDetails,
+          monthlyTotalYen: serviceFeeMonthlyYenTotal,
+          annualWan: serviceFeeWanTotal,
+        },
+        m01: m01Detail,
+        n04: n04Detail,
+      },
+      allowance: {
+        totalWan: allowanceWanTotal,
+        ...allowanceBreakdown,
+      },
+      disposable: {
+        takeHomeWan,
+        allowanceWan: allowanceWanTotal,
+        serviceFeeWan: serviceFeeWanTotal,
+        disposableWan,
+      },
+    },
   };
 }

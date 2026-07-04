@@ -5,7 +5,7 @@ export function rowAtKeyInt(arr, key, xInt) {
   const idx = clampInt(xInt, 0, arr.length - 1);
   const r = arr[idx];
   if (r && Number(r[key]) === idx) return r;
-  // fallback: nearest
+
   let best = arr[0];
   let min = Math.abs((arr[0][key] ?? 0) - xInt);
   for (const rr of arr) {
@@ -19,7 +19,6 @@ export function rowAtKeyInt(arr, key, xInt) {
 }
 
 export function interpTableValue(arr, xKey, xVal, yKey) {
-  // Linear interpolation for 1-step tables (e.g. taxable: 0..3000 by 1).
   const x = Number(xVal);
   if (!Number.isFinite(x) || !arr || arr.length === 0) return 0;
   const lo = Math.floor(x);
@@ -32,4 +31,3 @@ export function interpTableValue(arr, xKey, xVal, yKey) {
   const t = (x - lo) / (hi - lo);
   return y0 + (y1 - y0) * t;
 }
-

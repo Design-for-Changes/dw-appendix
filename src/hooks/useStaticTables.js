@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 
-// Load static JSON tables from /public/data.
-// Kept in a small hook to avoid duplicating fetch logic across components.
 export function useStaticTables() {
   const [empStatic, setEmpStatic] = useState([]);
   const [basicITStatic, setBasicITStatic] = useState([]);
   const [basicLTStatic, setBasicLTStatic] = useState([]);
   const [socialU40Static, setSocialU40Static] = useState([]);
   const [socialO40Static, setSocialO40Static] = useState([]);
-  const [taxTableStatic, setTaxTableStatic] = useState([]); // taxable -> tax (万円)
+  const [taxTableStatic, setTaxTableStatic] = useState([]);
   const [staticReady, setStaticReady] = useState(false);
 
   useEffect(() => {
@@ -34,7 +32,6 @@ export function useStaticTables() {
         setTaxTableStatic(taxRes);
         setStaticReady(true);
       } catch (e) {
-        // Keep app usable even if static tables fail to load (UI can show "計算" disabled).
         // eslint-disable-next-line no-console
         console.error("static json load error", e);
         if (!ignore) setStaticReady(false);
@@ -55,4 +52,3 @@ export function useStaticTables() {
     taxTableStatic,
   };
 }
-

@@ -12,117 +12,167 @@ import singleParentDeductionCfg from "../config/single_parent_deduction.json";
 import workingStudentDeductionCfg from "../config/working_student_deduction.json";
 import disabilityDeductionCfg from "../config/disability_deduction.json";
 import { computeSeries, buildHousehold } from "../calc/computePoint";
-import { useStaticTables } from "./disabilityWelfare/useStaticTables";
+import { useStaticTables } from "../hooks/useStaticTables";
 
-const X_MIN = 400;
+const X_MIN = 0;
 const X_MAX = 1500;
-const COLORS = ["#2358a6", "#8f3d67", "#2f6f5e", "#a2521d", "#5d4ca0"];
+const COLORS = ["#2358a6", "#8f3d67", "#2f6f5e"];
+const MARKER_COLORS = ["#1f5fbf", "#9a3d6f", "#2d7765", "#a2521d", "#5d4ca0", "#6d5c2e"];
 
-const CASES = [
-  {
-    id: "A",
-    label: "A: 特児2級・子1人",
-    minDropManyen: 3,
-    household: {
-      spouseEnabled: false,
-      head: { age: 40 },
-      children: [{ age: 10, disabled: true, specialDisabled: true, cohabit: true, tccaGrade: "2" }],
-    },
-    causes: [
-      { x: 740, label: "特別児童扶養手当" },
-      { x: 892, label: "障害児通所支援" },
-    ],
+const CONFIDENCE = {
+  strict: {
+    label: "厳密",
+    note: "独立計算またはコア系列で確定した制度境界。",
   },
-  {
-    id: "F",
-    label: "F: 特児1級＋障害児福祉手当",
-    minDropManyen: 3,
-    household: {
-      spouseEnabled: false,
-      head: { age: 40 },
-      children: [
-        {
-          age: 10,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-      ],
-    },
-    causes: [
-      { x: 740, label: "特別児童扶養手当" },
-      { x: 892, label: "障害児通所支援" },
-      { x: 907, label: "障害児福祉手当" },
-    ],
+  representative: {
+    label: "代表値",
+    note: "M01の高さは伊勢原市H29決算の代表値。感度レンジ 149,531〜167,929円/年。",
   },
-  {
-    id: "G",
-    label: "G: 特児1級＋福祉手当・子2人",
-    minDropManyen: 3,
-    household: {
-      spouseEnabled: false,
-      head: { age: 40 },
-      children: [
-        {
-          age: 10,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-        {
-          age: 10,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-      ],
-    },
-    causes: [
-      { x: 827, label: "特別児童扶養手当" },
-      { x: 956, label: "障害児通所支援" },
-      { x: 968, label: "障害児福祉手当" },
-    ],
+  provisional: {
+    label: "暫定",
+    note: "N04は住宅扶助・生活扶助・需要額調書・控除扱いの未確定点を残す代表設定。",
   },
+};
+
+const COMMON_HOUSEHOLD = {
+  spouseEnabled: true,
+  head: { age: 45 },
+  spouse: { age: 45 },
+};
+
+const PRESENTATION_CASES = [
   {
-    id: "M01",
-    label: "M01: 医療費助成を含む",
-    minDropManyen: 3,
-    household: {
-      spouseEnabled: false,
-      head: { age: 40 },
-      programs: { m01: true },
-      children: [{ age: 10, disabled: true, specialDisabled: true, cohabit: true, tccaGrade: "2" }],
-    },
-    causes: [
-      { x: 740, label: "特別児童扶養手当" },
-      { x: 803, label: "重心医療費助成" },
-      { x: 892, label: "障害児通所支援" },
-    ],
-  },
-  {
-    id: "N04",
-    label: "N04: 就学奨励費を含む",
+    id: "case1",
+    label: "ケース1",
+    shortLabel: "子1人",
+    description: "7歳・特児1級・特別障害・障害児福祉手当あり",
     minDropManyen: 2.5,
     household: {
-      spouseEnabled: false,
-      head: { age: 40 },
-      programs: { n04: true },
-      children: [{ age: 10, disabled: true, specialDisabled: true, cohabit: true, tccaGrade: "2" }],
+      ...COMMON_HOUSEHOLD,
+      programs: {
+        m01: true,
+        m01Count: 1,
+        n04: true,
+        n04Count: 1,
+        n04Boundary12SalaryManyen: 749,
+        n04Boundary23SalaryManyen: 1082,
+      },
+      children: [
+        {
+          age: 7,
+          disabled: true,
+          specialDisabled: true,
+          cohabit: true,
+          tccaGrade: "1",
+          childWelfareAllowance: true,
+        },
+      ],
     },
     causes: [
-      { x: 740, label: "特別児童扶養手当" },
-      { x: 747, label: "就学奨励費 第1→第2" },
-      { x: 892, label: "障害児通所支援" },
-      { x: 1055, label: "就学奨励費 第2→第3" },
+      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
+      { x: 782, label: "特別児童扶養手当", confidence: "strict" },
+      { x: 842, label: "M01 重心医療費助成", confidence: "representative" },
+      { x: 928, label: "障害児福祉手当", confidence: "strict" },
+      { x: 932, label: "障害児通所支援", confidence: "strict" },
+      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
+    ],
+  },
+  {
+    id: "case2",
+    label: "ケース2",
+    shortLabel: "子2人・混合",
+    description: "11歳1級特別＋7歳2級一般。福祉手当・M01・N04は1人分",
+    minDropManyen: 2.5,
+    household: {
+      ...COMMON_HOUSEHOLD,
+      programs: {
+        m01: true,
+        m01Count: 1,
+        n04: true,
+        n04Count: 1,
+        n04Boundary12SalaryManyen: 749,
+        n04Boundary23SalaryManyen: 1082,
+      },
+      children: [
+        {
+          age: 11,
+          disabled: true,
+          specialDisabled: true,
+          cohabit: true,
+          tccaGrade: "1",
+          childWelfareAllowance: true,
+        },
+        {
+          age: 7,
+          disabled: true,
+          specialDisabled: false,
+          cohabit: true,
+          tccaGrade: "2",
+        },
+      ],
+    },
+    causes: [
+      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
+      { x: 854, label: "特別児童扶養手当", confidence: "strict" },
+      { x: 873, label: "M01 重心医療費助成", confidence: "representative" },
+      { x: 950, label: "障害児福祉手当", confidence: "strict" },
+      { x: 963, label: "障害児通所支援", confidence: "strict" },
+      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
+    ],
+  },
+  {
+    id: "case3",
+    label: "ケース3",
+    shortLabel: "子2人・重複",
+    description: "11歳・7歳とも特児1級・特別障害。福祉手当・M01・N04は2人分",
+    minDropManyen: 2.5,
+    household: {
+      ...COMMON_HOUSEHOLD,
+      programs: {
+        m01: true,
+        m01Count: 2,
+        n04: true,
+        n04Count: 2,
+        n04Boundary12SalaryManyen: 749,
+        n04Boundary23SalaryManyen: 1082,
+      },
+      children: [
+        {
+          age: 11,
+          disabled: true,
+          specialDisabled: true,
+          cohabit: true,
+          tccaGrade: "1",
+          childWelfareAllowance: true,
+        },
+        {
+          age: 7,
+          disabled: true,
+          specialDisabled: true,
+          cohabit: true,
+          tccaGrade: "1",
+          childWelfareAllowance: true,
+        },
+      ],
+    },
+    causes: [
+      { x: 749, label: "N04 就学奨励費 第1→第2", confidence: "provisional" },
+      { x: 867, label: "特別児童扶養手当", confidence: "strict" },
+      { x: 906, label: "M01 重心医療費助成", confidence: "representative" },
+      { x: 990, label: "障害児福祉手当", confidence: "strict" },
+      { x: 995, label: "障害児通所支援", confidence: "strict" },
+      { x: 1082, label: "N04 就学奨励費 第2→第3", confidence: "provisional" },
     ],
   },
 ];
+
+const IDEAL_CASE = {
+  id: "ideal",
+  label: "第4ケース",
+  shortLabel: "全体最適モデル",
+  description: "崖なし、または大幅緩和した制度設計を後入れする枠。",
+  pending: true,
+};
 
 function makeTables(staticTables) {
   return {
@@ -156,38 +206,33 @@ function fmt(n, digits = 0) {
   });
 }
 
-function causeFor(caseDef, x) {
-  const exact = caseDef.causes?.find((c) => Math.abs(Number(c.x) - Number(x)) <= 1);
-  return exact?.label || "制度境界";
+function fmtWan(n, digits = 1) {
+  return `${fmt(n, digits)}万`;
 }
 
-function detectCliffs(series, caseDef) {
-  const rows = [];
-  for (let i = 1; i < series.length; i += 1) {
-    const prev = series[i - 1];
-    const cur = series[i];
-    if (cur.x < X_MIN || cur.x > X_MAX) continue;
-    const delta = Number(cur.disposable) - Number(prev.disposable);
-    if (delta > -Number(caseDef.minDropManyen || 3)) continue;
+function fmtYen(n) {
+  if (!Number.isFinite(Number(n))) return "—";
+  return `${Math.round(Number(n)).toLocaleString("ja-JP")}円`;
+}
 
-    const yBefore = Number(prev.disposable);
-    const yAfter = Number(cur.disposable);
-    const q = findQ(series, i, yAfter);
-    const r = findR(series, i, yBefore);
-    const yAtMax = Number(series.find((p) => p.x === X_MAX)?.disposable ?? series[series.length - 1]?.disposable);
-    rows.push({
-      index: rows.length + 1,
-      x: Number(cur.x),
-      yBefore,
-      yAfter,
-      drop: delta,
-      cause: causeFor(caseDef, cur.x),
-      q,
-      r,
-      unrecoveredShortfall: r ? 0 : Math.max(0, yBefore - yAtMax),
-    });
+function confidenceBadge(kind) {
+  return CONFIDENCE[kind] || CONFIDENCE.strict;
+}
+
+function causeFor(caseDef, x, drop) {
+  const expected = caseDef.causes || [];
+  let best = null;
+  let bestDist = Infinity;
+  for (const cause of expected) {
+    const dist = Math.abs(Number(cause.x) - Number(x));
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = cause;
+    }
   }
-  return rows;
+  if (best && bestDist <= 3) return best;
+  const label = Math.abs(drop) < 6 ? "小規模な制度境界" : "制度境界";
+  return { x, label, confidence: "strict" };
 }
 
 function findQ(series, cliffIndex, yAfter) {
@@ -206,15 +251,53 @@ function findR(series, cliffIndex, yBefore) {
   return null;
 }
 
+function detectCliffs(series, caseDef) {
+  const rows = [];
+  const causeXs = Array.isArray(caseDef.causes) && caseDef.causes.length ? new Set(caseDef.causes.map((c) => Number(c.x))) : null;
+  for (let i = 1; i < series.length; i += 1) {
+    const prev = series[i - 1];
+    const cur = series[i];
+    if (cur.x < X_MIN || cur.x > X_MAX) continue;
+    if (causeXs && !causeXs.has(Number(cur.x))) continue;
+    const delta = Number(cur.disposable) - Number(prev.disposable);
+    if (delta > -Number(caseDef.minDropManyen || 3)) continue;
+
+    const yBefore = Number(prev.disposable);
+    const yAfter = Number(cur.disposable);
+    const q = findQ(series, i, yAfter);
+    const r = findR(series, i, yBefore);
+    const yAtMax = Number(series.find((p) => p.x === X_MAX)?.disposable ?? series[series.length - 1]?.disposable);
+    const cause = causeFor(caseDef, cur.x, delta);
+    rows.push({
+      index: rows.length + 1,
+      x: Number(cur.x),
+      yBefore,
+      yAfter,
+      drop: delta,
+      cause: cause.label,
+      confidence: cause.confidence || "strict",
+      q,
+      r,
+      unrecoveredShortfall: r ? 0 : Math.max(0, yBefore - yAtMax),
+    });
+  }
+  return rows;
+}
+
 function buildPath(points, xScale, yScale) {
   const visible = points.filter((p) => p.x >= X_MIN && p.x <= X_MAX);
   return visible.map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.x).toFixed(2)} ${yScale(p.disposable).toFixed(2)}`).join(" ");
 }
 
-function Graph({ data, selectedId }) {
-  const width = 980;
-  const height = 520;
-  const pad = { left: 64, right: 24, top: 24, bottom: 56 };
+function pointAt(series, salaryWan) {
+  const x = Math.max(X_MIN, Math.min(X_MAX, Math.round(Number(salaryWan) || 0)));
+  return series.find((p) => Number(p.x) === x) || series.reduce((best, p) => (Math.abs(p.x - x) < Math.abs(best.x - x) ? p : best), series[0]);
+}
+
+function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
+  const width = 1040;
+  const height = 560;
+  const pad = { left: 66, right: 28, top: 26, bottom: 62 };
   const allVisible = data.flatMap((d) => d.series.filter((p) => p.x >= X_MIN && p.x <= X_MAX));
   const yMinRaw = Math.min(...allVisible.map((p) => Number(p.disposable)));
   const yMaxRaw = Math.max(...allVisible.map((p) => Number(p.disposable)));
@@ -222,13 +305,37 @@ function Graph({ data, selectedId }) {
   const yMax = Math.ceil((yMaxRaw + 20) / 50) * 50;
   const xScale = (x) => pad.left + ((Number(x) - X_MIN) / (X_MAX - X_MIN)) * (width - pad.left - pad.right);
   const yScale = (y) => pad.top + ((yMax - Number(y)) / (yMax - yMin)) * (height - pad.top - pad.bottom);
+  const salaryFromClientX = (clientX, svg) => {
+    const rect = svg.getBoundingClientRect();
+    const viewX = ((clientX - rect.left) / rect.width) * width;
+    const t = (viewX - pad.left) / (width - pad.left - pad.right);
+    return Math.max(X_MIN, Math.min(X_MAX, Math.round(X_MIN + t * (X_MAX - X_MIN))));
+  };
   const selected = data.find((d) => d.id === selectedId);
-  const xTicks = [400, 600, 800, 1000, 1200, 1400, 1500];
+  const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
+  const xTicks = [0, 250, 500, 750, 1000, 1250, 1500];
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) / 5) * i);
 
+  const moveLine = (event) => {
+    if (!event.currentTarget) return;
+    onSalaryChange(salaryFromClientX(event.clientX, event.currentTarget));
+  };
+
   return (
-    <svg className="appendix-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="給与と可処分所得の関係">
-      <rect className="appendix-chart-bg" x="0" y="0" width={width} height={height} rx="0" />
+    <svg
+      className="appendix-chart"
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label="給与と可処分所得の関係。縦線は選択給与を示す。"
+      onPointerDown={(event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        moveLine(event);
+      }}
+      onPointerMove={(event) => {
+        if (event.buttons === 1) moveLine(event);
+      }}
+    >
+      <rect className="appendix-chart-bg" x="0" y="0" width={width} height={height} />
       {yTicks.map((t) => (
         <g key={`y-${t}`}>
           <line className="appendix-grid" x1={pad.left} x2={width - pad.right} y1={yScale(t)} y2={yScale(t)} />
@@ -262,7 +369,7 @@ function Graph({ data, selectedId }) {
       ))}
 
       {selected?.cliffs.map((cliff, i) => {
-        const color = COLORS[i % COLORS.length];
+        const color = MARKER_COLORS[i % MARKER_COLORS.length];
         const points = [
           { key: "P", x: cliff.x, y: cliff.yAfter, label: `P${cliff.index}` },
           cliff.q ? { key: "Q", x: cliff.q.x, y: cliff.q.disposable, label: `Q${cliff.index}` } : null,
@@ -277,6 +384,16 @@ function Graph({ data, selectedId }) {
           </g>
         ));
       })}
+
+      {selectedPoint ? (
+        <g className="appendix-cursor">
+          <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
+          <circle cx={xScale(selectedPoint.x)} cy={yScale(selectedPoint.disposable)} r="5" />
+          <text x={xScale(selectedPoint.x) + 8} y={pad.top + 18}>
+            {fmt(selectedPoint.x)}万
+          </text>
+        </g>
+      ) : null}
     </svg>
   );
 }
@@ -292,23 +409,28 @@ function CliffTable({ cliffs }) {
           <tr>
             <th>崖</th>
             <th>制度</th>
-            <th>P</th>
-            <th>崖直前→直後</th>
+            <th>確度</th>
+            <th>P:給与</th>
+            <th>崖直前→直後の可処分</th>
             <th>落差</th>
-            <th>Q</th>
-            <th>P−Q</th>
-            <th>R</th>
-            <th>R−P</th>
+            <th>Q:後退先</th>
+            <th>実質無効幅</th>
+            <th>R:回復点</th>
+            <th>要追加年収</th>
           </tr>
         </thead>
         <tbody>
           {cliffs.map((c) => {
             const qWidth = c.q ? c.x - c.q.x : null;
             const rWidth = c.r ? c.r.x - c.x : null;
+            const confidence = confidenceBadge(c.confidence);
             return (
               <tr key={c.index}>
                 <td className="appendix-mono">P{c.index}/Q{c.index}/R{c.index}</td>
                 <td>{c.cause}</td>
+                <td>
+                  <span className={`confidence-pill ${c.confidence}`}>{confidence.label}</span>
+                </td>
                 <td className="appendix-mono">{fmt(c.x)}万</td>
                 <td className="appendix-mono">
                   {fmt(c.yBefore, 1)}→{fmt(c.yAfter, 1)}
@@ -329,8 +451,128 @@ function CliffTable({ cliffs }) {
   );
 }
 
+function FormulaRow({ label, value, tone }) {
+  return (
+    <div className={`formula-row ${tone || ""}`}>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
+function ProgramCard({ title, confidence, children }) {
+  const c = confidenceBadge(confidence);
+  return (
+    <section className="formula-card">
+      <div className="formula-card-head">
+        <h3>{title}</h3>
+        <span className={`confidence-pill ${confidence}`}>{c.label}</span>
+      </div>
+      <dl>{children}</dl>
+    </section>
+  );
+}
+
+function BreakdownPanel({ point }) {
+  if (!point?.breakdown) return <div className="appendix-empty">計算内訳を読み込んでいます。</div>;
+  const b = point.breakdown;
+  const tcca = b.programs.tcca;
+  const welfare = b.programs.welfareAllowance;
+  const service = b.programs.service;
+  const m01 = b.programs.m01;
+  const n04 = b.programs.n04;
+  const mainService = service.details[0];
+
+  return (
+    <div className="formula-grid">
+      <ProgramCard title="手取り" confidence="strict">
+        <FormulaRow
+          label="給与所得"
+          value={`${fmtWan(b.rows[0]?.salaryWan, 0)} − 給与所得控除 ${fmtWan(b.rows[0]?.employmentIncomeDeductionWan)} = ${fmtWan(b.rows[0]?.employmentIncomeWan)}`}
+        />
+        <FormulaRow
+          label="手取り"
+          value={`${fmtWan(b.takeHome.salaryWan, 0)} − 社会保険料 ${fmtWan(b.takeHome.socialWan)} − 税 ${fmtWan(b.takeHome.taxWan)} = ${fmtWan(b.takeHome.takeHomeWan)}`}
+        />
+        <FormulaRow
+          label="住民税所得割"
+          value={`${fmtWan(b.tax.residentIncomeLevyWan, 2)}（通所/M01判定に使用）`}
+        />
+      </ProgramCard>
+
+      <ProgramCard title="特別児童扶養手当" confidence="strict">
+        <FormulaRow
+          label="本人判定"
+          value={`${fmtYen(tcca.headAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.headLimitYen)} → ${tcca.eligible ? "支給" : "不支給"}`}
+        />
+        <FormulaRow
+          label="扶養義務者判定"
+          value={`${fmtYen(tcca.familyMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(tcca.familyLimitYen)} → ${tcca.eligible ? "通過" : "停止"}`}
+        />
+        <FormulaRow label="支給額" value={`${fmtYen(tcca.monthlyYen)}/月、${fmtWan(tcca.annualWan)}/年`} />
+      </ProgramCard>
+
+      <ProgramCard title="障害児福祉手当" confidence="strict">
+        <FormulaRow
+          label="扶養義務者"
+          value={`${fmtYen(welfare.obligorMaxAdjustedIncomeYen)} vs 限度額 ${fmtYen(welfare.obligorLimitYen)} → ${welfare.obligorOk ? "通過" : "停止"}`}
+        />
+        <FormulaRow label="対象者" value={`${welfare.recipients.filter((r) => r.ok).length}/${welfare.recipients.length}人 支給`} />
+        <FormulaRow label="支給額" value={`${fmtYen(welfare.monthlyYen)}/月、${fmtWan(welfare.annualWan)}/年`} />
+      </ProgramCard>
+
+      <ProgramCard title="障害児通所支援" confidence="strict">
+        <FormulaRow
+          label="区分"
+          value={`所得割 ${fmtWan(mainService?.householdLevyWan, 2)} ${Number(mainService?.householdLevyWan || 0) >= 28 ? "≥" : "<"} 28万 → ${mainService?.type || "対象外"}`}
+        />
+        <FormulaRow label="月額上限" value={`${fmtYen(service.monthlyTotalYen)}（年額 ${fmtWan(service.annualWan)}）`} />
+      </ProgramCard>
+
+      <ProgramCard title="M01 重心医療費助成" confidence="representative">
+        <FormulaRow
+          label="判定"
+          value={`所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} ${fmtWan(m01.cutoffWan, 1)} → ${m01.status}`}
+        />
+        <FormulaRow label="助成額" value={`${m01.count}人 × ${fmtYen(m01.annualYenPerRecipient || 0)} = ${fmtWan(m01.annualWan)}`} />
+      </ProgramCard>
+
+      <ProgramCard title="N04 就学奨励費" confidence="provisional">
+        <FormulaRow
+          label="区分"
+          value={`給与 ${fmtWan(point.x, 0)}、境界 ${fmt(n04.boundaries?.firstToSecondManyen)}万 / ${fmt(n04.boundaries?.secondToThirdManyen)}万 → ${n04.supportClass}`}
+        />
+        <FormulaRow label="補助額" value={`${n04.count || 0}人 × ${fmtYen(n04.annualYenPerRecipient || 0)} = ${fmtWan(n04.annualWan)}`} />
+      </ProgramCard>
+
+      <ProgramCard title="可処分所得" confidence="strict">
+        <FormulaRow label="手当合計" value={`${fmtWan(b.allowance.totalWan)}（特児・福祉手当・M01・N04等）`} />
+        <FormulaRow
+          label="可処分所得"
+          value={`${fmtWan(b.disposable.takeHomeWan)} + 手当 ${fmtWan(b.disposable.allowanceWan)} − 利用料 ${fmtWan(b.disposable.serviceFeeWan)} = ${fmtWan(b.disposable.disposableWan)}`}
+          tone="strong"
+        />
+      </ProgramCard>
+    </div>
+  );
+}
+
+function ConfidenceNotes() {
+  return (
+    <section className="appendix-notes" aria-label="確度ステータス">
+      {Object.entries(CONFIDENCE).map(([key, item]) => (
+        <div key={key}>
+          <span className={`confidence-pill ${key}`}>{item.label}</span>
+          <p>{item.note}</p>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 export default function AppendixCliffMap() {
-  const [selectedId, setSelectedId] = useState("G");
+  const [selectedId, setSelectedId] = useState("case3");
+  const [selectedSalary, setSelectedSalary] = useState(900);
   const staticTables = useStaticTables();
   const ready =
     staticTables.staticReady &&
@@ -344,11 +586,12 @@ export default function AppendixCliffMap() {
   const data = useMemo(() => {
     if (!ready) return [];
     const tables = makeTables(staticTables);
-    return CASES.map((caseDef, i) => {
+    return PRESENTATION_CASES.map((caseDef, i) => {
       const series = computeSeries({
         household: buildHousehold(caseDef.household),
         scenario: "S2_R7",
         tables,
+        sweep: { min: X_MIN, max: X_MAX, step: 1 },
       });
       return {
         ...caseDef,
@@ -360,31 +603,32 @@ export default function AppendixCliffMap() {
   }, [ready, staticTables]);
 
   const selected = data.find((d) => d.id === selectedId) || data[0];
+  const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
 
   return (
     <main className="App appendix-page">
-      <section className="appendix-header">
-        <div>
-          <p className="appendix-kicker">WEB APPENDIX</p>
-          <h1 className="appendix-title">所得制限の崖と回復点</h1>
-        </div>
-        <div className="appendix-summary">
-          <span>横軸上限 1500万円</span>
-          <span>計算コア由来</span>
-          <span>P/Q/R方式</span>
-        </div>
+      <section className="appendix-hero">
+        <p className="appendix-kicker">WEB APPENDIX</p>
+        <h1>部分最適な所得制限が、束になると可処分所得を逆転させる</h1>
+        <p>
+          給与を1万円刻みで掃引し、計算コアが返す手取り・手当・利用料・制度判定をそのまま表示する。
+          グラフは崖の位置関係を示し、縦ラインは選んだ給与での計算過程を展開する。
+        </p>
       </section>
 
       <section className="appendix-controls" aria-label="表示ケース">
-        {CASES.map((c) => (
+        {[...PRESENTATION_CASES, IDEAL_CASE].map((c) => (
           <button
             key={c.id}
             type="button"
             className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
             aria-pressed={selectedId === c.id}
-            onClick={() => setSelectedId(c.id)}
+            onClick={() => {
+              if (!c.pending) setSelectedId(c.id);
+            }}
           >
-            {c.label}
+            <span>{c.label}</span>
+            <small>{c.shortLabel}</small>
           </button>
         ))}
       </section>
@@ -394,12 +638,30 @@ export default function AppendixCliffMap() {
           <div className="appendix-empty">計算テーブルを読み込んでいます。</div>
         ) : (
           <>
-            <Graph data={data} selectedId={selected?.id} />
+            <div className="appendix-section-head">
+              <div>
+                <h2>{selected?.label}</h2>
+                <p>{selected?.description}</p>
+              </div>
+              <div className="salary-control">
+                <label htmlFor="salary-range">縦ライン: {fmt(selectedSalary)}万円</label>
+                <input
+                  id="salary-range"
+                  type="range"
+                  min={X_MIN}
+                  max={X_MAX}
+                  step="1"
+                  value={selectedSalary}
+                  onChange={(e) => setSelectedSalary(Number(e.target.value))}
+                />
+              </div>
+            </div>
+            <Graph data={data} selectedId={selected?.id} selectedSalary={selectedSalary} onSalaryChange={setSelectedSalary} />
             <div className="appendix-legend" aria-label="ケース凡例">
               {data.map((d) => (
                 <span key={d.id} className={d.id === selected?.id ? "active" : ""}>
                   <i style={{ background: d.color }} aria-hidden="true" />
-                  {d.label}
+                  {d.label}：{d.shortLabel}
                 </span>
               ))}
             </div>
@@ -407,12 +669,38 @@ export default function AppendixCliffMap() {
         )}
       </section>
 
-      <section className="appendix-panel appendix-table-panel">
+      <section className="appendix-panel">
         <div className="appendix-section-head">
-          <h2>{selected?.label || "選択ケース"}</h2>
-          <p>Pは崖点、Qは崖後の水準まで戻る左側の給与、Rは崖前の水準へ回復する右側の給与です。</p>
+          <div>
+            <h2>選択給与での計算過程</h2>
+            <p>フロントでは税・社保を再計算せず、computeSeriesの各点が持つ内訳を式として表示する。</p>
+          </div>
+          <div className="appendix-big-number">
+            <span>{fmt(selectedPoint?.x)}万円</span>
+            <strong>{fmtWan(selectedPoint?.disposable)}</strong>
+          </div>
+        </div>
+        <BreakdownPanel point={selectedPoint} />
+      </section>
+
+      <section className="appendix-panel">
+        <div className="appendix-section-head">
+          <div>
+            <h2>P/Q/R 表</h2>
+            <p>Pは崖点、Qは崖後の水準まで戻る左側の給与、Rは崖前の水準へ回復する右側の給与。</p>
+          </div>
         </div>
         <CliffTable cliffs={selected?.cliffs || []} />
+      </section>
+
+      <ConfidenceNotes />
+
+      <section className="appendix-panel ideal-slot">
+        <h2>第4ケース：全体最適モデル</h2>
+        <p>
+          後続設計で、崖なしまたは大幅緩和した制度モデルを同じP/Q/R表示器へ差し込む。
+          現時点では比較枠だけを固定し、恣意的な数値を置かない。
+        </p>
       </section>
     </main>
   );

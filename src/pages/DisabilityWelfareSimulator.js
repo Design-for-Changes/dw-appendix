@@ -586,6 +586,52 @@ export default function DisabilityWelfareSimulator() {
     return 0;
   };
 
+  const calcLimitFuyoInfo = (rows) => {
+    const cols = Array.isArray(rows) ? rows : [];
+    const spouseRow = cols.find((r) => String(r?.who || "") === "配偶者");
+    const maxIncome = Number(dependentDeductionCfg?.dependent_total_income_max_wan) || 0;
+    const spouseMax = Number(spouseDeductionITCfg?.spouse_total_income_max_wan) || 0;
+    const spouseIsTarget =
+      spouseEnabled && spouseRow ? (Number(spouseRow?.totalIncomeWan) || 0) <= spouseMax : false;
+
+    const dependents = [];
+    if (spouseIsTarget) dependents.push(spouseRow);
+    for (const r of cols) {
+      if (!String(r?.who || "").startsWith("子ども")) continue;
+      const total = Number(r?.totalIncomeWan) || 0;
+      if (total > maxIncome) continue;
+      dependents.push(r);
+    }
+
+    const statutoryAddYen = dependents.reduce((sum, r) => {
+      const age = Number(r?.age) || 0;
+      const specialDependentAdd = age >= 19 && age < 23 ? 250000 : 0;
+      const elderlyDependentAdd = age >= 70 ? 100000 : 0;
+      return sum + specialDependentAdd + elderlyDependentAdd;
+    }, 0);
+
+    return {
+      count: dependents.length,
+      statutoryAddYen,
+      dependents,
+    };
+  };
+
+  const calcLegacyDisabilityAddedFuyoCount = (rows) => {
+    const info = calcLimitFuyoInfo(rows);
+    const headRow = Array.isArray(rows) ? rows.find((r) => String(r?.who || "") === "世帯主") : null;
+    const addForHead = (row) => (Boolean(row?.disabled) ? 1 : 0);
+    const addForFamily = (row) => {
+      if (!Boolean(row?.disabled)) return 0;
+      if (!Boolean(row?.tccaSpecial)) return 1;
+      return Boolean(row?.cohabit) ? 2 : 1;
+    };
+
+    let add = addForHead(headRow);
+    for (const r of info.dependents) add += addForFamily(r);
+    return info.count + add;
+  };
+
   // ===== 入力反映グラフ（積み上げ面）用の系列を「計算」ボタン押下時だけ作って保持 =====
   useEffect(() => {
     const SWEEP_MIN_X = 1; // 万円
@@ -920,16 +966,17 @@ export default function DisabilityWelfareSimulator() {
           const headTotalWan = Number(headRow?.totalIncomeWan) || 0;
           const spouseTotalWan = Number(spouseRow?.totalIncomeWan) || 0;
 
-          const incomeLimitYen = (kind, fuyoCount) => {
+          const incomeLimitYen = (kind, fuyoCount, statutoryAddYen = 0) => {
             const n = Math.max(0, Math.trunc(Number(fuyoCount) || 0));
+            const add = Math.max(0, Math.trunc(Number(statutoryAddYen) || 0));
             if (kind === "head") {
               const base = [4596000, 4976000, 5356000, 5736000];
-              if (n <= 3) return base[n];
-              return base[3] + 380000 * (n - 3);
+              if (n <= 3) return base[n] + add;
+              return base[3] + 380000 * (n - 3) + add;
             }
             const base = [6287000, 6536000, 6749000, 6962000];
-            if (n <= 3) return base[n];
-            return base[3] + 213000 * (n - 3);
+            if (n <= 3) return base[n] + add;
+            return base[3] + 213000 * (n - 3) + add;
           };
 
           const tccaDisWan = (who) => {
@@ -944,43 +991,13 @@ export default function DisabilityWelfareSimulator() {
             return r ? (Number(r?.totalIncomeWan) || 0) <= childDepMaxWan : false;
           };
 
-          const calcFuyoCount = () => {
-            // NOTE: 扶養親族数（手当の所得制限用の人数カウント）は「扶養控除」と別ロジック。
-            // 扶養控除は年齢帯が必要だが、扶養親族数カウントでは年齢制限をかけない（ユーザー指定）。
-            const maxIncome = Number(dependentDeductionCfg?.dependent_total_income_max_wan) || 0;
-            const spouseMax = Number(spouseDeductionITCfg?.spouse_total_income_max_wan) || 0;
-            const spouseIsTarget =
-              spouseEnabled && spouseRow ? (Number(spouseRow?.totalIncomeWan) || 0) <= spouseMax : false;
+          const limitFuyoInfo = calcLimitFuyoInfo(cols);
+          const fuyoCount = Number(limitFuyoInfo.count) || 0;
+          const legacyFuyoCount = calcLegacyDisabilityAddedFuyoCount(cols);
+          const headLimitYen = incomeLimitYen("head", fuyoCount, limitFuyoInfo.statutoryAddYen);
+          const familyLimitYen = incomeLimitYen("family", fuyoCount, limitFuyoInfo.statutoryAddYen);
 
-            const dependents = [];
-            for (const r of cols) {
-              if (!String(r?.who || "").startsWith("子ども")) continue;
-              const total = Number(r?.totalIncomeWan) || 0;
-              if (total > maxIncome) continue;
-              dependents.push(r);
-            }
-
-            let base = 0;
-            if (spouseIsTarget) base += 1;
-            base += dependents.length;
-
-            const addForHead = (row) => (Boolean(row?.disabled) ? 1 : 0);
-            const addForFamily = (row) => {
-              if (!Boolean(row?.disabled)) return 0;
-              if (!Boolean(row?.tccaSpecial)) return 1;
-              return Boolean(row?.cohabit) ? 2 : 1;
-            };
-            let add = 0;
-            add += addForHead(headRow);
-            if (spouseIsTarget) add += addForFamily(spouseRow);
-            for (const r of dependents) add += addForFamily(r);
-            return base + add;
-          };
-
-          const fuyoCount = calcFuyoCount();
-          const headLimitYen = incomeLimitYen("head", fuyoCount);
-          const familyLimitYen = incomeLimitYen("family", fuyoCount);
-
+          const employmentIncomeDeductWan = 10;
           const socialFixedWan = 8;
           const otherDedWan = Number(headRow?.otherDedWan) || 0;
 
@@ -1040,6 +1057,7 @@ export default function DisabilityWelfareSimulator() {
           }
 
           const headDedSumWan =
+            employmentIncomeDeductWan +
             socialFixedWan +
             otherDedWan +
             spouseSpecialWan +
@@ -1052,11 +1070,12 @@ export default function DisabilityWelfareSimulator() {
 
           const familyByWho = new Map();
           const addFamily = (who, totalWan, wsWan, disWan) => {
-            const dedSumWan = socialFixedWan + wsWan + disWan;
+            const dedSumWan = employmentIncomeDeductWan + socialFixedWan + wsWan + disWan;
             const adjustedWan = Math.max(0, (Number(totalWan) || 0) - dedSumWan);
             familyByWho.set(String(who), {
               who: String(who),
               totalWan: Number(totalWan) || 0,
+              employmentIncomeDeductWan,
               socialFixedWan,
               wsWan,
               disWan,
@@ -1100,9 +1119,13 @@ export default function DisabilityWelfareSimulator() {
 
           return {
             fuyoCount,
+            limitFuyoCount: fuyoCount,
+            legacyFuyoCount,
+            limitFuyoStatutoryAddYen: Number(limitFuyoInfo.statutoryAddYen) || 0,
             limits: { headLimitYen, familyLimitYen },
             head: {
               totalWan: headTotalWan,
+              employmentIncomeDeductWan,
               socialFixedWan,
               otherDedWan,
               spouseSpecialWan,
@@ -1235,6 +1258,7 @@ export default function DisabilityWelfareSimulator() {
           const tcca = calcTccaComputedLocal(rows);
           const tccaAnnualWan = ((Number(tcca?.totalMonthlyYen) || 0) * 12) / 10000;
           const fuyo = Number(tcca?.fuyoCount) || 0;
+          const legacyFuyo = Number(tcca?.legacyFuyoCount ?? tcca?.fuyoCount) || 0;
 
           // 障害児福祉手当 / 特別障害者手当
           const WELFARE_CHILD_MONTHLY_YEN = 16100;
@@ -1340,7 +1364,7 @@ export default function DisabilityWelfareSimulator() {
           const childSupportAnnualWan = (() => {
             const isSingleParent = Boolean(head.singleParentWan) && !spouseEnabled;
             if (!isSingleParent) return 0;
-            const fuyo2 = fuyo;
+            const fuyo2 = legacyFuyo;
             const idx = Math.min(5, Math.max(0, Math.trunc(Number(fuyo2) || 0)));
             const base = tcca || { head: { adjustedWan: 0 } };
             const h = base?.head || {};
@@ -1540,17 +1564,18 @@ export default function DisabilityWelfareSimulator() {
     const spouseTotalWan = Number(spouseRow?.totalIncomeWan) || 0;
 
     // --- helper ---
-    const incomeLimitYen = (kind, fuyoCount) => {
+    const incomeLimitYen = (kind, fuyoCount, statutoryAddYen = 0) => {
       // kind: "head" | "family"（配偶者＋扶養義務者）
       const n = Math.max(0, Math.trunc(Number(fuyoCount) || 0));
+      const add = Math.max(0, Math.trunc(Number(statutoryAddYen) || 0));
       if (kind === "head") {
         const base = [4596000, 4976000, 5356000, 5736000];
-        if (n <= 3) return base[n];
-        return base[3] + 380000 * (n - 3);
+        if (n <= 3) return base[n] + add;
+        return base[3] + 380000 * (n - 3) + add;
       }
       const base = [6287000, 6536000, 6749000, 6962000];
-      if (n <= 3) return base[n];
-      return base[3] + 213000 * (n - 3);
+      if (n <= 3) return base[n] + add;
+      return base[3] + 213000 * (n - 3) + add;
     };
 
     const tccaDisWan = (who) => {
@@ -1567,52 +1592,14 @@ export default function DisabilityWelfareSimulator() {
       return r ? (Number(r?.totalIncomeWan) || 0) <= childDepMaxWan : false;
     };
 
-    // --- 扶養親族数（障害加算込み） ---
-    const calcFuyoCount = () => {
-      // NOTE: 元実装を「所得カードの cols」参照に寄せたもの。
-      // NOTE: 扶養親族数（手当の所得制限用の人数カウント）は「扶養控除」と別ロジック。
-      // 扶養控除は年齢帯が必要だが、扶養親族数カウントでは年齢制限をかけない（ユーザー指定）。
-      const maxIncome = Number(dependentDeductionCfg?.dependent_total_income_max_wan) || 0;
-
-      const spouseMax = Number(spouseDeductionITCfg?.spouse_total_income_max_wan) || 0;
-      const spouseIsTarget =
-        spouseEnabled && spouseRow ? (Number(spouseRow?.totalIncomeWan) || 0) <= spouseMax : false;
-
-      const dependents = [];
-      for (const r of cols) {
-        if (!String(r?.who || "").startsWith("子ども")) continue;
-        const total = Number(r?.totalIncomeWan) || 0;
-        if (total > maxIncome) continue;
-        dependents.push(r);
-      }
-
-      let base = 0;
-      if (spouseIsTarget) base += 1;
-      base += dependents.length;
-
-      // 障害加算（ユーザー指定）
-      // - 世帯主: 障害者なら +1（特別/同居の区別なし）
-      // - 配偶者・扶養親族: 障害者 +1 / 特別障害者かつ同居 +2（同居特別も+2）
-      const addForHead = (row) => (Boolean(row?.disabled) ? 1 : 0);
-      const addForFamily = (row) => {
-        if (!Boolean(row?.disabled)) return 0;
-        if (!Boolean(row?.tccaSpecial)) return 1;
-        return Boolean(row?.cohabit) ? 2 : 1;
-      };
-
-      let add = 0;
-      add += addForHead(headRow);
-      if (spouseIsTarget) add += addForFamily(spouseRow);
-      for (const r of dependents) add += addForFamily(r);
-
-      return base + add;
-    };
-
-    const fuyoCount = calcFuyoCount();
-    const headLimitYen = incomeLimitYen("head", fuyoCount);
-    const familyLimitYen = incomeLimitYen("family", fuyoCount);
+    const limitFuyoInfo = calcLimitFuyoInfo(cols);
+    const fuyoCount = Number(limitFuyoInfo.count) || 0;
+    const legacyFuyoCount = calcLegacyDisabilityAddedFuyoCount(cols);
+    const headLimitYen = incomeLimitYen("head", fuyoCount, limitFuyoInfo.statutoryAddYen);
+    const familyLimitYen = incomeLimitYen("family", fuyoCount, limitFuyoInfo.statutoryAddYen);
 
     // --- 判定所得（世帯主） ---
+    const employmentIncomeDeductWan = 10;
     const socialFixedWan = 8;
     const otherDedWan = Number(headRow?.otherDedWan) || 0;
 
@@ -1675,6 +1662,7 @@ export default function DisabilityWelfareSimulator() {
     }
 
     const headDedSumWan =
+      employmentIncomeDeductWan +
       socialFixedWan +
       otherDedWan +
       spouseSpecialWan +
@@ -1688,11 +1676,12 @@ export default function DisabilityWelfareSimulator() {
     // --- 判定所得（配偶者＋扶養義務者: 個別値と最大値） ---
     const familyByWho = new Map();
     const addFamily = (who, totalWan, wsWan, disWan) => {
-      const dedSumWan = socialFixedWan + wsWan + disWan;
+      const dedSumWan = employmentIncomeDeductWan + socialFixedWan + wsWan + disWan;
       const adjustedWan = Math.max(0, (Number(totalWan) || 0) - dedSumWan);
       familyByWho.set(String(who), {
         who: String(who),
         totalWan: Number(totalWan) || 0,
+        employmentIncomeDeductWan,
         socialFixedWan,
         wsWan,
         disWan,
@@ -1740,9 +1729,13 @@ export default function DisabilityWelfareSimulator() {
 
     return {
       fuyoCount,
+      limitFuyoCount: fuyoCount,
+      legacyFuyoCount,
+      limitFuyoStatutoryAddYen: Number(limitFuyoInfo.statutoryAddYen) || 0,
       limits: { headLimitYen, familyLimitYen },
       head: {
         totalWan: headTotalWan,
+        employmentIncomeDeductWan,
         socialFixedWan,
         otherDedWan,
         spouseSpecialWan,
@@ -2674,7 +2667,10 @@ export default function DisabilityWelfareSimulator() {
                     };
                   };
 
-                  const calcTccaFuyoCount = () => Number(tccaComputed?.fuyoCount) || 0;
+                  const calcTccaFuyoCount = () =>
+                    Number(tccaComputed?.limitFuyoCount ?? tccaComputed?.fuyoCount) || 0;
+                  const calcLegacyFuyoCount = () =>
+                    Number(tccaComputed?.legacyFuyoCount ?? tccaComputed?.fuyoCount) || 0;
 
                   const calcTccaIncomeLimitYen = (kind) =>
                     kind === "head"
@@ -2696,10 +2692,12 @@ export default function DisabilityWelfareSimulator() {
                       const totalWan = Number(col?.totalIncomeWan) || 0;
                       const wsWan = Boolean(col?.workingStudent) ? 27 : 0;
                       const disWan = 0;
+                      const employmentIncomeDeductWan = 10;
                       const socialFixedWan = 8;
-                      const dedSumWan = socialFixedWan + wsWan + disWan;
+                      const dedSumWan = employmentIncomeDeductWan + socialFixedWan + wsWan + disWan;
                       return {
                         totalWan,
+                        employmentIncomeDeductWan,
                         socialFixedWan,
                         wsWan,
                         disWan,
@@ -2709,6 +2707,7 @@ export default function DisabilityWelfareSimulator() {
                     }
                     return {
                       totalWan: Number(r.totalWan) || 0,
+                      employmentIncomeDeductWan: Number(r.employmentIncomeDeductWan) || 0,
                       socialFixedWan: Number(r.socialFixedWan) || 0,
                       wsWan: Number(r.wsWan) || 0,
                       disWan: Number(r.disWan) || 0,
@@ -2777,16 +2776,6 @@ export default function DisabilityWelfareSimulator() {
                   const calcWelfareAllowanceAdjustedIncomeYen = (col, mode = "self") => {
                     // 障害児福祉手当 / 特別障害者手当 / 心身障害者医療費助成制度（ユーザー指定）
                     // 判定所得 = 所得合計 −（制度で認められる控除）
-                    //
-                    // 控除ルール（現状実装）:
-                    // - その他の控除: 雑損/医療費/小規模企業共済等掛金 等をまとめた入力（世帯主のみ入力欄あり）
-                    // - 配偶者特別控除: 所得税側の配偶者特別控除（世帯主のみ）
-                    // - 社会保険料控除: 実計算の社会保険料（固定8万円ではない）
-                    // - 障害者控除(扶養配偶者/扶養親族): 27万円
-                    // - 特別障害者控除(扶養配偶者/扶養親族): 40万円
-                    // - 寡婦控除: 27万円（世帯主のみ）
-                    // - ひとり親控除: 35万円（世帯主のみ）
-                    // - 勤労学生控除: 27万円
                     const totalWan = Number(col?.totalIncomeWan) || 0;
                     const who = String(col?.who || "");
 
@@ -2868,6 +2857,7 @@ export default function DisabilityWelfareSimulator() {
                     const adjustedWan = Math.max(0, totalWan - deductionsWan);
                     return {
                       totalWan,
+                      employmentIncomeDeductWan: 0,
                       otherDedWan,
                       spouseSpecialWan,
                       socialWan,
@@ -3172,7 +3162,7 @@ export default function DisabilityWelfareSimulator() {
                     // ひとり親でない場合は支給されない（ユーザー指摘）
                     const isSingleParent = Boolean(head.singleParentWan) && !spouseEnabled;
                     if (!isSingleParent) return { totalMonthlyYen: 0, annualWan: 0 };
-                    const fuyo = calcTccaFuyoCount();
+                    const fuyo = calcLegacyFuyoCount();
                     const idx = Math.min(5, Math.max(0, Math.trunc(Number(fuyo) || 0)));
                     const adj = calcTccaAdjustedIncomeWan();
                     const incomeWan = Number(adj?.head?.adjustedWan) || 0;
@@ -3617,6 +3607,10 @@ export default function DisabilityWelfareSimulator() {
                                           <td style={{ textAlign: "right" }}>{fmt1(h.totalWan ?? 0)} 万円</td>
                                         </tr>
                                         <tr>
+                                          <td className="indent">給与所得控除後の調整</td>
+                                          <td style={{ textAlign: "right" }}>{fmt1(h.employmentIncomeDeductWan ?? 0)} 万円</td>
+                                        </tr>
+                                        <tr>
                                           <td className="indent">社会保険料（固定）</td>
                                           <td style={{ textAlign: "right" }}>{fmt1(h.socialFixedWan ?? 0)} 万円</td>
                                         </tr>
@@ -3684,6 +3678,10 @@ export default function DisabilityWelfareSimulator() {
                                               <tr>
                                                 <td>所得合計</td>
                                                 <td style={{ textAlign: "right" }}>{fmt1(b.totalWan)} 万円</td>
+                                              </tr>
+                                              <tr>
+                                                <td className="indent">給与所得控除後の調整</td>
+                                                <td style={{ textAlign: "right" }}>{fmt1(b.employmentIncomeDeductWan)} 万円</td>
                                               </tr>
                                               <tr>
                                                 <td className="indent">社会保険料（固定）</td>
@@ -3889,6 +3887,10 @@ export default function DisabilityWelfareSimulator() {
                                           <td style={{ textAlign: "right" }}>{fmt1(b.totalWan)} 万円</td>
                                         </tr>
                                         <tr>
+                                          <td className="indent">給与所得控除後の調整</td>
+                                          <td style={{ textAlign: "right" }}>{fmt1(b.employmentIncomeDeductWan)} 万円</td>
+                                        </tr>
+                                        <tr>
                                           <td className="indent">その他の控除</td>
                                           <td style={{ textAlign: "right" }}>{fmt1(b.otherDedWan)} 万円</td>
                                         </tr>
@@ -4069,7 +4071,7 @@ export default function DisabilityWelfareSimulator() {
                         <summary>児童扶養手当の計算表</summary>
 
                         {(() => {
-                      const fuyo = calcTccaFuyoCount();
+                      const fuyo = calcLegacyFuyoCount();
                       const idx = Math.min(5, Math.max(0, Math.trunc(Number(fuyo) || 0)));
                       const adj = calcJidoFuyoAdjustedIncomeWan();
                       const incomeWan = Number(adj?.head?.adjustedWan) || 0; // 世帯主のみ（ひとり親前提）

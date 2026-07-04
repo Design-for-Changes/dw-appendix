@@ -1297,6 +1297,15 @@ export default function DisabilityWelfareSimulator() {
           };
           const calcWelfareAdjustedIncomeYen = (col, mode = "self") => {
             const totalWan = Number(col?.totalIncomeWan) || 0;
+            if (mode === "obligor") {
+              const allowanceTotalWan = totalWan + (Number(col?.incomeAdjWan) || 0);
+              const employmentIncomeDeductWan = 10;
+              const socialFixedWan = 8;
+              const disWan = calcWelfareDisabilityDeductionWan(col, mode);
+              const deductionsWan = employmentIncomeDeductWan + socialFixedWan + disWan;
+              return Math.round(Math.max(0, allowanceTotalWan - deductionsWan) * 10000);
+            }
+
             const who = String(col?.who || "");
             const headRow2 = rows.find((rr) => rr.who === "世帯主");
             const headTotalForLimitWan = Number(headRow2?.totalIncomeWan) || 0;
@@ -2777,6 +2786,15 @@ export default function DisabilityWelfareSimulator() {
                     // 障害児福祉手当 / 特別障害者手当 / 心身障害者医療費助成制度（ユーザー指定）
                     // 判定所得 = 所得合計 −（制度で認められる控除）
                     const totalWan = Number(col?.totalIncomeWan) || 0;
+                    if (mode === "obligor") {
+                      const allowanceTotalWan = totalWan + (Number(col?.incomeAdjWan) || 0);
+                      const employmentIncomeDeductWan = 10;
+                      const socialFixedWan = 8;
+                      const disWan = calcWelfareAllowanceDisabilityDeductionWan(col, mode);
+                      const deductionsWan = employmentIncomeDeductWan + socialFixedWan + disWan;
+                      return Math.round(Math.max(0, allowanceTotalWan - deductionsWan) * 10000);
+                    }
+
                     const who = String(col?.who || "");
 
                     // 所得カード起点（世帯主のみ入力欄あり）
@@ -2820,6 +2838,30 @@ export default function DisabilityWelfareSimulator() {
 
                   const calcWelfareAllowanceAdjustedIncomeBreakdown = (col, mode = "self") => {
                     const totalWan = Number(col?.totalIncomeWan) || 0;
+                    if (mode === "obligor") {
+                      const incomeAdjustmentRestoreWan = Number(col?.incomeAdjWan) || 0;
+                      const allowanceTotalWan = totalWan + incomeAdjustmentRestoreWan;
+                      const employmentIncomeDeductWan = 10;
+                      const socialWan = 8;
+                      const disWan = calcWelfareAllowanceDisabilityDeductionWan(col, mode);
+                      const deductionsWan = employmentIncomeDeductWan + socialWan + disWan;
+                      const adjustedWan = Math.max(0, allowanceTotalWan - deductionsWan);
+                      return {
+                        totalWan: allowanceTotalWan,
+                        incomeAdjustmentRestoreWan,
+                        employmentIncomeDeductWan,
+                        otherDedWan: 0,
+                        spouseSpecialWan: 0,
+                        socialWan,
+                        widowWan: 0,
+                        singleParentWan: 0,
+                        wsWan: 0,
+                        disWan,
+                        deductionsWan,
+                        adjustedWan,
+                      };
+                    }
+
                     const who = String(col?.who || "");
 
                     const headRow = cols.find((x) => x.who === "世帯主");
@@ -2857,6 +2899,7 @@ export default function DisabilityWelfareSimulator() {
                     const adjustedWan = Math.max(0, totalWan - deductionsWan);
                     return {
                       totalWan,
+                      incomeAdjustmentRestoreWan: 0,
                       employmentIncomeDeductWan: 0,
                       otherDedWan,
                       spouseSpecialWan,
@@ -3885,6 +3928,10 @@ export default function DisabilityWelfareSimulator() {
                                         <tr>
                                           <td>所得合計</td>
                                           <td style={{ textAlign: "right" }}>{fmt1(b.totalWan)} 万円</td>
+                                        </tr>
+                                        <tr>
+                                          <td className="indent">所得金額調整控除の戻し</td>
+                                          <td style={{ textAlign: "right" }}>{fmt1(b.incomeAdjustmentRestoreWan)} 万円</td>
                                         </tr>
                                         <tr>
                                           <td className="indent">給与所得控除後の調整</td>

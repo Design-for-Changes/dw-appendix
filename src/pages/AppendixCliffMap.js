@@ -516,6 +516,15 @@ function incomeRowsFor(r) {
   ];
 }
 
+function serviceCapYen(detail) {
+  const type = String(detail?.type || "");
+  const age = Number(detail?.age) || 0;
+  if (type === "非課税" || type === "無償化") return 0;
+  if (type === "一般2") return 37200;
+  if (type === "一般1") return age >= 18 ? 9300 : 4600;
+  return 0;
+}
+
 function childDisabilityLabel(c) {
   if (c?.specialDisabled) return "特別障害者";
   if (c?.disabled) return "一般障害者";
@@ -599,7 +608,6 @@ function BreakdownPanel({ point }) {
 
   const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
   const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
-  const serviceUpperYens = (service.details || []).map((d) => d.monthlyUpperYen);
 
   return (
     <div className="formula-grid">
@@ -729,8 +737,8 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="⑤ 障害児通所支援（世帯上限）"
         wide
-        confidence="strict"
-        note="負担上限月額は世帯単位。複数児でも合算せず、該当する上限のうち最も高い1つを採用（児福法施行令24条・27条の2）。人数倍しない。"
+        confidence={service.confidence || "strict"}
+        note="負担上限月額は世帯単位（複数児でも合算せず最も高い1つ。児福法施行令24条・27条の2）。一般2の実負担は上限37,200円ではなく、東京都R6調査の利用者負担平均10,406円を採用（上限は非拘束）。"
         rows={[
           {
             key: "levySum",
@@ -738,18 +746,22 @@ function BreakdownPanel({ point }) {
             value: fmtWan(service.householdLevySumWan, 2),
             formula: "各人の住民税所得割（市町村分）を合算 → 区分判定に使用",
           },
-          ...(service.details || []).map((d) => ({
-            key: `svc-${d.who}`,
-            label: `${d.who}（${fmt(d.age)}歳）`,
-            value: d.type,
-            confidence: d.confidence,
-            formula: `所得割 ${fmtYen(d.householdLevyYen)} → 区分 ${d.type} → 上限 ${fmtYen(d.monthlyUpperYen)}/月`,
-          })),
+          ...(service.details || []).map((d) => {
+            const capYen = serviceCapYen(d);
+            const usesRep = d.rawMonthlyYen != null && d.rawMonthlyYen < capYen;
+            return {
+              key: `svc-${d.who}`,
+              label: `${d.who}（${fmt(d.age)}歳）`,
+              value: d.type,
+              confidence: d.confidence,
+              formula: `所得割 ${fmtYen(d.householdLevyYen)} → 区分 ${d.type} → 上限 ${fmtYen(capYen)}/月${usesRep ? `（使用する代表値 ${fmtYen(d.rawMonthlyYen)}）` : ""}`,
+            };
+          }),
           {
             key: "svc-adopt",
-            label: "世帯採用上限",
+            label: "世帯月額負担",
             value: fmtYen(service.monthlyTotalYen),
-            formula: `max(${serviceUpperYens.map((y) => fmtYen(y)).join(", ") || "—"}) = ${fmtYen(service.monthlyTotalYen)}（人数倍なし）`,
+            formula: "各児の月額負担の最大を1つ採用（人数倍なし）",
             tone: "strong",
           },
           { key: "svc-annual", label: "年額負担", value: fmtWan(service.annualWan), formula: `${fmtYen(service.monthlyTotalYen)}/月 × 12` },

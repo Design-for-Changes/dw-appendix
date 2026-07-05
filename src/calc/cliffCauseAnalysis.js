@@ -55,6 +55,16 @@ function detailKey(detail) {
   return String(detail?.who || "");
 }
 
+// 制度上の負担上限月額（区分と年齢から導出）。コアは実負担(min結果)しか持たないため表示側で復元。
+function statutoryCapYen(detail) {
+  const type = String(detail?.type || "");
+  const age = toNumber(detail?.age, 0);
+  if (type === "非課税" || type === "無償化") return 0;
+  if (type === "一般2") return 37200;
+  if (type === "一般1") return age >= 18 ? 9300 : 4600;
+  return 0;
+}
+
 function compareService(out, before, after) {
   const b = before?.programs?.service || {};
   const a = after?.programs?.service || {};
@@ -64,18 +74,22 @@ function compareService(out, before, after) {
   for (const [who, next] of afterDetails) {
     const prev = beforeDetails.get(who) || {};
     if (!changed(prev.type, next.type) && !changed(prev.monthlyUpperYen, next.monthlyUpperYen)) continue;
-    changes.push({
-      who,
-      prevType: prev.type || "対象外",
-      nextType: next.type || "対象外",
-      prevYen: prev.monthlyUpperYen,
-      nextYen: next.monthlyUpperYen,
-    });
+    changes.push({ who, prev, next });
   }
   if (!changes.length && !changed(b.annualWan, a.annualWan)) return;
 
-  const describe = (c) => `${c.prevType}→${c.nextType}、月額上限 ${yen(c.prevYen)}→${yen(c.nextYen)}`;
-  const signature = (c) => `${c.prevType}→${c.nextType}|${yen(c.prevYen)}→${yen(c.nextYen)}`;
+  const describe = ({ prev, next }) => {
+    const prevType = prev.type || "対象外";
+    const nextType = next.type || "対象外";
+    let s = `${prevType}→${nextType}、月額上限 ${yen(statutoryCapYen(prev))}→${yen(statutoryCapYen(next))}`;
+    // 上限が代表値より高く、代表値が実負担として効く区分（例：一般2）だけ注記
+    if (next.rawMonthlyYen != null && next.rawMonthlyYen < statutoryCapYen(next)) {
+      s += `（使用する代表値は${yen(next.rawMonthlyYen)}）`;
+    }
+    return s;
+  };
+  const signature = ({ prev, next }) =>
+    `${prev.type || "対象外"}→${next.type || "対象外"}|${statutoryCapYen(prev)}→${statutoryCapYen(next)}|${next.rawMonthlyYen}`;
   let text;
   if (!changes.length) {
     text = `年額利用料 ${wan(b.annualWan)}→${wan(a.annualWan)}`;

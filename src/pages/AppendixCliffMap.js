@@ -604,6 +604,7 @@ function BreakdownPanel({ point }) {
   const m01 = programs.m01 || {};
   const n04 = programs.n04 || {};
   const allowance = b.allowance || {};
+  const costBurden = b.costBurden || {};
   const disposable = b.disposable || {};
 
   const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
@@ -781,9 +782,9 @@ function BreakdownPanel({ point }) {
           },
           {
             key: "amt",
-            label: "助成額",
+            label: "軽減効果",
             value: fmtWan(m01.annualWan),
-            formula: `1人あたり ${fmtYen(m01.annualYenPerRecipient || 0)} × ${fmt(m01.count)}人（1人ずつ助成＝人数倍が正）`,
+            formula: `1人あたり ${fmtYen(m01.annualYenPerRecipient || 0)} × ${fmt(m01.count)}人（該当時は自己負担を軽減）`,
           },
           {
             key: "sens",
@@ -807,44 +808,58 @@ function BreakdownPanel({ point }) {
           },
           {
             key: "amt",
-            label: "補助額",
+            label: "補助効果",
             value: fmtWan(n04.annualWan),
-            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（1人ずつ補助＝人数倍が正）`,
+            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（満額との差分を自己負担化）`,
           },
         ]}
       />
 
-      {/* ⑥ 手当合計（7内訳） */}
+      {/* ⑥ 現金給付合計 */}
       <CalculationTable
-        title="⑥ 手当合計（全内訳）"
+        title="⑥ 現金給付合計"
         wide
         confidence="strict"
-        note="7内訳の合計＝手当合計（totalWan）。畳まず全内訳を出すことで内訳計と合計が一致する。"
+        note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここでは実際に現金として受け取る給付だけを合計する。"
         rows={[
           { key: "pension", label: "基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人・配偶者の基礎年金" },
           { key: "tcca", label: "特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "⑤特児より" },
           { key: "welfare", label: "障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "⑤福祉手当より" },
           { key: "childSupport", label: "児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親世帯のみ" },
           { key: "childAllowance", label: "児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "18歳未満・出生順で加算" },
-          { key: "m01", label: "重心医療費助成", value: fmtWan(allowance.m01Wan), formula: "⑤重心医療費助成より", confidence: "representative" },
-          { key: "n04", label: "就学奨励費", value: fmtWan(allowance.n04Wan), formula: "⑤就学奨励費より", confidence: "provisional" },
-          { key: "allowance-total", label: "手当合計", value: fmtWan(allowance.totalWan), formula: "上記7内訳の合計", tone: "strong" },
+          { key: "allowance-total", label: "現金給付合計", value: fmtWan(allowance.totalWan), formula: "上記5内訳の合計", tone: "strong" },
         ]}
       />
 
-      {/* ⑥ 可処分所得 */}
+      {/* ⑦ 自己負担合計 */}
       <CalculationTable
-        title="⑥ 可処分所得"
+        title="⑦ 自己負担合計"
+        wide
+        confidence="strict"
+        note="費用軽減制度は助成・補助の縮小分を自己負担の増加として扱う。表示名は仮置き。"
+        rows={[
+          { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: `M01軽減満額 ${fmtWan(m01.fullReliefWan)} − 現在の軽減効果 ${fmtWan(m01.annualWan)}`, confidence: "representative" },
+          { key: "education", label: "教育費自己負担", value: fmtWan(costBurden.educationCostBurdenWan), formula: `N04満額補助 ${fmtWan(n04.fullSupportWan)} − 現在の補助効果 ${fmtWan(n04.annualWan)}`, confidence: "provisional" },
+          { key: "serviceFee", label: "通所利用料", value: fmtWan(costBurden.serviceFeeWan), formula: "⑤通所の年額負担より" },
+          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 教育費自己負担 ＋ 通所利用料", tone: "strong" },
+        ]}
+      />
+
+      {/* ⑧ 可処分所得 */}
+      <CalculationTable
+        title="⑧ 可処分所得"
         confidence="strict"
         rows={[
           { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与総額 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
-          { key: "allowance", label: "手当", value: fmtWan(disposable.allowanceWan), formula: "⑥手当合計より（＋）" },
+          { key: "allowance", label: "現金給付", value: fmtWan(disposable.allowanceWan), formula: "⑥現金給付合計より（＋）" },
+          { key: "medical", label: "医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "⑦自己負担合計より（−）", confidence: "representative" },
+          { key: "education", label: "教育費自己負担", value: fmtWan(disposable.educationCostBurdenWan), formula: "⑦自己負担合計より（−）", confidence: "provisional" },
           { key: "serviceFee", label: "通所利用料", value: fmtWan(disposable.serviceFeeWan), formula: "⑤通所の年額負担より（−）" },
           {
             key: "disposable",
             label: "可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 手当 ${fmtWan(disposable.allowanceWan)} − 利用料 ${fmtWan(disposable.serviceFeeWan)}`,
+            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 教育 ${fmtWan(disposable.educationCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}`,
             tone: "strong",
           },
         ]}

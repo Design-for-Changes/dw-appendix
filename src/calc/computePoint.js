@@ -1,4 +1,4 @@
-import { rowAtKeyInt, interpTableValue } from "./tableUtils.js";
+import { rowAtKeyInt } from "./tableUtils.js";
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
 export const M01_KENSHIN_ANNUAL_YEN_DEFAULT = 149531;
@@ -756,6 +756,8 @@ function calcM01Detail(ctx, householdLevySumWan) {
     count,
     annualYenPerRecipient,
     annualWan,
+    fullReliefWan: (annualYenPerRecipient * count) / 10000,
+    medicalCostBurdenWan: eligible ? 0 : (annualYenPerRecipient * count) / 10000,
     sensitivityRangeWan: {
       min: (M01_KENSHIN_ANNUAL_YEN_RANGE.min * count) / 10000,
       max: (M01_KENSHIN_ANNUAL_YEN_RANGE.max * count) / 10000,
@@ -764,9 +766,6 @@ function calcM01Detail(ctx, householdLevySumWan) {
   };
 }
 
-function calcM01AnnualWan(ctx, householdLevySumWan) {
-  return calcM01Detail(ctx, householdLevySumWan).annualWan;
-}
 
 function calcN04Detail(ctx, salaryManyen) {
   if (!ctx.programs?.n04) {
@@ -798,6 +797,8 @@ function calcN04Detail(ctx, salaryManyen) {
     count,
     annualYenPerRecipient,
     annualWan: (annualYenPerRecipient * count) / 10000,
+    fullSupportWan: (N04_SHOGAKU_ANNUAL_YEN.first * count) / 10000,
+    educationCostBurdenWan: ((N04_SHOGAKU_ANNUAL_YEN.first - annualYenPerRecipient) * count) / 10000,
     boundaries: {
       firstToSecondManyen: b12,
       secondToThirdManyen: b23,
@@ -808,9 +809,6 @@ function calcN04Detail(ctx, salaryManyen) {
   };
 }
 
-function calcN04AnnualWan(ctx, salaryManyen) {
-  return calcN04Detail(ctx, salaryManyen).annualWan;
-}
 
 function computePoint(ctx, x) {
   const rows = buildRows(ctx, x);
@@ -1137,22 +1135,30 @@ function computePoint(ctx, x) {
   const n04Detail = calcN04Detail(ctx, x);
   const m01AnnualWan = m01Detail.annualWan;
   const n04AnnualWan = n04Detail.annualWan;
+  const m01FullReliefWan = toNumber(m01Detail.fullReliefWan ?? m01Detail.sensitivityRangeWan?.min, 0);
+  const n04FullSupportWan = toNumber(n04Detail.fullSupportWan, 0);
+  const medicalCostBurdenWan = Math.max(0, m01FullReliefWan - toNumber(m01AnnualWan, 0));
+  const educationCostBurdenWan = Math.max(0, n04FullSupportWan - toNumber(n04AnnualWan, 0));
+  const costBurdenWanTotal =
+    toNumber(medicalCostBurdenWan, 0) +
+    toNumber(educationCostBurdenWan, 0) +
+    toNumber(serviceFeeWanTotal, 0);
 
   const allowanceWanTotal =
     toNumber(basicPensionWan, 0) +
     toNumber(tccaAnnualWan, 0) +
     toNumber(welfareAnnualWan, 0) +
     toNumber(childSupportAnnualWan, 0) +
-    toNumber(childAllowanceAnnualWan, 0) +
-    toNumber(m01AnnualWan, 0) +
-    toNumber(n04AnnualWan, 0);
+    toNumber(childAllowanceAnnualWan, 0);
 
   const grossWan = rows.reduce((a, r) => a + toNumber(r.salaryWan, 0) + toNumber(r.otherIncomeWan, 0), 0);
   const takeHomeWan = grossWan - toNumber(socialWanTotal, 0) - toNumber(taxWanTotal, 0);
-  const disposableWan = toNumber(takeHomeWan, 0) + toNumber(allowanceWanTotal, 0) - toNumber(serviceFeeWanTotal, 0);
+  const disposableWan = toNumber(takeHomeWan, 0) + toNumber(allowanceWanTotal, 0) - toNumber(costBurdenWanTotal, 0);
   const expTax = -toNumber(taxWanTotal, 0);
   const expSocial = -toNumber(socialWanTotal, 0);
   const expService = -toNumber(serviceFeeWanTotal, 0);
+  const expMedicalCost = -toNumber(medicalCostBurdenWan, 0);
+  const expEducationCost = -toNumber(educationCostBurdenWan, 0);
   const totalPlusWan = toNumber(grossWan, 0) + toNumber(allowanceWanTotal, 0);
   const allowanceBreakdown = {
     basicDisabilityPensionWan: toNumber(basicPensionWan, 0),
@@ -1160,8 +1166,12 @@ function computePoint(ctx, x) {
     welfareAllowanceWan: toNumber(welfareAnnualWan, 0),
     childSupportWan: toNumber(childSupportAnnualWan, 0),
     childAllowanceWan: toNumber(childAllowanceAnnualWan, 0),
-    m01Wan: toNumber(m01AnnualWan, 0),
-    n04Wan: toNumber(n04AnnualWan, 0),
+  };
+  const costBurdenBreakdown = {
+    medicalCostBurdenWan: toNumber(medicalCostBurdenWan, 0),
+    educationCostBurdenWan: toNumber(educationCostBurdenWan, 0),
+    serviceFeeWan: toNumber(serviceFeeWanTotal, 0),
+    totalWan: toNumber(costBurdenWanTotal, 0),
   };
   const rowsDetail = rows.map((r) => ({
     who: String(r.who),
@@ -1241,7 +1251,12 @@ function computePoint(ctx, x) {
     expTax,
     expSocial,
     expService,
+    expMedicalCost,
+    expEducationCost,
     service: toNumber(serviceFeeWanTotal, 0),
+    medicalCostBurden: toNumber(medicalCostBurdenWan, 0),
+    educationCostBurden: toNumber(educationCostBurdenWan, 0),
+    costBurden: toNumber(costBurdenWanTotal, 0),
     tax: toNumber(taxWanTotal, 0),
     social: toNumber(socialWanTotal, 0),
     totalPlus: totalPlusWan,
@@ -1281,10 +1296,14 @@ function computePoint(ctx, x) {
         totalWan: allowanceWanTotal,
         ...allowanceBreakdown,
       },
+      costBurden: costBurdenBreakdown,
       disposable: {
         takeHomeWan,
         allowanceWan: allowanceWanTotal,
+        medicalCostBurdenWan,
+        educationCostBurdenWan,
         serviceFeeWan: serviceFeeWanTotal,
+        costBurdenWan: costBurdenWanTotal,
         disposableWan,
       },
     },

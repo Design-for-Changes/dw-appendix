@@ -117,7 +117,7 @@ function compareM01(out, before, after) {
     out,
     "重心医療費助成",
     a.confidence || b.confidence || "representative",
-    `${status}、助成年額 ${wan(b.annualWan)}→${wan(a.annualWan)}`
+    `${status}、医療費自己負担 ${wan(b.medicalCostBurdenWan)}→${wan(a.medicalCostBurdenWan)}（軽減効果 ${wan(b.annualWan)}→${wan(a.annualWan)}）`
   );
 }
 
@@ -129,7 +129,7 @@ function compareN04(out, before, after) {
     out,
     "就学奨励費",
     a.confidence || b.confidence || "provisional",
-    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、補助年額 ${wan(b.annualWan)}→${wan(a.annualWan)}`
+    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、教育費自己負担 ${wan(b.educationCostBurdenWan)}→${wan(a.educationCostBurdenWan)}（補助効果 ${wan(b.annualWan)}→${wan(a.annualWan)}）`
   );
 }
 
@@ -166,10 +166,13 @@ function compareFallback(out, before, after) {
   const aSocial = toNumber(after?.socialInsurance?.totalWan);
   const bAllowance = toNumber(before?.allowance?.totalWan);
   const aAllowance = toNumber(after?.allowance?.totalWan);
+  const bBurden = toNumber(before?.costBurden?.totalWan);
+  const aBurden = toNumber(after?.costBurden?.totalWan);
   const pieces = [];
   if (changed(bTax, aTax, 0.05)) pieces.push(`税 ${wan(bTax)}→${wan(aTax)}`);
   if (changed(bSocial, aSocial, 0.05)) pieces.push(`社会保険料 ${wan(bSocial)}→${wan(aSocial)}`);
-  if (changed(bAllowance, aAllowance, 0.05)) pieces.push(`手当合計 ${wan(bAllowance)}→${wan(aAllowance)}`);
+  if (changed(bAllowance, aAllowance, 0.05)) pieces.push(`現金給付 ${wan(bAllowance)}→${wan(aAllowance)}`);
+  if (changed(bBurden, aBurden, 0.05)) pieces.push(`自己負担 ${wan(bBurden)}→${wan(aBurden)}`);
   pushCause(out, "その他", "strict", pieces.length ? pieces.join(" / ") : "主要制度・控除の状態変化なし");
 }
 

@@ -160,6 +160,214 @@ function calcIncomeAdjustmentDeductionWan(salaryWan, eligible) {
   return Math.min(15, Math.max(0, (capped - 850) * 0.1));
 }
 
+function describeEmploymentIncomeDeduction(salaryWan, scenarioKey, tableWan, incomeAdjustmentWan) {
+  const s = Math.max(0, toNumber(salaryWan, 0));
+  const skey = normalizeScenario(scenarioKey);
+  const baseWan = toNumber(tableWan, 0);
+  const minByScenario = {
+    s1: { amountWan: 55, upperWan: 162, bracketLabel: "162万円以下" },
+    s2: { amountWan: 65, upperWan: 190, bracketLabel: "190万円以下" },
+    s3: { amountWan: 74, upperWan: 220, bracketLabel: "220万円以下" },
+  };
+  const min = minByScenario[skey] || minByScenario.s2;
+  let detail;
+  if (s <= 0) {
+    detail = {
+      bracketLabel: "0円",
+      rate: 0,
+      interceptWan: 0,
+      capWan: null,
+      isCapped: false,
+      formula: "給与収入0のため給与所得控除0",
+      formulaValueWan: 0,
+    };
+  } else if (s <= min.upperWan) {
+    detail = {
+      bracketLabel: min.bracketLabel,
+      rate: 0,
+      interceptWan: min.amountWan,
+      capWan: null,
+      isCapped: false,
+      formula: `${min.amountWan}万円(最低保障)`,
+      formulaValueWan: min.amountWan,
+    };
+  } else if (s <= 180) {
+    detail = {
+      bracketLabel: "162万円超180万円以下",
+      rate: 0.4,
+      interceptWan: -10,
+      capWan: null,
+      isCapped: false,
+      formula: "収入×0.40 − 10万円",
+      formulaValueWan: roundWan(s * 0.4 - 10, 4),
+    };
+  } else if (s < 360) {
+    detail = {
+      bracketLabel: "180万円超360万円未満",
+      rate: 0.3,
+      interceptWan: 8,
+      capWan: null,
+      isCapped: false,
+      formula: "収入×0.30 + 8万円",
+      formulaValueWan: roundWan(s * 0.3 + 8, 4),
+    };
+  } else if (s < 660) {
+    detail = {
+      bracketLabel: "360万円以上660万円未満",
+      rate: 0.2,
+      interceptWan: 44,
+      capWan: null,
+      isCapped: false,
+      formula: "収入×0.20 + 44万円",
+      formulaValueWan: roundWan(s * 0.2 + 44, 4),
+    };
+  } else if (s <= 850) {
+    detail = {
+      bracketLabel: "660万円以上850万円以下",
+      rate: 0.1,
+      interceptWan: 110,
+      capWan: 195,
+      isCapped: false,
+      formula: "収入×0.10 + 110万円",
+      formulaValueWan: roundWan(s * 0.1 + 110, 4),
+    };
+  } else {
+    detail = {
+      bracketLabel: "850万円超",
+      rate: 0.1,
+      interceptWan: 110,
+      capWan: 195,
+      isCapped: true,
+      rawFormulaWan: roundWan(s * 0.1 + 110, 4),
+      formula: "min(195万円, 収入×0.10 + 110万円)",
+      formulaValueWan: 195,
+    };
+  }
+  return {
+    ...detail,
+    salaryWan: s,
+    roundedSalaryWan: Math.round(s),
+    tableValueWan: baseWan,
+    incomeAdjustmentDeductionWan: toNumber(incomeAdjustmentWan, 0),
+    totalDeductionWan: baseWan + toNumber(incomeAdjustmentWan, 0),
+    employmentIncomeWan: Math.max(0, s - baseWan - toNumber(incomeAdjustmentWan, 0)),
+    source: "emp_deduction.json + embedded bracket metadata",
+  };
+}
+
+const SOCIAL_FIXED_ANNUAL_YEN = {
+  s1: { u40: [131354, 137342, 143330], o40: [136922, 143870, 150818] },
+  s2: { u40: [131111, 137057, 143003], o40: [136644, 143544, 150444] },
+  s3: { u40: [132152, 137750, 143798], o40: [137339, 144360, 151380] },
+};
+const SOCIAL_UPPER_RATE_762_1626 = {
+  s1: { u40: 0.05265, o40: 0.06065 },
+  s2: { u40: 0.0523, o40: 0.06025 },
+  s3: { u40: 0.05315, o40: 0.06125 },
+};
+const SOCIAL_UPPER_1627_PLUS = {
+  slope: 0.0055,
+  intercept: {
+    s1: { u40: 1546032, o40: 1679472 },
+    s2: { u40: 1540194, o40: 1672800 },
+    s3: { u40: 1554372, o40: 1689480 },
+  },
+};
+
+function describeSocialInsuranceDeduction(salaryWan, age, scenarioKey, totalWan, exemptSocial) {
+  const s = Math.max(0, toNumber(salaryWan, 0));
+  const incomeYen = Math.round(s * 10000);
+  const skey = normalizeScenario(scenarioKey);
+  const ageKey = toNumber(age, 0) >= 40 ? "o40" : "u40";
+  const fixed = SOCIAL_FIXED_ANNUAL_YEN[skey]?.[ageKey] || [];
+  const upperRate = SOCIAL_UPPER_RATE_762_1626[skey]?.[ageKey] || 0;
+  const upperIntercept = SOCIAL_UPPER_1627_PLUS.intercept[skey]?.[ageKey] || 0;
+  const base = {
+    salaryWan: s,
+    roundedSalaryWan: Math.round(s),
+    age: toNumber(age, 0),
+    ageBand: ageKey,
+    scenario: skey,
+    totalWan: toNumber(totalWan, 0),
+    source: "social_u40/social_o40 generated from bracket formulas",
+  };
+  if (exemptSocial) {
+    return { ...base, bracketLabel: "130万円以下・被扶養扱い", rate: 0, interceptYen: 0, fixedAnnualYen: 0, formula: "130万円以下の被扶養扱いで0" };
+  }
+  if (incomeYen <= 0) {
+    return { ...base, bracketLabel: "0円", rate: 0, interceptYen: 0, fixedAnnualYen: 0, formula: "給与収入0のため社会保険料0" };
+  }
+  if (incomeYen <= 756000) {
+    return { ...base, bracketLabel: "75.6万円以下", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[0], formula: "固定年額" };
+  }
+  if (incomeYen <= 876000) {
+    return { ...base, bracketLabel: "75.6万円超87.6万円以下", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[1], formula: "固定年額" };
+  }
+  if (incomeYen < 1000000) {
+    return { ...base, bracketLabel: "87.6万円超100万円未満", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[2], formula: "固定年額" };
+  }
+  if (incomeYen >= 7620000 && incomeYen <= 16260000) {
+    return { ...base, bracketLabel: "762万円以上1626万円以下", rate: upperRate, interceptYen: 713700, fixedAnnualYen: null, formula: "収入×区分率 + 713,700円" };
+  }
+  if (incomeYen >= 16270000) {
+    return { ...base, bracketLabel: "1627万円以上", rate: SOCIAL_UPPER_1627_PLUS.slope, interceptYen: upperIntercept, fixedAnnualYen: null, formula: "収入×0.0055 + 区分別切片" };
+  }
+  return { ...base, bracketLabel: "100万円以上762万円未満", rate: upperRate + 0.0915, interceptYen: 0, fixedAnnualYen: null, formula: "収入×(区分率 + 0.0915)" };
+}
+
+function describeBasicDeduction(kind, scenarioKey, totalIncomeWan, amountWan) {
+  const income = Math.max(0, toNumber(totalIncomeWan, 0));
+  const skey = normalizeScenario(scenarioKey);
+  const valueWan = toNumber(amountWan, 0);
+  const incomeTaxBands = {
+    s1: [
+      { maxWan: 2400, amountWan: 48, label: "2400万円以下" },
+      { maxWan: 2450, amountWan: 32, label: "2400万円超2450万円以下" },
+      { maxWan: 2500, amountWan: 16, label: "2450万円超2500万円以下" },
+      { maxWan: Infinity, amountWan: 0, label: "2500万円超" },
+    ],
+    s2: [
+      { maxWan: 132, amountWan: 95, label: "132万円以下" },
+      { maxWan: 336, amountWan: 88, label: "132万円超336万円以下" },
+      { maxWan: 489, amountWan: 68, label: "336万円超489万円以下" },
+      { maxWan: 655, amountWan: 63, label: "489万円超655万円以下" },
+      { maxWan: 2350, amountWan: 58, label: "655万円超2350万円以下" },
+      { maxWan: 2400, amountWan: 48, label: "2350万円超2400万円以下" },
+      { maxWan: 2450, amountWan: 32, label: "2400万円超2450万円以下" },
+      { maxWan: 2500, amountWan: 16, label: "2450万円超2500万円以下" },
+      { maxWan: Infinity, amountWan: 0, label: "2500万円超" },
+    ],
+    s3: [
+      { maxWan: 489, amountWan: 104, label: "489万円以下" },
+      { maxWan: 655, amountWan: 67, label: "489万円超655万円以下" },
+      { maxWan: 2350, amountWan: 62, label: "655万円超2350万円以下" },
+      { maxWan: 2400, amountWan: 48, label: "2350万円超2400万円以下" },
+      { maxWan: 2450, amountWan: 32, label: "2400万円超2450万円以下" },
+      { maxWan: 2500, amountWan: 16, label: "2450万円超2500万円以下" },
+      { maxWan: Infinity, amountWan: 0, label: "2500万円超" },
+    ],
+  };
+  const residentBands = [
+    { maxWan: 2400, amountWan: 43, label: "2400万円以下" },
+    { maxWan: 2450, amountWan: 29, label: "2400万円超2450万円以下" },
+    { maxWan: 2500, amountWan: 15, label: "2450万円超2500万円以下" },
+    { maxWan: Infinity, amountWan: 0, label: "2500万円超" },
+  ];
+  const bands = kind === "it" ? incomeTaxBands[skey] || incomeTaxBands.s2 : residentBands;
+  const band = bands.find((b) => income <= b.maxWan) || bands[bands.length - 1];
+  return {
+    kind,
+    scenario: kind === "it" ? skey : "common",
+    totalIncomeWan: income,
+    bracketLabel: band.label,
+    upperIncomeWan: Number.isFinite(band.maxWan) ? band.maxWan : null,
+    deductionWan: valueWan,
+    formulaValueWan: band.amountWan,
+    formula: `合計所得金額 ${band.label} → 基礎控除 ${band.amountWan}万円`,
+    source: kind === "it" ? "basic_it.json + embedded bracket metadata" : "basic_lt.json + embedded bracket metadata",
+  };
+}
+
 function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
   const s = Math.max(0, toNumber(salaryWan, 0));
   const o = Math.max(0, toNumber(otherIncomeWan, 0));
@@ -191,32 +399,21 @@ function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
     socialWan,
     basicITWan,
     basicLTWan,
-    employmentIncomeDeductionDetail: {
-      salaryWan: s,
-      roundedSalaryWan: Math.round(s),
-      tableKey: ctx.empKey,
-      baseDeductionWan: empBaseWan,
-      incomeAdjustmentDeductionWan: incomeAdjWan,
-      totalDeductionWan: empWan,
-      employmentIncomeWan: incomeWan,
-      source: "emp_deduction.json",
-      formula: "給与所得控除テーブル値 + 所得金額調整控除 = 給与所得控除",
+    employmentIncomeDeductionDetail: describeEmploymentIncomeDeduction(s, ctx.skey, empBaseWan, incomeAdjWan),
+    basicDeductionDetail: {
+      incomeTax: describeBasicDeduction("it", ctx.skey, totalIncomeWan, basicITWan),
+      residentTax: describeBasicDeduction("lt", ctx.skey, totalIncomeWan, basicLTWan),
     },
     socialInsuranceDetail: {
-      salaryWan: s,
-      roundedSalaryWan: Math.round(s),
-      age: toNumber(age, 0),
+      ...describeSocialInsuranceDeduction(s, age, ctx.skey, socialWan, exemptSocial),
       tableKey: ctx.socialKey,
       table: toNumber(age, 0) >= 40 ? "socialO40" : "socialU40",
       exemptUnder130: exemptSocial,
-      totalWan: socialWan,
       healthWan: null,
       careWan: null,
       pensionWan: null,
       employmentWan: null,
       childSupportContributionWan: null,
-      source: "social_insurance table/approximation",
-      formula: exemptSocial ? "130万以下の被扶養扱いで0" : "年収別社会保険料テーブル参照(総額)",
     },
   };
 }
@@ -1024,6 +1221,8 @@ function computePoint(ctx, x) {
       deductions: {
         basicITWan: toNumber(r.basicITWan, 0),
         basicLTWan: toNumber(r.basicLTWan, 0),
+        basicITDetail: r.basicDeductionDetail?.incomeTax || null,
+        basicLTDetail: r.basicDeductionDetail?.residentTax || null,
         socialWan: toNumber(r.socialWan, 0),
         workingStudentITWan: Boolean(r.workingStudent) ? ctx.wsAmtIT : 0,
         workingStudentLTWan: Boolean(r.workingStudent) ? ctx.wsAmtLT : 0,
@@ -1375,6 +1574,7 @@ function computePoint(ctx, x) {
     totalIncomeWan: toNumber(r.totalIncomeWan, 0),
     socialInsuranceWan: toNumber(r.socialWan, 0),
     employmentIncomeDeductionDetail: r.employmentIncomeDeductionDetail || null,
+    basicDeductionDetail: r.basicDeductionDetail || null,
     socialInsuranceBreakdown: {
       ...(r.socialInsuranceDetail || {}),
       totalWan: toNumber(r.socialWan, 0),

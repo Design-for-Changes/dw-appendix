@@ -768,26 +768,32 @@ function BreakdownPanel({ point }) {
         ]}
       />
 
-      {/* D 就学奨励費（N04）＝教育費軽減。コア現行(378e692)は可処分所得に加算 */}
+      {/* D 就学奨励費（N04）＝教育費自己負担の軽減。基準＝第3区分（補助0）。コア確定378e692 */}
       <CalculationTable
         title="D. 費用軽減：就学奨励費（N04）"
         confidence="provisional"
-        note="現金給付ではなく教育費の負担軽減。★N04の最終指標への入れ方はコア側で変更中。コア現行（378e692）は補助相当額を可処分所得に加算する扱い。値・符号はコアに追随。"
+        note="現金給付ではなく、教育費の自己負担を軽くする費用軽減。基準は第3区分（補助0＝自己負担フル）。所得が上がって支弁区分が上がるほど補助が縮小＝自己負担が増える。値・符号はコア確定（378e692）に一致。"
         rows={[
-          { key: "class", label: "制度分類", value: "教育費負担軽減", formula: "所得が上がり区分が下がるほど補助が縮小" },
+          { key: "class", label: "制度分類", value: "教育費負担軽減（自己負担側）", formula: "現金給付ではない。第3区分（補助0）を基準に、当区分は自己負担が軽い" },
           {
             key: "region",
             label: "区分",
             value: n04.supportClass,
-            formula: `給与 ${fmt(n04.salaryManyen)}万、境界 ${fmt(n04.boundaries?.firstToSecondManyen)} / ${fmt(n04.boundaries?.secondToThirdManyen)}万`,
+            formula: `給与 ${fmt(n04.salaryManyen)}万、境界 ${fmt(n04.boundaries?.firstToSecondManyen)} / ${fmt(n04.boundaries?.secondToThirdManyen)}万（区分が上がるほど補助縮小）`,
           },
           {
             key: "relief",
-            label: "教育費軽減（補助相当）",
+            label: "教育費自己負担の軽減額（第3区分基準）",
             value: fmtWan(n04.annualWan),
-            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人`,
+            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（第3区分＝補助0からの差）`,
           },
-          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算（コア現行）", formula: "＋教育費軽減（コア追随・符号は変更中）", tone: "strong" },
+          {
+            key: "treat",
+            label: "最終指標への扱い",
+            value: "費用軽減（教育費自己負担を軽くする）",
+            formula: `基準＝第3区分（補助0＝自己負担フル）。当区分は自己負担が ${fmtWan(n04.annualWan)} 軽い。区分が上がると自己負担が増える（崖）。現金給付ではない。`,
+            tone: "strong",
+          },
         ]}
       />
 
@@ -844,16 +850,18 @@ function BreakdownPanel({ point }) {
         ]}
       />
 
-      {/* F 自己負担合計（−） */}
+      {/* F 費用（自己負担・軽減）: 医療・通所は自己負担、N04は教育費自己負担の軽減。給付側から分離 */}
       <CalculationTable
-        title="F. 自己負担合計（−）"
+        title="F. 費用（自己負担・軽減）"
         wide
         confidence="strict"
-        note="M01は代表値に基づく実費負担として計上。就学奨励費(N04)は費用軽減として可処分所得側で加算するため、ここ（自己負担）には含めない。表示名は仮置き。"
+        note="現金給付ではない費用側の束。医療費（M01非該当時）・通所は自己負担。就学奨励費(N04)は教育費自己負担の軽減（第3区分＝補助0を基準）で、費用を差し引く方向に効く。符号はコア確定（378e692）。表示名は仮置き。"
         rows={[
           { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "D 重心医療費助成より（非該当時に発生）", confidence: "representative" },
           { key: "serviceFee", label: "通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E 通所の年額負担より" },
-          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 通所利用者負担", tone: "strong" },
+          { key: "burden-subtotal", label: "自己負担 小計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 通所利用者負担" },
+          { key: "eduRelief", label: "教育費自己負担の軽減（第3区分基準）", value: fmtWan(disposable.educationCostReliefWan), formula: "D 就学奨励費より（第3区分＝補助0を基準に軽くなる分。現金給付ではない）", confidence: "provisional" },
+          { key: "net", label: "純費用（自己負担 − 教育費軽減）", value: fmtWan(Number(costBurden.totalWan) - Number(disposable.educationCostReliefWan)), formula: "自己負担小計 − 教育費軽減（マイナスは軽減が自己負担を上回る）", tone: "strong" },
         ]}
       />
 
@@ -866,14 +874,14 @@ function BreakdownPanel({ point }) {
         rows={[
           { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与収入 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
           { key: "allowance", label: "＋ 現金給付", value: fmtWan(disposable.allowanceWan), formula: "F 現金給付合計より" },
-          { key: "eduRelief", label: "＋ 就学奨励費（教育費軽減）", value: fmtWan(disposable.educationCostReliefWan), formula: "D 就学奨励費より（コア現行は加算・符号変更中）", confidence: "provisional" },
-          { key: "medical", label: "− 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "F 自己負担合計より", confidence: "representative" },
+          { key: "medical", label: "− 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "F 費用（自己負担・軽減）より", confidence: "representative" },
           { key: "serviceFee", label: "− 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: "E 通所の年額負担より" },
+          { key: "eduRelief", label: "＋ 教育費自己負担の軽減（第3区分基準）", value: fmtWan(disposable.educationCostReliefWan), formula: "F 費用（自己負担・軽減）より（第3区分＝補助0を基準に自己負担が軽くなる分。現金給付ではない）", confidence: "provisional" },
           {
             key: "disposable",
             label: "可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} ＋ 就学 ${fmtWan(disposable.educationCostReliefWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}`,
+            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)} ＋ 教育費軽減 ${fmtWan(disposable.educationCostReliefWan)}`,
             tone: "strong",
           },
         ]}

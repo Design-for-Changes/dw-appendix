@@ -22,6 +22,18 @@ function toNumber(v, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function roundWan(v, digits = 4) {
+  const m = 10 ** digits;
+  return Math.round(toNumber(v, 0) * m) / m;
+}
+
+function compactDeductions(items) {
+  return (Array.isArray(items) ? items : [])
+    .map((item) => ({ ...item, wan: roundWan(item?.wan, 4) }))
+    .filter((item) => Boolean(item?.alwaysShow) || Math.abs(toNumber(item?.wan, 0)) > 1e-9)
+    .map(({ alwaysShow, ...item }) => item);
+}
+
 export function buildHousehold(caseHousehold = {}) {
   const headInput = caseHousehold.head || {};
   const spouseInput = caseHousehold.spouse || {};
@@ -179,6 +191,33 @@ function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
     socialWan,
     basicITWan,
     basicLTWan,
+    employmentIncomeDeductionDetail: {
+      salaryWan: s,
+      roundedSalaryWan: Math.round(s),
+      tableKey: ctx.empKey,
+      baseDeductionWan: empBaseWan,
+      incomeAdjustmentDeductionWan: incomeAdjWan,
+      totalDeductionWan: empWan,
+      employmentIncomeWan: incomeWan,
+      source: "emp_deduction.json",
+      formula: "給与所得控除テーブル値 + 所得金額調整控除 = 給与所得控除",
+    },
+    socialInsuranceDetail: {
+      salaryWan: s,
+      roundedSalaryWan: Math.round(s),
+      age: toNumber(age, 0),
+      tableKey: ctx.socialKey,
+      table: toNumber(age, 0) >= 40 ? "socialO40" : "socialU40",
+      exemptUnder130: exemptSocial,
+      totalWan: socialWan,
+      healthWan: null,
+      careWan: null,
+      pensionWan: null,
+      employmentWan: null,
+      childSupportContributionWan: null,
+      source: "social_insurance table/approximation",
+      formula: exemptSocial ? "130万以下の被扶養扱いで0" : "年収別社会保険料テーブル参照(総額)",
+    },
   };
 }
 
@@ -443,43 +482,59 @@ function floorTaxableWanToThousandYen(taxableWan) {
   return Math.floor(yen / 1000) * 1000;
 }
 
-function getIncomeTaxWan(taxableWan) {
+const INCOME_TAX_BANDS = [
+  { max: 1950000, rate: 0.05, deductionYen: 0 },
+  { max: 3300000, rate: 0.1, deductionYen: 97500 },
+  { max: 6950000, rate: 0.2, deductionYen: 427500 },
+  { max: 9000000, rate: 0.23, deductionYen: 636000 },
+  { max: 18000000, rate: 0.33, deductionYen: 1536000 },
+  { max: 40000000, rate: 0.4, deductionYen: 2796000 },
+  { max: Infinity, rate: 0.45, deductionYen: 4796000 },
+];
+
+function getIncomeTaxParts(taxableWan) {
   const taxableYen = floorTaxableWanToThousandYen(taxableWan);
-  const bands = [
-    { max: 1950000, rate: 0.05, deductionYen: 0 },
-    { max: 3300000, rate: 0.1, deductionYen: 97500 },
-    { max: 6950000, rate: 0.2, deductionYen: 427500 },
-    { max: 9000000, rate: 0.23, deductionYen: 636000 },
-    { max: 18000000, rate: 0.33, deductionYen: 1536000 },
-    { max: 40000000, rate: 0.4, deductionYen: 2796000 },
-    { max: Infinity, rate: 0.45, deductionYen: 4796000 },
-  ];
-  const band = bands.find((b) => taxableYen <= b.max) || bands[bands.length - 1];
-  const taxYen = Math.max(0, taxableYen * band.rate - band.deductionYen);
-  return Math.round(taxYen) / 10000;
+  const band = INCOME_TAX_BANDS.find((b) => taxableYen <= b.max) || INCOME_TAX_BANDS[INCOME_TAX_BANDS.length - 1];
+  const rawTaxYen = taxableYen * band.rate - band.deductionYen;
+  const taxYen = Math.max(0, Math.round(rawTaxYen));
+  return {
+    taxableWan: taxableYen / 10000,
+    taxableYen,
+    rate: band.rate,
+    deductionYen: band.deductionYen,
+    rawTaxYen,
+    taxYen,
+    taxWan: taxYen / 10000,
+  };
 }
 
 function getResidentTaxParts(taxableWan) {
   const taxableYen = floorTaxableWanToThousandYen(taxableWan);
-  const rawIncomeLevyYen = taxableYen * 0.1;
+  const rate = 0.1;
+  const rawIncomeLevyYen = taxableYen * rate;
   const adjustmentDeductionYen = rawIncomeLevyYen > 0 ? 5000 : 0;
-  const incomeLevyYen = Math.max(0, rawIncomeLevyYen - adjustmentDeductionYen);
-  const municipalIncomeLevyYen = Math.max(0, incomeLevyYen * 0.6);
-  const perCapitaWan = incomeLevyYen > 0 ? 0.5 : 0;
-  const incomeLevyWan = Math.round(incomeLevyYen) / 10000;
+  const incomeLevyYen = Math.max(0, Math.round(rawIncomeLevyYen - adjustmentDeductionYen));
+  const municipalIncomeLevyYen = Math.max(0, Math.round(incomeLevyYen * 0.6));
+  const prefecturalIncomeLevyYen = Math.max(0, incomeLevyYen - municipalIncomeLevyYen);
+  const perCapitaYen = incomeLevyYen > 0 ? 5000 : 0;
+  const incomeLevyWan = incomeLevyYen / 10000;
   return {
     taxableWan: taxableYen / 10000,
+    taxableYen,
+    rate,
+    rawIncomeLevyYen,
+    adjustmentDeductionYen,
+    incomeLevyYen,
     incomeLevyWan,
-    municipalIncomeLevyWan: Math.round(municipalIncomeLevyYen) / 10000,
+    municipalIncomeLevyYen,
+    municipalIncomeLevyWan: municipalIncomeLevyYen / 10000,
+    prefecturalIncomeLevyYen,
+    prefecturalIncomeLevyWan: prefecturalIncomeLevyYen / 10000,
     adjustmentDeductionWan: adjustmentDeductionYen / 10000,
-    perCapitaWan,
-    totalWan: incomeLevyWan + perCapitaWan,
+    perCapitaYen,
+    perCapitaWan: perCapitaYen / 10000,
+    totalWan: incomeLevyWan + perCapitaYen / 10000,
   };
-}
-
-function getTax(taxableWan, kind) {
-  if (kind === "it") return getIncomeTaxWan(taxableWan);
-  return getResidentTaxParts(taxableWan).totalWan;
 }
 
 function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
@@ -560,19 +615,25 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   const headTotalWan = allowanceIncomeWan(headRow);
   const spouseTotalWan = allowanceIncomeWan(spouseRow);
 
-  const incomeLimitYen = (kind, fuyoCount, statutoryAddYen = 0) => {
+  const incomeLimitParts = (kind, fuyoCount, statutoryAddYen = 0) => {
     const n = Math.max(0, Math.trunc(toNumber(fuyoCount, 0)));
     const add = Math.max(0, Math.trunc(toNumber(statutoryAddYen, 0)));
-    if (kind === "head") {
-      const base = [4596000, 4976000, 5356000, 5736000];
-      if (n <= 3) return base[n] + add;
-      return base[3] + 380000 * (n - 3) + add;
-    }
-    const base = [6287000, 6536000, 6749000, 6962000];
-    if (n <= 3) return base[n] + add;
-    return base[3] + 213000 * (n - 3) + add;
+    const isHead = kind === "head";
+    const base = isHead ? [4596000, 4976000, 5356000, 5736000] : [6287000, 6536000, 6749000, 6962000];
+    const stepYen = isHead ? 380000 : 213000;
+    const extraCount = Math.max(0, n - 3);
+    const baseYen = n <= 3 ? base[n] : base[3] + stepYen * extraCount;
+    return {
+      kind,
+      fuyoCount: n,
+      baseYen,
+      statutoryAddYen: add,
+      stepYen,
+      extraCount,
+      limitYen: baseYen + add,
+      formula: n <= 3 ? "基準額テーブル + 法定加算" : "3人基準額 + 追加人数×加算単価 + 法定加算",
+    };
   };
-
   const tccaDisWan = (who) => {
     const r = cols.find((x) => String(x?.who || "") === String(who || ""));
     return toNumber(r?.tccaDisWan, 0);
@@ -585,8 +646,10 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   const limitFuyoInfo = calcLimitFuyoInfo(ctx, cols);
   const fuyoCount = toNumber(limitFuyoInfo.count, 0);
   const legacyFuyoCount = calcLegacyDisabilityAddedFuyoCount(ctx, cols);
-  const headLimitYen = incomeLimitYen("head", fuyoCount, limitFuyoInfo.statutoryAddYen);
-  const familyLimitYen = incomeLimitYen("family", fuyoCount, limitFuyoInfo.statutoryAddYen);
+  const headLimit = incomeLimitParts("head", fuyoCount, limitFuyoInfo.statutoryAddYen);
+  const familyLimit = incomeLimitParts("family", fuyoCount, limitFuyoInfo.statutoryAddYen);
+  const headLimitYen = headLimit.limitYen;
+  const familyLimitYen = familyLimit.limitYen;
 
   const employmentIncomeDeductWan = 10;
   const socialFixedWan = 8;
@@ -638,11 +701,42 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
     workingStudentWan +
     disabilityDedWan;
   const headAdjustedWan = Math.max(0, headTotalWan - headDedSumWan);
+  const headJudgmentIncome = {
+    totalWan: roundWan(headTotalWan, 4),
+    deductions: compactDeductions([
+      { label: "給与所得控除相当(特児10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+      { label: "社会保険料控除(特児8万固定)", wan: socialFixedWan, alwaysShow: true },
+      { label: "その他控除", wan: otherDedWan },
+      { label: "配偶者特別控除", wan: spouseSpecialWan },
+      { label: "特定扶養親族控除", wan: specialDependentDedWan },
+      { label: "寡婦控除", wan: widowWan },
+      { label: "ひとり親控除", wan: singleParentWan },
+      { label: "勤労学生控除", wan: workingStudentWan },
+      { label: "障害者控除", wan: disabilityDedWan },
+    ]),
+    deductionSumWan: roundWan(headDedSumWan, 4),
+    adjustedWan: roundWan(headAdjustedWan, 4),
+    adjustedYen: Math.round(headAdjustedWan * 10000),
+    formula: "総所得 − 控除合計 = 判定所得",
+  };
 
   const familyByWho = new Map();
   const addFamily = (who, totalWan, wsWan, disWan) => {
     const dedSumWan = employmentIncomeDeductWan + socialFixedWan + wsWan + disWan;
     const adjustedWan = Math.max(0, toNumber(totalWan, 0) - dedSumWan);
+    const judgmentIncome = {
+      totalWan: roundWan(totalWan, 4),
+      deductions: compactDeductions([
+        { label: "給与所得控除相当(特児10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+        { label: "社会保険料控除(特児8万固定)", wan: socialFixedWan, alwaysShow: true },
+        { label: "勤労学生控除", wan: wsWan },
+        { label: "障害者控除", wan: disWan },
+      ]),
+      deductionSumWan: roundWan(dedSumWan, 4),
+      adjustedWan: roundWan(adjustedWan, 4),
+      adjustedYen: Math.round(adjustedWan * 10000),
+      formula: "総所得 − 控除合計 = 判定所得",
+    };
     familyByWho.set(String(who), {
       who: String(who),
       totalWan: toNumber(totalWan, 0),
@@ -653,6 +747,8 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
       dedSumWan,
       adjustedWan,
       adjustedYen: Math.round(adjustedWan * 10000),
+      judgmentIncome,
+      limit: familyLimit,
     });
   };
   if (ctx.spouseEnabled && spouseRow) {
@@ -686,7 +782,7 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
     limitFuyoCount: fuyoCount,
     legacyFuyoCount,
     limitFuyoStatutoryAddYen: toNumber(limitFuyoInfo.statutoryAddYen, 0),
-    limits: { headLimitYen, familyLimitYen },
+    limits: { headLimitYen, familyLimitYen, head: headLimit, family: familyLimit },
     head: {
       totalWan: headTotalWan,
       employmentIncomeDeductWan,
@@ -703,6 +799,8 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
       dedSumWan: headDedSumWan,
       adjustedWan: headAdjustedWan,
       adjustedYen: Math.round(headAdjustedWan * 10000),
+      judgmentIncome: headJudgmentIncome,
+      limit: headLimit,
     },
     familyByWho,
     familyMaxAdjustedYen,
@@ -762,6 +860,21 @@ function calcM01Detail(ctx, householdLevySumWan) {
       min: (M01_KENSHIN_ANNUAL_YEN_RANGE.min * count) / 10000,
       max: (M01_KENSHIN_ANNUAL_YEN_RANGE.max * count) / 10000,
     },
+    judgment: {
+      householdLevyWan: toNumber(householdLevySumWan, 0),
+      householdLevyYen,
+      cutoffYen: M01_LEVY_CUTOFF_YEN,
+      eligible,
+      formula: "世帯所得割 < 23.5万円なら該当",
+    },
+    amountFormula: {
+      annualYenPerRecipient,
+      count,
+      annualWan,
+      fullReliefWan: (annualYenPerRecipient * count) / 10000,
+      medicalCostBurdenWan: eligible ? 0 : (annualYenPerRecipient * count) / 10000,
+      formula: "代表年額 × 対象人数 = 軽減額 / 非該当時の医療費自己負担",
+    },
     confidence: "representative",
   };
 }
@@ -804,6 +917,20 @@ function calcN04Detail(ctx, salaryManyen) {
     boundaries: {
       firstToSecondManyen: b12,
       secondToThirdManyen: b23,
+    },
+    judgment: {
+      salaryManyen: x,
+      firstToSecondManyen: b12,
+      secondToThirdManyen: b23,
+      supportClass,
+      formula: "給与収入で支弁区分を判定",
+    },
+    amountFormula: {
+      annualYenPerRecipient,
+      count,
+      annualWan: (annualYenPerRecipient * count) / 10000,
+      educationCostReliefWan: (annualYenPerRecipient * count) / 10000,
+      formula: "区分別補助単価 × 対象人数 = 高所得側0基準の教育費負担軽減",
     },
     needAmountWan: null,
     ratio: null,
@@ -851,7 +978,8 @@ function computePoint(ctx, x) {
     socialWanTotal += toNumber(r.socialWan, 0);
     const taxableIT = getTaxable(ctx, r, "it", rows, headDedCommonITWithKin);
     const taxableLT = getTaxable(ctx, r, "lt", rows, headDedCommonLTWithKin);
-    const taxIT = getTax(taxableIT, "it");
+    const incomeTax = getIncomeTaxParts(taxableIT);
+    const taxIT = incomeTax.taxWan;
     const residentTax = getResidentTaxParts(taxableLT);
     const taxLT = residentTax.totalWan;
     const residentIncomeLevyWan = residentTax.municipalIncomeLevyWan;
@@ -866,16 +994,32 @@ function computePoint(ctx, x) {
       who: String(r.who),
       age: toNumber(r.age, 0),
       incomeTax: {
-        taxableWan: taxableIT,
+        taxableWan: incomeTax.taxableWan,
+        taxableYen: incomeTax.taxableYen,
+        rate: incomeTax.rate,
+        quickDeductionYen: incomeTax.deductionYen,
+        rawTaxYen: incomeTax.rawTaxYen,
+        taxYen: incomeTax.taxYen,
         taxWan: toNumber(taxIT, 0),
+        formula: "課税所得(千円未満切捨) × 税率 − 速算控除",
       },
       residentTax: {
         taxableWan: residentTax.taxableWan,
+        taxableYen: residentTax.taxableYen,
         computedTaxWan: toNumber(taxLT, 0),
         incomeLevyWan: residentIncomeLevyWan,
+        incomeLevyYen: residentTax.incomeLevyYen,
         perCapitaWan: residentPerCapitaWan,
+        perCapitaYen: residentTax.perCapitaYen,
+        rate: residentTax.rate,
+        rawIncomeLevyYen: residentTax.rawIncomeLevyYen,
         adjustmentDeductionWan: residentTax.adjustmentDeductionWan,
+        adjustmentDeductionYen: residentTax.adjustmentDeductionYen,
         municipalIncomeLevyWan: residentTax.municipalIncomeLevyWan,
+        municipalIncomeLevyYen: residentTax.municipalIncomeLevyYen,
+        prefecturalIncomeLevyWan: residentTax.prefecturalIncomeLevyWan,
+        prefecturalIncomeLevyYen: residentTax.prefecturalIncomeLevyYen,
+        formula: "課税所得(千円未満切捨) × 10% − 調整控除 + 均等割",
       },
       deductions: {
         basicITWan: toNumber(r.basicITWan, 0),
@@ -1006,14 +1150,34 @@ function computePoint(ctx, x) {
     if (mode === "obligor") return depDisWan + selfDisWan;
     return depDisWan;
   };
-  const calcWelfareAdjustedIncomeYen = (col, mode = "self") => {
+  const calcWelfareAdjustedIncomeDetail = (col, mode = "self") => {
     const totalWan = toNumber(col?.totalIncomeWan, 0);
-    if (mode === "obligor") {
-      const allowanceTotalWan = totalWan + toNumber(col?.incomeAdjWan, 0);
-      const deductionsWan = 10 + 8 + calcWelfareDisabilityDeductionWan(col, mode);
-      return Math.round(Math.max(0, allowanceTotalWan - deductionsWan) * 10000);
-    }
     const who = String(col?.who || "");
+    if (mode === "obligor") {
+      const incomeAdjustmentWan = toNumber(col?.incomeAdjWan, 0);
+      const allowanceTotalWan = totalWan + incomeAdjustmentWan;
+      const employmentIncomeDeductWan = 10;
+      const socialFixedWan = 8;
+      const disWan = calcWelfareDisabilityDeductionWan(col, mode);
+      const deductionsWan = employmentIncomeDeductWan + socialFixedWan + disWan;
+      const adjustedWan = Math.max(0, allowanceTotalWan - deductionsWan);
+      return {
+        who,
+        mode,
+        totalWan: roundWan(totalWan, 4),
+        incomeAdjustmentWan: roundWan(incomeAdjustmentWan, 4),
+        allowanceTotalWan: roundWan(allowanceTotalWan, 4),
+        deductions: compactDeductions([
+          { label: "給与所得控除相当(手当10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+          { label: "社会保険料控除(手当8万固定)", wan: socialFixedWan, alwaysShow: true },
+          { label: "障害者控除", wan: disWan },
+        ]),
+        deductionSumWan: roundWan(deductionsWan, 4),
+        adjustedWan: roundWan(adjustedWan, 4),
+        adjustedYen: Math.round(adjustedWan * 10000),
+        formula: "総所得(+所得金額調整控除戻し) − 控除合計 = 判定所得",
+      };
+    }
     const headRow2 = rows.find((rr) => rr.who === "世帯主");
     const headTotalForLimitWan = toNumber(headRow2?.totalIncomeWan, 0);
     const headIncomeOk = headTotalForLimitWan <= 500;
@@ -1037,9 +1201,28 @@ function computePoint(ctx, x) {
     const wsWan = Boolean(col?.workingStudent) ? 27 : 0;
     const disWan = calcWelfareDisabilityDeductionWan(col, mode);
     const deductionsWan = otherDedWan + spouseSpecialWan + socialWan + widowWan + singleParentWan + wsWan + disWan;
-    return Math.round(Math.max(0, totalWan - deductionsWan) * 10000);
+    const adjustedWan = Math.max(0, totalWan - deductionsWan);
+    return {
+      who,
+      mode,
+      totalWan: roundWan(totalWan, 4),
+      deductions: compactDeductions([
+        { label: "その他控除", wan: otherDedWan },
+        { label: "配偶者特別控除", wan: spouseSpecialWan },
+        { label: "社会保険料控除(実額)", wan: socialWan },
+        { label: "寡婦控除", wan: widowWan },
+        { label: "ひとり親控除", wan: singleParentWan },
+        { label: "勤労学生控除", wan: wsWan },
+        { label: "障害者控除", wan: disWan },
+      ]),
+      deductionSumWan: roundWan(deductionsWan, 4),
+      adjustedWan: roundWan(adjustedWan, 4),
+      adjustedYen: Math.round(adjustedWan * 10000),
+      formula: "総所得 − 控除合計 = 判定所得",
+    };
   };
-  const obligorMaxYen = obligorCols.length ? Math.max(...obligorCols.map((o) => calcWelfareAdjustedIncomeYen(o, "obligor"))) : 0;
+  const obligorJudgmentIncomeDetails = obligorCols.map((o) => calcWelfareAdjustedIncomeDetail(o, "obligor"));
+  const obligorMaxYen = obligorJudgmentIncomeDetails.length ? Math.max(...obligorJudgmentIncomeDetails.map((o) => o.adjustedYen)) : 0;
   const obligorOk = obligorMaxYen <= limitObligorYen;
 
   const recipients = rows
@@ -1064,7 +1247,8 @@ function computePoint(ctx, x) {
             : Boolean(cc?.tokubetsuAllowance));
       if (!isWelfareChild && !isTokubetsu) return null;
       const type = isWelfareChild ? "child" : "adult";
-      const selfYen = calcWelfareAdjustedIncomeYen(c, "self");
+      const selfJudgmentIncome = calcWelfareAdjustedIncomeDetail(c, "self");
+      const selfYen = selfJudgmentIncome.adjustedYen;
       const selfOk = selfYen <= limitSelfYen;
       const ok = selfOk && obligorOk;
       const monthlyYen = ok ? (type === "child" ? WELFARE_CHILD_MONTHLY_YEN : TOKUBETSU_MONTHLY_YEN) : 0;
@@ -1075,6 +1259,7 @@ function computePoint(ctx, x) {
         selfYen,
         selfLimitYen: limitSelfYen,
         selfOk,
+        selfJudgmentIncome,
         obligorMaxYen,
         obligorLimitYen: limitObligorYen,
         obligorOk,
@@ -1189,7 +1374,9 @@ function computePoint(ctx, x) {
     employmentIncomeWan: toNumber(r.incomeWan, 0),
     totalIncomeWan: toNumber(r.totalIncomeWan, 0),
     socialInsuranceWan: toNumber(r.socialWan, 0),
+    employmentIncomeDeductionDetail: r.employmentIncomeDeductionDetail || null,
     socialInsuranceBreakdown: {
+      ...(r.socialInsuranceDetail || {}),
       totalWan: toNumber(r.socialWan, 0),
       healthWan: null,
       careWan: null,
@@ -1207,8 +1394,10 @@ function computePoint(ctx, x) {
     statutoryAddYen: toNumber(tcca?.limitFuyoStatutoryAddYen, 0),
     headAdjustedIncomeYen: toNumber(tcca?.head?.adjustedYen, 0),
     headLimitYen: toNumber(tcca?.limits?.headLimitYen, 0),
+    headLimit: tcca?.limits?.head || null,
     familyMaxAdjustedIncomeYen: toNumber(tcca?.familyMaxAdjustedYen, 0),
     familyLimitYen: toNumber(tcca?.limits?.familyLimitYen, 0),
+    familyLimit: tcca?.limits?.family || null,
     eligible:
       toNumber(tcca?.head?.adjustedYen, 0) <= toNumber(tcca?.limits?.headLimitYen, 0) &&
       toNumber(tcca?.familyMaxAdjustedYen, 0) <= toNumber(tcca?.limits?.familyLimitYen, 0),
@@ -1223,6 +1412,7 @@ function computePoint(ctx, x) {
     obligorLimitYen: limitObligorYen,
     obligorMaxAdjustedIncomeYen: obligorMaxYen,
     obligorOk,
+    obligorJudgmentIncomeDetails,
     selfLimitYen: limitSelfYen,
     recipients,
     monthlyYen: welfareMonthly,
@@ -1292,6 +1482,18 @@ function computePoint(ctx, x) {
           confidence: serviceConfidenceOverall,
           householdLevySumWan,
           details: serviceFeeDetails,
+          calculation: {
+            method: "householdMax",
+            monthlyCandidateYenByChild: serviceFeeDetails.map((d) => ({
+              who: d.who,
+              type: d.type,
+              monthlyYen: d.monthlyUpperYen,
+              confidence: d.confidence,
+            })),
+            monthlyTotalYen: serviceFeeMonthlyYenTotal,
+            annualWan: serviceFeeWanTotal,
+            formula: "児童ごとの月額候補の最大値を世帯上限として採用し、12か月分を年額化",
+          },
           monthlyTotalYen: serviceFeeMonthlyYenTotal,
           annualWan: serviceFeeWanTotal,
         },

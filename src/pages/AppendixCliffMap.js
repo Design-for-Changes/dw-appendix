@@ -613,25 +613,27 @@ function BreakdownPanel({ point }) {
 
   const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
   const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
+  const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
+  const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
+  const nonZeroSocial = (si.byWho || []).filter((s) => Number(s.totalWan) !== 0);
 
   return (
     <div className="formula-grid">
-      {/* ① 収入・控除（各人） */}
-      {rows.map((r) => (
-        <CalculationTable
-          key={`income-${r.who}`}
-          title={`① 収入・控除：${r.who}`}
-          subtitle={`${fmt(r.age)}歳${r.disabled ? `・障害(${r.disabilityKind})` : ""}`}
-          confidence="strict"
-          rows={incomeRowsFor(r)}
-        />
-      ))}
-
-      {/* ② 所得控除（所得税IT・住民税LT別） */}
+      {/* ===== B. 基礎計算（税・社保の土台。原則 世帯主のみ） ===== */}
+      {/* B 収入・控除：世帯主（配偶者・子は所得0円固定＝ケース条件） */}
       <CalculationTable
-        title="② 所得控除（所得税IT／住民税LT別）"
+        title="B. 基礎計算：収入・控除（世帯主）"
+        subtitle={`${fmt(headRow.age)}歳`}
         confidence="strict"
-        note="所得税と住民税で額が異なる控除は両方を併記（所＝所得税、住＝住民税）。"
+        note="配偶者・子どもは所得0円として固定（ケース条件参照）。基礎計算は世帯主のみを出す。"
+        rows={incomeRowsFor(headRow)}
+      />
+
+      {/* B 所得控除（IT/LT別）＝控除・調整 */}
+      <CalculationTable
+        title="B. 所得控除（所得税IT／住民税LT別）"
+        confidence="strict"
+        note="所得税と住民税で額が異なる控除は両方を併記（所＝所得税、住＝住民税）。0円でも検算に効く行は残す。"
         rows={[
           { key: "dependent", label: "扶養控除", value: itLt(ded.dependent?.itWan, ded.dependent?.ltWan), formula: "子の年齢・所得帯で判定" },
           { key: "specialKin", label: "特定扶養（19–22歳）", value: itLt(ded.specialKin?.itWan, ded.specialKin?.ltWan), formula: "19〜22歳・扶養上限超の所得帯" },
@@ -642,60 +644,55 @@ function BreakdownPanel({ point }) {
         ]}
       />
 
-      {/* ③ 社会保険（総額・近似式） */}
+      {/* B 社会保険料（総額・近似式） */}
       <CalculationTable
-        title="③ 社会保険料（総額・近似式）"
+        title="B. 社会保険料（総額・近似式）"
         confidence="strict"
-        note="★内訳（健保／介護／年金／雇用／子育て拠出）はコアが算定せず null。年収ベースの近似式で総額のみを求めており、標準報酬等級表による内訳割りは行っていない。"
+        note="★内訳（健保／介護／年金／雇用／子育て拠出）はコアが算定せず null。年収ベースの近似式で総額のみ。配偶者・子は0円のため省略。"
         rows={[
-          ...(si.byWho || []).map((s) => ({
+          ...nonZeroSocial.map((s) => ({
             key: `si-${s.who}`,
             label: s.who,
             value: fmtWan(s.totalWan),
             formula: "健保/介護/年金/雇用/子育拠出＝内訳なし（null）",
           })),
-          { key: "si-total", label: "社保 総額", value: fmtWan(si.totalWan), formula: "各人の合計", tone: "strong" },
+          { key: "si-total", label: "社保 総額", value: fmtWan(si.totalWan), formula: "近似式による総額（世帯主）", tone: "strong" },
         ]}
       />
 
-      {/* ④ 税（人別内訳） */}
+      {/* B 税：世帯主＋集計＋手取り */}
       <CalculationTable
-        title="④ 税：人別内訳"
+        title="B. 税：世帯主と集計・手取り"
         wide
         confidence="strict"
-        rows={(tax.byWho || []).flatMap((t) => [
-          {
-            key: `it-${t.who}`,
-            label: `${t.who}・所得税`,
-            value: fmtWan(t.incomeTax?.taxWan),
-            formula: `課税所得 ${fmtWan(t.incomeTax?.taxableWan)} → 所得税 ${fmtWan(t.incomeTax?.taxWan)}`,
-          },
-          {
-            key: `lt-${t.who}`,
-            label: `${t.who}・住民税`,
-            value: fmtWan(t.residentTax?.computedTaxWan),
-            formula: `課税 ${fmtWan(t.residentTax?.taxableWan)} → 所得割 ${fmtWan(t.residentTax?.incomeLevyWan, 2)}（内 市町村分 ${fmtWan(t.residentTax?.municipalIncomeLevyWan, 2)}）＋ 均等割 ${fmtWan(t.residentTax?.perCapitaWan, 2)}`,
-          },
-        ])}
-      />
-
-      {/* ④ 税（集計） */}
-      <CalculationTable
-        title="④ 税：集計"
-        confidence="strict"
+        note="配偶者・子は課税所得0円で税0のため省略。住民税所得割（市町村分）は通所・重心の該当判定に使う。"
         rows={[
-          { key: "incomeTax", label: "所得税 合計", value: fmtWan(tax.incomeTaxWan), formula: "各人の所得税を合算" },
-          { key: "residentTax", label: "住民税 合計", value: fmtWan(tax.residentTaxWan), formula: "各人の住民税（所得割＋均等割）を合算" },
+          {
+            key: "it-head",
+            label: "世帯主・所得税",
+            value: fmtWan(taxHead.incomeTax?.taxWan),
+            formula: `所得税課税所得 ${fmtWan(taxHead.incomeTax?.taxableWan)} → 所得税 ${fmtWan(taxHead.incomeTax?.taxWan)}`,
+          },
+          {
+            key: "lt-head",
+            label: "世帯主・住民税",
+            value: fmtWan(taxHead.residentTax?.computedTaxWan),
+            formula: `住民税課税所得 ${fmtWan(taxHead.residentTax?.taxableWan)} → 所得割 ${fmtWan(taxHead.residentTax?.incomeLevyWan, 2)}（内 市町村分 ${fmtWan(taxHead.residentTax?.municipalIncomeLevyWan, 2)}）＋ 均等割 ${fmtWan(taxHead.residentTax?.perCapitaWan, 2)}`,
+          },
           { key: "levy", label: "住民税所得割（市町村分）", value: fmtWan(tax.residentIncomeLevyWan, 2), formula: "★通所・重心医療費助成の該当判定に使う値" },
-          { key: "tax-total", label: "税 合計", value: fmtWan(tax.totalWan), formula: "所得税 ＋ 住民税", tone: "strong" },
+          { key: "tax-total", label: "税 合計", value: fmtWan(tax.totalWan), formula: "所得税 ＋ 住民税" },
+          { key: "takeHome", label: "手取り", value: fmtWan(b.takeHome?.takeHomeWan), formula: `給与収入 ${fmtWan(b.takeHome?.salaryWan, 0)} − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}`, tone: "strong" },
         ]}
       />
 
-      {/* ⑤ 特別児童扶養手当（特児） */}
+      {/* ===== C. 現金給付の判定（可処分所得に ＋） ===== */}
+      {/* C 特別児童扶養手当 */}
       <CalculationTable
-        title="⑤ 特別児童扶養手当（特児）"
+        title="C. 現金給付：特別児童扶養手当（特児）"
         confidence="strict"
+        note="★特児の「判定所得」は通常の課税所得と異なる（社保控除が8万円固定等の制度固有控除）。B の課税所得と混同しない。"
         rows={[
+          { key: "class", label: "制度分類", value: "現金給付", formula: "家計へ現金として入る" },
           { key: "fuyo", label: "扶養人数", value: `${fmt(tcca.fuyoCount)}人`, formula: `限度額の法定加算 ${fmtYen(tcca.statutoryAddYen)}` },
           {
             key: "head",
@@ -709,16 +706,18 @@ function BreakdownPanel({ point }) {
             value: tccaFamilyOk ? "通過" : "停止",
             formula: `家族最大 ${fmtYen(tcca.familyMaxAdjustedIncomeYen)} ${tccaFamilyOk ? "≤" : ">"} 限度 ${fmtYen(tcca.familyLimitYen)}`,
           },
-          { key: "elig", label: "支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "本人 ∧ 扶養義務者 の両方通過で支給" },
-          { key: "amt", label: "支給額", value: fmtWan(tcca.annualWan), formula: `${fmtYen(tcca.monthlyYen)}/月 × 12` },
+          { key: "elig", label: "判定結果", value: tcca.eligible ? "支給" : "不支給", formula: "本人 ∧ 扶養義務者 の両方通過で支給" },
+          { key: "amt", label: "支給額（月額・年額）", value: fmtWan(tcca.annualWan), formula: `${fmtYen(tcca.monthlyYen)}/月 × 12` },
+          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算", formula: "＋現金給付", tone: "strong" },
         ]}
       />
 
-      {/* ⑤ 障害児福祉手当 */}
+      {/* C 障害児福祉手当／特別障害者手当 */}
       <CalculationTable
-        title="⑤ 障害児福祉手当"
+        title="C. 現金給付：障害児福祉手当"
         confidence="strict"
         rows={[
+          { key: "class", label: "制度分類", value: "現金給付", formula: "家計へ現金として入る" },
           { key: "fuyo", label: "扶養人数", value: `${fmt(welfare.fuyoCount)}人`, formula: "扶養義務者限度額の算定基礎" },
           {
             key: "obligor",
@@ -734,17 +733,72 @@ function BreakdownPanel({ point }) {
                 formula: `本人所得 ${fmtYen(rc.selfYen)} vs 限度 ${fmtYen(rc.selfLimitYen)}（本人${rc.selfOk ? "○" : "×"}・義務者${rc.obligorOk ? "○" : "×"}）`,
               }))
             : [{ key: "wf-none", label: "対象者", value: "なし", formula: "受給対象者が存在しない" }]),
-          { key: "amt", label: "支給額", value: fmtWan(welfare.annualWan), formula: `${fmtYen(welfare.monthlyYen)}/月 × 12` },
+          { key: "amt", label: "支給額（月額・年額）", value: fmtWan(welfare.annualWan), formula: `${fmtYen(welfare.monthlyYen)}/月 × 12` },
+          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算", formula: "＋現金給付", tone: "strong" },
         ]}
       />
 
-      {/* ⑤ 障害児通所支援（世帯上限） */}
+      {/* ===== D. 費用軽減にともなう自己負担（可処分所得から −） ===== */}
+      {/* D 重心医療費助成（M01） */}
       <CalculationTable
-        title="⑤ 障害児通所支援（世帯上限）"
+        title="D. 自己負担：重心医療費助成（M01）"
+        confidence="representative"
+        note="現金給付ではなく費用軽減。医療費自己負担の軽減効果を代表値で年額換算。該当時は自己負担0、非該当時に医療費自己負担が立つ。"
+        rows={[
+          { key: "class", label: "制度分類", value: "医療費負担軽減", formula: "助成が縮小・停止で自己負担が発生" },
+          {
+            key: "judge",
+            label: "該当判定（区分）",
+            value: m01.status,
+            formula: `所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} 上限 ${fmtWan(m01.cutoffWan, 2)}`,
+          },
+          {
+            key: "burden",
+            label: "医療費自己負担",
+            value: fmtWan(costBurden.medicalCostBurdenWan),
+            formula: `該当なら0／非該当なら軽減満額 ${fmtWan(m01.fullReliefWan)} が自己負担化（1人 ${fmtYen(m01.annualYenPerRecipient || 0)} × ${fmt(m01.count)}人）`,
+          },
+          {
+            key: "sens",
+            label: "感度レンジ",
+            value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`,
+            formula: "伊勢原市H29決算の代表値レンジ",
+          },
+          { key: "treat", label: "最終指標への扱い", value: "可処分所得から減算", formula: "−医療費自己負担", tone: "strong" },
+        ]}
+      />
+
+      {/* D 就学奨励費（N04）＝教育費軽減。コア現行(378e692)は可処分所得に加算 */}
+      <CalculationTable
+        title="D. 費用軽減：就学奨励費（N04）"
+        confidence="provisional"
+        note="現金給付ではなく教育費の負担軽減。★N04の最終指標への入れ方はコア側で変更中。コア現行（378e692）は補助相当額を可処分所得に加算する扱い。値・符号はコアに追随。"
+        rows={[
+          { key: "class", label: "制度分類", value: "教育費負担軽減", formula: "所得が上がり区分が下がるほど補助が縮小" },
+          {
+            key: "region",
+            label: "区分",
+            value: n04.supportClass,
+            formula: `給与 ${fmt(n04.salaryManyen)}万、境界 ${fmt(n04.boundaries?.firstToSecondManyen)} / ${fmt(n04.boundaries?.secondToThirdManyen)}万`,
+          },
+          {
+            key: "relief",
+            label: "教育費軽減（補助相当）",
+            value: fmtWan(n04.annualWan),
+            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人`,
+          },
+          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算（コア現行）", formula: "＋教育費軽減（コア追随・符号は変更中）", tone: "strong" },
+        ]}
+      />
+
+      {/* ===== E. 利用者負担（可処分所得から −） ===== */}
+      <CalculationTable
+        title="E. 利用者負担：障害児通所支援（世帯上限）"
         wide
         confidence={service.confidence || "strict"}
         note="負担上限月額は世帯単位（複数児でも合算せず最も高い1つ。児福法施行令24条・27条の2）。一般2の実負担は上限37,200円ではなく、東京都R6調査の利用者負担平均10,406円を採用（上限は非拘束）。"
         rows={[
+          { key: "class", label: "制度分類", value: "利用者負担", formula: "支出として差し引く" },
           {
             key: "levySum",
             label: "世帯 所得割合計",
@@ -767,102 +821,59 @@ function BreakdownPanel({ point }) {
             label: "世帯月額負担",
             value: fmtYen(service.monthlyTotalYen),
             formula: "各児の月額負担の最大を1つ採用（人数倍なし）",
-            tone: "strong",
           },
           { key: "svc-annual", label: "年額負担", value: fmtWan(service.annualWan), formula: `${fmtYen(service.monthlyTotalYen)}/月 × 12` },
+          { key: "treat", label: "最終指標への扱い", value: "可処分所得から減算", formula: "−通所利用者負担", tone: "strong" },
         ]}
       />
 
-      {/* ⑤ 重心医療費助成 */}
+      {/* ===== F. 最終集計（一本の可処分所得） ===== */}
+      {/* F 現金給付合計（＋） */}
       <CalculationTable
-        title="⑤ 重心医療費助成"
-        confidence="representative"
-        rows={[
-          {
-            key: "judge",
-            label: "判定",
-            value: m01.status,
-            formula: `所得割 ${fmtWan(m01.householdLevyWan, 2)} ${m01.eligible ? "<" : "≥"} 上限 ${fmtWan(m01.cutoffWan, 2)}`,
-          },
-          {
-            key: "amt",
-            label: "軽減効果",
-            value: fmtWan(m01.annualWan),
-            formula: `1人あたり ${fmtYen(m01.annualYenPerRecipient || 0)} × ${fmt(m01.count)}人（該当時は自己負担を軽減）`,
-          },
-          {
-            key: "sens",
-            label: "感度レンジ",
-            value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`,
-            formula: "伊勢原市H29決算の代表値レンジ",
-          },
-        ]}
-      />
-
-      {/* ⑤ 就学奨励費 */}
-      <CalculationTable
-        title="⑤ 就学奨励費"
-        confidence="provisional"
-        rows={[
-          {
-            key: "class",
-            label: "区分",
-            value: n04.supportClass,
-            formula: `給与 ${fmt(n04.salaryManyen)}万、境界 ${fmt(n04.boundaries?.firstToSecondManyen)} / ${fmt(n04.boundaries?.secondToThirdManyen)}万`,
-          },
-          {
-            key: "amt",
-            label: "崖分析上の補助効果",
-            value: fmtWan(n04.annualWan),
-            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（可処分所得水準には加算せず、区分低下時の減少分だけを崖として扱う）`,
-          },
-        ]}
-      />
-
-      {/* ⑥ 現金給付合計 */}
-      <CalculationTable
-        title="⑥ 現金給付合計"
+        title="F. 現金給付合計（＋）"
         wide
         confidence="strict"
-        note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここでは実際に現金として受け取る給付だけを合計する。"
+        note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここは実際に現金として受け取る給付だけを合計。"
         rows={[
           { key: "pension", label: "基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人・配偶者の基礎年金" },
-          { key: "tcca", label: "特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "⑤特児より" },
-          { key: "welfare", label: "障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "⑤福祉手当より" },
+          { key: "tcca", label: "特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "C 特児より" },
+          { key: "welfare", label: "障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "C 福祉手当より" },
           { key: "childSupport", label: "児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親世帯のみ" },
           { key: "childAllowance", label: "児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "18歳未満・出生順で加算" },
           { key: "allowance-total", label: "現金給付合計", value: fmtWan(allowance.totalWan), formula: "上記5内訳の合計", tone: "strong" },
         ]}
       />
 
-      {/* ⑦ 自己負担合計 */}
+      {/* F 自己負担合計（−） */}
       <CalculationTable
-        title="⑦ 自己負担合計"
+        title="F. 自己負担合計（−）"
         wide
         confidence="strict"
-        note="M01は代表値に基づく実費負担として計上。N04は実費総額を置かず、区分低下時の補助減少分だけを崖分析に使う。表示名は仮置き。"
+        note="M01は代表値に基づく実費負担として計上。就学奨励費(N04)は費用軽減として可処分所得側で加算するため、ここ（自己負担）には含めない。表示名は仮置き。"
         rows={[
-          { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: `M01軽減満額 ${fmtWan(m01.fullReliefWan)} − 現在の軽減効果 ${fmtWan(m01.annualWan)}`, confidence: "representative" },
-          { key: "n04Cliff", label: "N04崖効果", value: fmtWan(costBurden.n04CliffEffectWan), formula: "可処分所得水準には入れず、崖表・回帰検証でだけ補助減少分として扱う", confidence: "provisional" },
-          { key: "serviceFee", label: "通所利用料", value: fmtWan(costBurden.serviceFeeWan), formula: "⑤通所の年額負担より" },
-          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 通所利用料（N04崖効果は含めない）", tone: "strong" },
+          { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "D 重心医療費助成より（非該当時に発生）", confidence: "representative" },
+          { key: "serviceFee", label: "通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E 通所の年額負担より" },
+          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 通所利用者負担", tone: "strong" },
         ]}
       />
 
-      {/* ⑧ 可処分所得 */}
+      {/* F 可処分所得（結論・一本集計） */}
       <CalculationTable
-        title="⑧ 可処分所得"
+        title="F. 可処分所得（結論・一本集計）"
+        wide
         confidence="strict"
+        note="最終指標は可処分所得の一本。「制度込み家計余力」という第二指標は作らない。"
         rows={[
-          { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与総額 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
-          { key: "allowance", label: "現金給付", value: fmtWan(disposable.allowanceWan), formula: "⑥現金給付合計より（＋）" },
-          { key: "medical", label: "医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "⑦自己負担合計より（−）", confidence: "representative" },
-          { key: "serviceFee", label: "通所利用料", value: fmtWan(disposable.serviceFeeWan), formula: "⑤通所の年額負担より（−）" },
+          { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与収入 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
+          { key: "allowance", label: "＋ 現金給付", value: fmtWan(disposable.allowanceWan), formula: "F 現金給付合計より" },
+          { key: "eduRelief", label: "＋ 就学奨励費（教育費軽減）", value: fmtWan(disposable.educationCostReliefWan), formula: "D 就学奨励費より（コア現行は加算・符号変更中）", confidence: "provisional" },
+          { key: "medical", label: "− 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "F 自己負担合計より", confidence: "representative" },
+          { key: "serviceFee", label: "− 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: "E 通所の年額負担より" },
           {
             key: "disposable",
             label: "可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}（N04は水準に含めない）`,
+            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} ＋ 就学 ${fmtWan(disposable.educationCostReliefWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}`,
             tone: "strong",
           },
         ]}

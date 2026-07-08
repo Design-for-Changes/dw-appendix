@@ -21,6 +21,10 @@ function pushCause(out, cause, confidence, whatHappened) {
   out.push({ cause, confidence, whatHappened });
 }
 
+function pointY(point) {
+  return toNumber(point?.cliffDisposable ?? point?.disposable);
+}
+
 function compareTcca(out, before, after) {
   const b = before?.programs?.tcca || {};
   const a = after?.programs?.tcca || {};
@@ -129,7 +133,7 @@ function compareN04(out, before, after) {
     out,
     "就学奨励費",
     a.confidence || b.confidence || "provisional",
-    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、教育費自己負担 ${wan(b.educationCostBurdenWan)}→${wan(a.educationCostBurdenWan)}（補助効果 ${wan(b.annualWan)}→${wan(a.annualWan)}）`
+    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、補助効果 ${wan(b.annualWan)}→${wan(a.annualWan)}（減少分を崖として計上、可処分所得水準には加算しない）`
   );
 }
 
@@ -194,30 +198,28 @@ export function detectCliffCauseRows(series, options = {}) {
   const minDropManyen = toNumber(options.minDropManyen, 3);
   const xMin = toNumber(options.xMin, -Infinity);
   const xMax = toNumber(options.xMax, Infinity);
-  const yAtMax = toNumber(
-    series.find((p) => toNumber(p?.x) === xMax)?.disposable ?? series[series.length - 1]?.disposable
-  );
+  const yAtMax = pointY(series.find((p) => toNumber(p?.x) === xMax) ?? series[series.length - 1]);
   const rows = [];
   for (let i = 1; i < series.length; i += 1) {
     const before = series[i - 1];
     const after = series[i];
     if (toNumber(after?.x) < xMin || toNumber(after?.x) > xMax) continue;
-    const delta = toNumber(after?.disposable) - toNumber(before?.disposable);
+    const delta = pointY(after) - pointY(before);
     if (delta > -minDropManyen) continue;
     const causes = explainCliffCauses(before, after);
-    const q = findQ(series, i, toNumber(after?.disposable));
-    const r = findR(series, i, toNumber(before?.disposable), xMax);
+    const q = findQ(series, i, pointY(after));
+    const r = findR(series, i, pointY(before), xMax);
     rows.push({
       index: rows.length + 1,
       salaryManyen: toNumber(after?.x),
-      yBeforeWan: toNumber(before?.disposable),
-      yAfterWan: toNumber(after?.disposable),
+      yBeforeWan: pointY(before),
+      yAfterWan: pointY(after),
       dropManyen: Math.round(delta * 10) / 10,
       qSalaryManyen: q ? toNumber(q.x) : null,
       ineffectiveWidthManyen: q ? toNumber(after?.x) - toNumber(q.x) : null,
       rSalaryManyen: r ? toNumber(r.x) : null,
       recoveryWidthManyen: r ? toNumber(r.x) - toNumber(after?.x) : null,
-      unrecoveredShortfallWan: r ? 0 : Math.max(0, toNumber(before?.disposable) - yAtMax),
+      unrecoveredShortfallWan: r ? 0 : Math.max(0, pointY(before) - yAtMax),
       causes,
     });
   }
@@ -227,7 +229,7 @@ export function detectCliffCauseRows(series, options = {}) {
 function findQ(series, cliffIndex, yAfter) {
   for (let i = cliffIndex - 1; i >= 0; i -= 1) {
     const point = series[i];
-    if (toNumber(point?.disposable) <= yAfter) return point;
+    if (pointY(point) <= yAfter) return point;
   }
   return null;
 }
@@ -236,7 +238,7 @@ function findR(series, cliffIndex, yBefore, xMax) {
   for (let i = cliffIndex + 1; i < series.length; i += 1) {
     const point = series[i];
     if (toNumber(point?.x) > xMax) return null;
-    if (toNumber(point?.disposable) >= yBefore) return point;
+    if (pointY(point) >= yBefore) return point;
   }
   return null;
 }

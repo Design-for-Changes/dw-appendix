@@ -206,10 +206,14 @@ function tintWhite(hex, whiteRatio) {
   return `rgb(${mix(ch(0))}, ${mix(ch(2))}, ${mix(ch(4))})`;
 }
 
+function pointY(point) {
+  return Number(point?.cliffDisposable ?? point?.disposable);
+}
+
 function findQ(series, cliffIndex, yAfter) {
   for (let i = cliffIndex - 1; i >= 0; i -= 1) {
     const point = series[i];
-    if (Number(point.disposable) <= yAfter) return point;
+    if (pointY(point) <= yAfter) return point;
   }
   return null;
 }
@@ -217,7 +221,7 @@ function findQ(series, cliffIndex, yAfter) {
 function findR(series, cliffIndex, yBefore) {
   for (let i = cliffIndex + 1; i < series.length; i += 1) {
     const point = series[i];
-    if (Number(point.disposable) >= yBefore) return point;
+    if (pointY(point) >= yBefore) return point;
   }
   return null;
 }
@@ -228,14 +232,14 @@ function detectCliffs(series, caseDef) {
     const prev = series[i - 1];
     const cur = series[i];
     if (cur.x < X_MIN || cur.x > X_MAX) continue;
-    const delta = Number(cur.disposable) - Number(prev.disposable);
+    const delta = pointY(cur) - pointY(prev);
     if (delta > -Number(caseDef.minDropManyen || 3)) continue;
 
-    const yBefore = Number(prev.disposable);
-    const yAfter = Number(cur.disposable);
+    const yBefore = pointY(prev);
+    const yAfter = pointY(cur);
     const q = findQ(series, i, yAfter);
     const r = findR(series, i, yBefore);
-    const yAtMax = Number(series.find((p) => p.x === X_MAX)?.disposable ?? series[series.length - 1]?.disposable);
+    const yAtMax = pointY(series.find((p) => p.x === X_MAX) ?? series[series.length - 1]);
     const causes = explainCliffCauses(prev, cur);
     rows.push({
       index: rows.length + 1,
@@ -808,9 +812,9 @@ function BreakdownPanel({ point }) {
           },
           {
             key: "amt",
-            label: "補助効果",
+            label: "崖分析上の補助効果",
             value: fmtWan(n04.annualWan),
-            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（満額との差分を自己負担化）`,
+            formula: `1人あたり ${fmtYen(n04.annualYenPerRecipient || 0)} × ${fmt(n04.count || 0)}人（可処分所得水準には加算せず、区分低下時の減少分だけを崖として扱う）`,
           },
         ]}
       />
@@ -836,12 +840,12 @@ function BreakdownPanel({ point }) {
         title="⑦ 自己負担合計"
         wide
         confidence="strict"
-        note="費用軽減制度は助成・補助の縮小分を自己負担の増加として扱う。表示名は仮置き。"
+        note="M01は代表値に基づく実費負担として計上。N04は実費総額を置かず、区分低下時の補助減少分だけを崖分析に使う。表示名は仮置き。"
         rows={[
           { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: `M01軽減満額 ${fmtWan(m01.fullReliefWan)} − 現在の軽減効果 ${fmtWan(m01.annualWan)}`, confidence: "representative" },
-          { key: "education", label: "教育費自己負担", value: fmtWan(costBurden.educationCostBurdenWan), formula: `N04満額補助 ${fmtWan(n04.fullSupportWan)} − 現在の補助効果 ${fmtWan(n04.annualWan)}`, confidence: "provisional" },
+          { key: "n04Cliff", label: "N04崖効果", value: fmtWan(costBurden.n04CliffEffectWan), formula: "可処分所得水準には入れず、崖表・回帰検証でだけ補助減少分として扱う", confidence: "provisional" },
           { key: "serviceFee", label: "通所利用料", value: fmtWan(costBurden.serviceFeeWan), formula: "⑤通所の年額負担より" },
-          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 教育費自己負担 ＋ 通所利用料", tone: "strong" },
+          { key: "burden-total", label: "自己負担合計", value: fmtWan(costBurden.totalWan), formula: "医療費自己負担 ＋ 通所利用料（N04崖効果は含めない）", tone: "strong" },
         ]}
       />
 
@@ -853,13 +857,12 @@ function BreakdownPanel({ point }) {
           { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `給与総額 − 社保 ${fmtWan(b.takeHome?.socialWan)} − 税 ${fmtWan(b.takeHome?.taxWan)}` },
           { key: "allowance", label: "現金給付", value: fmtWan(disposable.allowanceWan), formula: "⑥現金給付合計より（＋）" },
           { key: "medical", label: "医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "⑦自己負担合計より（−）", confidence: "representative" },
-          { key: "education", label: "教育費自己負担", value: fmtWan(disposable.educationCostBurdenWan), formula: "⑦自己負担合計より（−）", confidence: "provisional" },
           { key: "serviceFee", label: "通所利用料", value: fmtWan(disposable.serviceFeeWan), formula: "⑤通所の年額負担より（−）" },
           {
             key: "disposable",
             label: "可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 教育 ${fmtWan(disposable.educationCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}`,
+            formula: `${fmtWan(disposable.takeHomeWan)} ＋ 現金給付 ${fmtWan(disposable.allowanceWan)} − 医療 ${fmtWan(disposable.medicalCostBurdenWan)} − 通所 ${fmtWan(disposable.serviceFeeWan)}（N04は水準に含めない）`,
             tone: "strong",
           },
         ]}

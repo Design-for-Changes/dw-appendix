@@ -775,6 +775,8 @@ function calcN04Detail(ctx, salaryManyen) {
       salaryManyen: toNumber(salaryManyen, 0),
       supportClass: "対象外",
       annualWan: 0,
+      cliffEffectWan: 0,
+      educationCostBurdenWan: 0,
       confidence: "provisional",
     };
   }
@@ -797,8 +799,8 @@ function calcN04Detail(ctx, salaryManyen) {
     count,
     annualYenPerRecipient,
     annualWan: (annualYenPerRecipient * count) / 10000,
-    fullSupportWan: (N04_SHOGAKU_ANNUAL_YEN.first * count) / 10000,
-    educationCostBurdenWan: ((N04_SHOGAKU_ANNUAL_YEN.first - annualYenPerRecipient) * count) / 10000,
+    cliffEffectWan: (annualYenPerRecipient * count) / 10000,
+    educationCostBurdenWan: 0,
     boundaries: {
       firstToSecondManyen: b12,
       secondToThirdManyen: b23,
@@ -1136,12 +1138,11 @@ function computePoint(ctx, x) {
   const m01AnnualWan = m01Detail.annualWan;
   const n04AnnualWan = n04Detail.annualWan;
   const m01FullReliefWan = toNumber(m01Detail.fullReliefWan ?? m01Detail.sensitivityRangeWan?.min, 0);
-  const n04FullSupportWan = toNumber(n04Detail.fullSupportWan, 0);
   const medicalCostBurdenWan = Math.max(0, m01FullReliefWan - toNumber(m01AnnualWan, 0));
-  const educationCostBurdenWan = Math.max(0, n04FullSupportWan - toNumber(n04AnnualWan, 0));
+  const educationCostBurdenWan = 0;
+  const n04CliffEffectWan = toNumber(n04AnnualWan, 0);
   const costBurdenWanTotal =
     toNumber(medicalCostBurdenWan, 0) +
-    toNumber(educationCostBurdenWan, 0) +
     toNumber(serviceFeeWanTotal, 0);
 
   const allowanceWanTotal =
@@ -1154,6 +1155,7 @@ function computePoint(ctx, x) {
   const grossWan = rows.reduce((a, r) => a + toNumber(r.salaryWan, 0) + toNumber(r.otherIncomeWan, 0), 0);
   const takeHomeWan = grossWan - toNumber(socialWanTotal, 0) - toNumber(taxWanTotal, 0);
   const disposableWan = toNumber(takeHomeWan, 0) + toNumber(allowanceWanTotal, 0) - toNumber(costBurdenWanTotal, 0);
+  const cliffDisposableWan = disposableWan + n04CliffEffectWan;
   const expTax = -toNumber(taxWanTotal, 0);
   const expSocial = -toNumber(socialWanTotal, 0);
   const expService = -toNumber(serviceFeeWanTotal, 0);
@@ -1246,6 +1248,7 @@ function computePoint(ctx, x) {
     n04: n04AnnualWan,
     takeHome: takeHomeWan,
     disposable: disposableWan,
+    cliffDisposable: cliffDisposableWan,
     householdLevySumWan,
     levyByWho: Array.from(levyByWho.values()),
     expTax,
@@ -1253,6 +1256,7 @@ function computePoint(ctx, x) {
     expService,
     expMedicalCost,
     expEducationCost,
+    n04CliffEffect: n04CliffEffectWan,
     service: toNumber(serviceFeeWanTotal, 0),
     medicalCostBurden: toNumber(medicalCostBurdenWan, 0),
     educationCostBurden: toNumber(educationCostBurdenWan, 0),
@@ -1304,7 +1308,9 @@ function computePoint(ctx, x) {
         educationCostBurdenWan,
         serviceFeeWan: serviceFeeWanTotal,
         costBurdenWan: costBurdenWanTotal,
+        n04CliffEffectWan,
         disposableWan,
+        cliffDisposableWan,
       },
     },
   };

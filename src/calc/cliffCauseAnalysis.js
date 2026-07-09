@@ -78,18 +78,27 @@ function compareService(out, before, after) {
   }
   if (!changes.length && !changed(b.annualWan, a.annualWan)) return;
 
+  const adoptedMonthlyYen = (detail) => {
+    const value = toNumber(detail?.monthlyUpperYen, NaN);
+    return Number.isFinite(value) ? value : statutoryCapYen(detail);
+  };
+
   const describe = ({ prev, next }) => {
     const prevType = prev.type || "対象外";
     const nextType = next.type || "対象外";
-    let s = `${prevType}→${nextType}、月額上限 ${yen(statutoryCapYen(prev))}→${yen(statutoryCapYen(next))}`;
-    // 上限が代表値より高く、代表値が実負担として効く区分（例：一般2）だけ注記
-    if (next.rawMonthlyYen != null && next.rawMonthlyYen < statutoryCapYen(next)) {
-      s += `（使用する代表値は${yen(next.rawMonthlyYen)}）`;
+    const prevAdopted = adoptedMonthlyYen(prev);
+    const nextAdopted = adoptedMonthlyYen(next);
+    const prevCap = statutoryCapYen(prev);
+    const nextCap = statutoryCapYen(next);
+    let s = `${prevType}→${nextType}、月額負担 ${yen(prevAdopted)}→${yen(nextAdopted)}`;
+    // 一般2は制度上限ではなく代表値を採用するため、上限との差を注記する。
+    if (next.rawMonthlyYen != null && next.rawMonthlyYen < nextCap) {
+      s += `（制度上限 ${yen(prevCap)}→${yen(nextCap)}、代表値 ${yen(next.rawMonthlyYen)}を採用）`;
     }
     return s;
   };
   const signature = ({ prev, next }) =>
-    `${prev.type || "対象外"}→${next.type || "対象外"}|${statutoryCapYen(prev)}→${statutoryCapYen(next)}|${next.rawMonthlyYen}`;
+    `${prev.type || "対象外"}→${next.type || "対象外"}|${adoptedMonthlyYen(prev)}→${adoptedMonthlyYen(next)}|${statutoryCapYen(prev)}→${statutoryCapYen(next)}|${next.rawMonthlyYen}`;
   let text;
   if (!changes.length) {
     text = `年額利用料 ${wan(b.annualWan)}→${wan(a.annualWan)}`;

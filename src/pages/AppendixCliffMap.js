@@ -714,7 +714,7 @@ function BreakdownPanel({ point }) {
               label: `${d.who}（${fmt(d.age)}歳）`,
               value: d.type,
               confidence: d.confidence,
-              formula: `所得割 ${fmtYen(d.householdLevyYen)} → 区分 ${d.type} → 上限 ${fmtYen(capYen)}/月${usesRep ? `（使用する代表値 ${fmtYen(d.rawMonthlyYen)}）` : ""}`,
+              formula: `所得割 ${fmtYen(d.householdLevyYen)} → 区分 ${d.type} → 採用月額 ${fmtYen(d.monthlyUpperYen)}/月${usesRep ? `（制度上限 ${fmtYen(capYen)}、代表値 ${fmtYen(d.rawMonthlyYen)}を採用）` : `（制度上限 ${fmtYen(capYen)}）`}`,
             };
           }),
           {

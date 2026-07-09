@@ -473,6 +473,55 @@ function itLt(itWan, ltWan) {
   return `所${fmtWan(itWan)}／住${fmtWan(ltWan)}`;
 }
 
+function disabilityCategoryForDeduction(row) {
+  if (!row?.disabled) return null;
+  if (row.disabilityKind === "special" && row.cohabit !== false) return "cohab_special";
+  if (row.disabilityKind === "special") return "special";
+  return "disabled";
+}
+
+function disabilityDeductionSummary(rows) {
+  const counts = { disabled: 0, special: 0, cohab_special: 0 };
+  for (const row of rows || []) {
+    const who = String(row?.who || "");
+    const isTarget = who === "世帯主" || who === "配偶者" || who.startsWith("子ども");
+    if (!isTarget) continue;
+    if (who !== "世帯主" && Number(row?.totalIncomeWan || 0) > 58) continue;
+    const key = disabilityCategoryForDeduction(row);
+    if (key) counts[key] += 1;
+  }
+  const labels = [];
+  if (counts.disabled) labels.push(`普通障害者×${counts.disabled}`);
+  if (counts.special) labels.push(`特別障害者×${counts.special}`);
+  if (counts.cohab_special) labels.push(`同居特別障害者×${counts.cohab_special}`);
+  const it = disabilityDeductionCfg.it_wan || {};
+  const lt = disabilityDeductionCfg.lt_wan || {};
+  const formulaParts = [];
+  if (counts.disabled) formulaParts.push(`普通 ${fmtWan(it.disabled)}/${fmtWan(lt.disabled)} × ${counts.disabled}`);
+  if (counts.special) formulaParts.push(`特別 ${fmtWan(it.special)}/${fmtWan(lt.special)} × ${counts.special}`);
+  if (counts.cohab_special) formulaParts.push(`同居特別 ${fmtWan(it.cohab_special)}/${fmtWan(lt.cohab_special)} × ${counts.cohab_special}`);
+  return {
+    labels: labels.length ? labels.join("、") : "対象なし",
+    formula: formulaParts.length ? `${formulaParts.join(" ＋ ")}（所/住、所得税・住民税課税所得に適用）` : "該当する障害者控除なし",
+  };
+}
+
+function deemedMinorDependentDeductionSummary(rows) {
+  const targets = (rows || []).filter((row) => {
+    const who = String(row?.who || "");
+    return who.startsWith("子ども") && Number(row?.age || 0) < 16 && Number(row?.totalIncomeWan || 0) <= 58;
+  });
+  const count = targets.length;
+  return {
+    count,
+    ltWan: count * 33,
+    formula:
+      count > 0
+        ? `16歳未満の子 ${count}人 × 住民税33万。通常の住民税課税所得とは別枠で、通所・M01等の所得割判定に効く特例として確認`
+        : "16歳未満の対象児なし。通常の住民税課税所得とは別枠の特例",
+  };
+}
+
 function incomeRowsFor(r) {
   return [
     {
@@ -615,6 +664,9 @@ function BreakdownPanel({ point }) {
   const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
   const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
   const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
+  const headTaxDeductions = taxHead.deductions || {};
+  const disabilitySummary = disabilityDeductionSummary(rows);
+  const deemedMinorSummary = deemedMinorDependentDeductionSummary(rows);
   const nonZeroSocial = (si.byWho || []).filter((s) => Number(s.totalWan) !== 0);
 
   return (
@@ -633,14 +685,38 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="B. 所得控除（所得税IT／住民税LT別）"
         confidence="strict"
-        note="所得税と住民税で額が異なる控除は両方を併記（所＝所得税、住＝住民税）。0円でも検算に効く行は残す。"
+        note="所得税と住民税で額が異なる控除は両方を併記（所＝所得税、住＝住民税）。通常の課税所得に入る控除と、通所・M01の所得割判定だけで確認する別枠特例を分けて示す。"
         rows={[
-          { key: "dependent", label: "扶養控除", value: itLt(ded.dependent?.itWan, ded.dependent?.ltWan), formula: "子の年齢・所得帯で判定" },
-          { key: "specialKin", label: "特定扶養（19–22歳）", value: itLt(ded.specialKin?.itWan, ded.specialKin?.ltWan), formula: "19〜22歳・扶養上限超の所得帯" },
-          { key: "spouse", label: "配偶者控除", value: itLt(ded.spouse?.itWan, ded.spouse?.ltWan), formula: "配偶者所得×世帯主所得帯" },
-          { key: "spouseSpecial", label: "配偶者特別控除", value: itLt(ded.spouseSpecial?.itWan, ded.spouseSpecial?.ltWan), formula: "配偶者控除が0のとき適用" },
-          { key: "widow", label: "寡婦控除", value: itLt(ws.widow?.itWan, ws.widow?.ltWan), formula: "世帯主所得500万以下・条件付き" },
-          { key: "singleParent", label: "ひとり親控除", value: itLt(ws.singleParent?.itWan, ws.singleParent?.ltWan), formula: "世帯主所得500万以下・条件付き" },
+          {
+            key: "basic",
+            label: "基礎控除",
+            value: itLt(headTaxDeductions.basicITWan, headTaxDeductions.basicLTWan),
+            formula: `${headTaxDeductions.basicITDetail?.formula || "所得税の合計所得金額で判定"}／${headTaxDeductions.basicLTDetail?.formula || "住民税の合計所得金額で判定"}。所得税・住民税課税所得に適用`,
+          },
+          {
+            key: "socialDeduction",
+            label: "社会保険料控除",
+            value: itLt(headTaxDeductions.socialWan, headTaxDeductions.socialWan),
+            formula: `実額 ${fmtWan(headTaxDeductions.socialWan)} を所得税・住民税の課税所得から控除（Bの社会保険料総額と同じ値）`,
+          },
+          {
+            key: "disability",
+            label: "障害者控除",
+            value: itLt(headTaxDeductions.disabilityITWan, headTaxDeductions.disabilityLTWan),
+            formula: `${disabilitySummary.labels}。${disabilitySummary.formula}`,
+          },
+          { key: "dependent", label: "扶養控除", value: itLt(ded.dependent?.itWan, ded.dependent?.ltWan), formula: "子の年齢・所得帯で判定。所得税・住民税課税所得に適用" },
+          { key: "specialKin", label: "特定扶養（19–22歳）", value: itLt(ded.specialKin?.itWan, ded.specialKin?.ltWan), formula: "19〜22歳・扶養上限超の所得帯。所得税・住民税課税所得に適用" },
+          { key: "spouse", label: "配偶者控除", value: itLt(ded.spouse?.itWan, ded.spouse?.ltWan), formula: "配偶者所得×世帯主所得帯。所得税・住民税課税所得に適用" },
+          { key: "spouseSpecial", label: "配偶者特別控除", value: itLt(ded.spouseSpecial?.itWan, ded.spouseSpecial?.ltWan), formula: "配偶者控除が0のとき適用。所得税・住民税課税所得に適用" },
+          { key: "widow", label: "寡婦控除", value: itLt(ws.widow?.itWan, ws.widow?.ltWan), formula: "世帯主所得500万以下・条件付き。所得税・住民税課税所得に適用" },
+          { key: "singleParent", label: "ひとり親控除", value: itLt(ws.singleParent?.itWan, ws.singleParent?.ltWan), formula: "世帯主所得500万以下・条件付き。所得税・住民税課税所得に適用" },
+          {
+            key: "deemedMinorDependent",
+            label: "みなし年少扶養控除",
+            value: `所—／住${fmtWan(deemedMinorSummary.ltWan)}`,
+            formula: deemedMinorSummary.formula,
+          },
         ]}
       />
 

@@ -117,7 +117,7 @@ function compareM01(out, before, after) {
     out,
     "重心医療費助成",
     a.confidence || b.confidence || "representative",
-    `${status}、医療費自己負担 ${wan(b.medicalCostBurdenWan)}→${wan(a.medicalCostBurdenWan)}（軽減効果 ${wan(b.annualWan)}→${wan(a.annualWan)}）`
+    `${status}、医療費自己負担 ${wan(b.medicalCostBurdenWan)}→${wan(a.medicalCostBurdenWan)}`
   );
 }
 
@@ -129,7 +129,7 @@ function compareN04(out, before, after) {
     out,
     "就学奨励費",
     a.confidence || b.confidence || "provisional",
-    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、教育費負担軽減 ${wan(b.annualWan)}→${wan(a.annualWan)}（補助減少分が可処分所得の下向き崖）`
+    `支弁区分 ${b.supportClass || b.status || "対象外"}→${a.supportClass || a.status || "対象外"}、教育費負担軽減 ${wan(b.annualWan)}→${wan(a.annualWan)}`
   );
 }
 

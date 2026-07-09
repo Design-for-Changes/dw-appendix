@@ -100,6 +100,16 @@
   gap: 12px;
 }
 
+.case-cond-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.case-cond-summary b {
+  font-weight: 800;
+}
+
 .case-cond-list {
   margin: 0;
   padding-left: 18px;
@@ -249,6 +259,27 @@
   font-weight: 900;
 }
 
+.appendix-cliff-marker text {
+  fill: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.appendix-s-marker text {
+  fill: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.appendix-pnum {
+  font-weight: 900;
+  color: #1c2529;
+  white-space: nowrap;
+}
+
 .appendix-cursor line {
   stroke: #1c2529;
   stroke-dasharray: 6 5;
@@ -305,6 +336,7 @@
 }
 
 .formula-card {
+  min-width: 0;
   border: 1px solid #dce5e9;
   border-radius: 8px;
   background: #fbfcfd;
@@ -347,9 +379,9 @@
 
 .formula-table {
   width: 100%;
-  min-width: 560px;
+  min-width: 420px;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .formula-table th,
@@ -369,10 +401,11 @@
 }
 
 .formula-table tbody th {
-  width: 24%;
   color: #33444c;
   font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
+  padding-right: 16px;
 }
 
 .formula-table .formula-value,
@@ -384,16 +417,15 @@
 }
 
 .formula-table .formula-value {
-  width: 22%;
   white-space: nowrap;
+  padding-right: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #16324d;
 }
 
 .formula-table .formula-expression {
-  width: 40%;
-}
-
-.formula-table td:last-child {
-  width: 14%;
+  width: 100%;
   padding-right: 0;
 }
 
@@ -441,7 +473,7 @@
 
 .appendix-table {
   width: 100%;
-  min-width: 1080px;
+  min-width: 940px;
   border-collapse: collapse;
   font-size: 13px;
 }
@@ -468,6 +500,11 @@
 .appendix-mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.appendix-cause,
+.appendix-cause div {
   white-space: nowrap;
 }
 
@@ -534,7 +571,7 @@
   }
 
   .formula-table {
-    min-width: 640px;
+    min-width: 460px;
   }
 }
 

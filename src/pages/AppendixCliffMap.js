@@ -445,6 +445,20 @@ function itLt(itWan, ltWan) {
   return `所${fmtWan(itWan)}／住${fmtWan(ltWan)}`;
 }
 
+function deemedMinorDeduction(rows) {
+  const count = (rows || []).filter((row) => {
+    const who = String(row?.who || "");
+    return who.startsWith("子ども") && Number(row?.age || 0) < 16 && Number(row?.totalIncomeWan || 0) <= 58;
+  }).length;
+  return {
+    ltWan: count * 33,
+    formula:
+      count > 0
+        ? `16歳未満の子 ${count}人 × 住民税33万（別枠）。実際の住民税額には非適用。通所・M01等の所得割判定でのみ効く特例`
+        : "16歳未満の対象児なし。別枠特例（実際の住民税額には非適用）",
+  };
+}
+
 function incomeTaxBracket(taxableWan) {
   const yen = Math.max(0, Math.floor(((Number(taxableWan) || 0) * 10000) / 1000) * 1000);
   const bands = [
@@ -542,6 +556,7 @@ function BreakdownPanel({ point }) {
   const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
   const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
   const itbr = incomeTaxBracket(taxHead.incomeTax?.taxableWan);
+  const deemedMinor = deemedMinorDeduction(rows);
 
   return (
     <div className="formula-grid">
@@ -577,6 +592,7 @@ function BreakdownPanel({ point }) {
           { key: "B4", label: "B4 配偶者控除", value: itLt(ded.spouse?.itWan, ded.spouse?.ltWan), formula: "配偶者所得×世帯主所得帯" },
           { key: "B5", label: "B5 配偶者特別控除", value: itLt(ded.spouseSpecial?.itWan, ded.spouseSpecial?.ltWan), formula: "配偶者控除が0のとき適用" },
           { key: "B6", label: "B6 障害者控除", value: itLt(taxHead.deductions?.disabilityITWan, taxHead.deductions?.disabilityLTWan), formula: "本人・扶養家族の障害区分による（同居特別障害者含む）" },
+          { key: "B7", label: "B7 みなし年少扶養控除（住民税のみ・別枠）", value: `所—／住${fmtWan(deemedMinor.ltWan)}`, formula: `${deemedMinor.formula}。A4（住民税課税所得）には含めない` },
         ]}
       />
 

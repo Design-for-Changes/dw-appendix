@@ -664,7 +664,6 @@ function BreakdownPanel({ point }) {
         confidence="strict"
         note="T3には特児固有の控除（給与10万円・社保8万円固定、障害者控除等）を含む。通常の課税所得とは異なる。"
         rows={[
-          { key: "T0", label: "T0 制度分類", value: "現金給付", formula: "F2へ" },
           {
             key: "T1",
             label: "T1 扶養人数",

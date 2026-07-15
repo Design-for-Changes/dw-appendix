@@ -782,7 +782,6 @@ function BreakdownPanel({ point }) {
         title="M. 自己負担：重心医療費助成"
         confidence="representative"
         rows={[
-          { key: "M0", label: "M0 制度分類", value: "医療費負担軽減", formula: "F7へ" },
           { key: "M1", label: "M1 世帯所得割", value: fmtYen(m01.judgment?.householdLevyYen), formula: "A6の市町村分合計" },
           { key: "M2", label: "M2 所得割上限", value: fmtYen(m01.judgment?.cutoffYen), formula: "制度上限" },
           { key: "M3", label: "M3 該当判定", value: m01.status, formula: "M1 < M2" },
@@ -799,7 +798,6 @@ function BreakdownPanel({ point }) {
         title="N. 費用軽減：就学奨励費"
         confidence="provisional"
         rows={[
-          { key: "N0", label: "N0 制度分類", value: "教育費負担軽減", formula: "F10へ" },
           { key: "N1", label: "N1 給与収入", value: fmtWan(n04.judgment?.salaryManyen, 0), formula: "A1" },
           { key: "N2", label: "N2 区分境界", value: `${fmt(n04.judgment?.firstToSecondManyen)}万／${fmt(n04.judgment?.secondToThirdManyen)}万`, formula: "第1→2／第2→3" },
           { key: "N3", label: "N3 支弁区分", value: n04.supportClass, formula: "N1とN2を比較" },

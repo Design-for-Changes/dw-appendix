@@ -559,11 +559,13 @@ function BreakdownPanel({ point }) {
           { key: "A4", label: "A4 住民税 課税所得", value: fmtWan(taxHead.residentTax?.taxableWan), formula: "A2 −（B2〜B9：住民税側、千円未満切捨て）" },
           { key: "A5", label: "A5 所得税", value: fmtWan(taxHead.incomeTax?.taxWan), formula: `A3 × ${Math.round(itbr.rate * 100)}% − ${fmtYen(itbr.dedYen)}` },
           {
-            key: "A6",
-            label: "A6 住民税",
-            value: fmtWan(taxHead.residentTax?.computedTaxWan),
-            formula: `所得割 ${fmtWan(Number(taxHead.residentTax?.computedTaxWan || 0) - Number(taxHead.residentTax?.perCapitaWan || 0))}（内 市町村分 ${fmtWan(taxHead.residentTax?.municipalIncomeLevyWan, 2)}は通所・重心判定用）＋ 均等割 ${fmtWan(taxHead.residentTax?.perCapitaWan, 2)}`,
+            key: "A6a",
+            label: "A6a 住民税 所得割",
+            value: fmtWan(Number(taxHead.residentTax?.computedTaxWan || 0) - Number(taxHead.residentTax?.perCapitaWan || 0)),
+            formula: "A4 × 10% − 調整控除",
           },
+          { key: "A6b", label: "A6b 住民税 均等割", value: fmtWan(taxHead.residentTax?.perCapitaWan, 2), formula: "均等割 年額" },
+          { key: "A6", label: "A6 住民税", value: fmtWan(taxHead.residentTax?.computedTaxWan), formula: "A6a ＋ A6b" },
           { key: "A7", label: "A7 基礎手取額", value: fmtWan(b.takeHome?.takeHomeWan), formula: "A1 − B2 − A5 − A6", tone: "strong" },
         ]}
       />

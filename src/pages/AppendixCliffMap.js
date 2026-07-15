@@ -781,7 +781,6 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="M. 自己負担：重心医療費助成"
         confidence="representative"
-        note="現金給付ではなく費用軽減。医療費自己負担の軽減効果を代表値で年額換算。該当時は自己負担0、非該当時に医療費自己負担が立つ。"
         rows={[
           { key: "M0", label: "M0 制度分類", value: "医療費負担軽減", formula: "F7へ" },
           { key: "M1", label: "M1 世帯所得割", value: fmtYen(m01.judgment?.householdLevyYen), formula: "A6の市町村分合計" },
@@ -799,7 +798,6 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="N. 費用軽減：就学奨励費"
         confidence="provisional"
-        note="現金給付ではなく、教育費の自己負担を軽くする費用軽減。基準は第3区分（補助0＝自己負担フル）。所得が上がって支弁区分が上がるほど補助が縮小＝自己負担が増える。値・符号はコア確定（378e692）に一致。"
         rows={[
           { key: "N0", label: "N0 制度分類", value: "教育費負担軽減", formula: "F10へ" },
           { key: "N1", label: "N1 給与収入", value: fmtWan(n04.judgment?.salaryManyen, 0), formula: "A1" },

@@ -666,7 +666,7 @@ function BreakdownPanel({ point }) {
       {/* ===== C. 現金給付の判定（可処分所得に ＋） ===== */}
       {/* C 特別児童扶養手当 */}
       <CalculationTable
-        title="C. 現金給付：特別児童扶養手当（特児）"
+        title="T. 現金給付：特別児童扶養手当（特児）"
         confidence="strict"
         note="T3aは基礎控除引き上げに対応する10万円上限の調整。T3bは特児の所得判定で定められた8万円固定の控除。通常の給与所得控除B1や社会保険料実額B2とは異なる。"
         rows={[

@@ -445,112 +445,6 @@ function itLt(itWan, ltWan) {
   return `所${fmtWan(itWan)}／住${fmtWan(ltWan)}`;
 }
 
-function fmtWanAuto(n, maxDigits = 4) {
-  if (!Number.isFinite(Number(n))) return "—";
-  return `${Number(n).toLocaleString("ja-JP", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: maxDigits,
-  })}万`;
-}
-
-function fmtRate(rate) {
-  if (!Number.isFinite(Number(rate))) return "—";
-  return `${fmt(Number(rate) * 100, 3).replace(/\.0+$/, "")}%`;
-}
-
-function deductionTerms(items) {
-  const active = (items || []).filter((item) => Number(item?.wan || 0) !== 0 || item?.alwaysShow);
-  if (!active.length) return "控除なし";
-  return active.map((item) => `${item.label} ${fmtWanAuto(item.wan)}`).join(" ＋ ");
-}
-
-function judgmentFormula(detail) {
-  if (!detail) return "判定所得の内訳なし";
-  const total = detail.allowanceTotalWan ?? detail.totalWan;
-  return `${fmtWanAuto(total)} −（${deductionTerms(detail.deductions)}）＝ ${fmtWanAuto(detail.adjustedWan)}`;
-}
-
-function limitFormula(limit, fallbackYen) {
-  if (limit) {
-    return `基準 ${fmtYen(limit.baseYen)} ＋ 法定加算 ${fmtYen(limit.statutoryAddYen)} ＝ ${fmtYen(limit.limitYen)}`;
-  }
-  return `扶養人数別限度額表 ＝ ${fmtYen(fallbackYen)}`;
-}
-
-function familyJudgmentFormula(items, limitYen, ok) {
-  if (!(items || []).length) return `扶養義務者なし。限度 ${fmtYen(limitYen)}`;
-  const formulas = items
-    .map((item) => `${item.who}：${judgmentFormula(item.judgmentIncome)}`)
-    .join("／");
-  const maxYen = Math.max(...items.map((item) => Number(item?.judgmentIncome?.adjustedYen || item?.adjustedYen || 0)));
-  return `${formulas} → 最大 ${fmtYen(maxYen)} ${ok ? "≤" : ">"} 限度 ${fmtYen(limitYen)}`;
-}
-
-function employmentDeductionFormula(detail, fallbackBaseWan, fallbackAdjustmentWan) {
-  if (!detail) {
-    return `基礎 ${fmtWanAuto(fallbackBaseWan)} ＋ 所得金額調整 ${fmtWanAuto(fallbackAdjustmentWan)}`;
-  }
-  const salary = fmtWanAuto(detail.salaryWan);
-  const base = fmtWanAuto(detail.formulaValueWan ?? detail.tableValueWan);
-  let calculation = detail.formula || "給与所得控除表";
-  if (Number(detail.rate) > 0) {
-    const raw = `${salary} × ${fmtRate(detail.rate)} ＋ ${fmtWanAuto(detail.interceptWan || 0)}`;
-    calculation = detail.isCapped
-      ? `min（${fmtWanAuto(detail.capWan)}, ${raw}）＝ ${base}`
-      : `${raw} ＝ ${base}`;
-  } else if (detail.bracketLabel) {
-    calculation = `${salary}（${detail.bracketLabel}）→ ${base}`;
-  }
-  const adjustment = Number(detail.incomeAdjustmentDeductionWan || 0);
-  return `${calculation} ＋ 所得金額調整 ${fmtWanAuto(adjustment)} ＝ ${fmtWanAuto(detail.totalDeductionWan)}`;
-}
-
-function socialInsuranceFormula(detail, fallbackWan) {
-  if (!detail) return `年収ベース近似式 ＝ ${fmtWanAuto(fallbackWan)}`;
-  if (detail.exemptUnder130) return `${detail.bracketLabel} → ${fmtWanAuto(detail.totalWan)}`;
-  if (detail.fixedAnnualYen != null && Number.isFinite(Number(detail.fixedAnnualYen))) {
-    return `${detail.bracketLabel}：固定年額 ${fmtYen(detail.fixedAnnualYen)} ＝ ${fmtWanAuto(detail.totalWan)}`;
-  }
-  if (Number.isFinite(Number(detail.rate))) {
-    return `${fmtWanAuto(detail.salaryWan)} × ${fmtRate(detail.rate)} ＋ ${fmtYen(detail.interceptYen || 0)} ＝ ${fmtWanAuto(detail.totalWan)}`;
-  }
-  return `${detail.formula || "年収ベース近似式"} ＝ ${fmtWanAuto(detail.totalWan)}`;
-}
-
-function basicDeductionFormula(detail, label) {
-  if (!detail) return `${label}の所得帯別控除`;
-  return `総所得 ${fmtWanAuto(detail.totalIncomeWan)}（${detail.bracketLabel}）→ ${label} ${fmtWanAuto(detail.deductionWan)}`;
-}
-
-function disabilityDeductionFormula(rows, itWan, ltWan) {
-  const targets = (rows || []).filter((row) => row?.disabilityKind && row.disabilityKind !== "none");
-  const groups = [
-    {
-      label: "同居特別障害者",
-      count: targets.filter((row) => row.who !== "世帯主" && row.disabilityKind === "special" && row.cohabit).length,
-      it: disabilityDeductionCfg.it_wan?.cohab_special,
-      lt: disabilityDeductionCfg.lt_wan?.cohab_special,
-    },
-    {
-      label: "特別障害者",
-      count: targets.filter((row) => !(row.who !== "世帯主" && row.disabilityKind === "special" && row.cohabit) && row.disabilityKind === "special").length,
-      it: disabilityDeductionCfg.it_wan?.special,
-      lt: disabilityDeductionCfg.lt_wan?.special,
-    },
-    {
-      label: "一般障害者",
-      count: targets.filter((row) => row.disabilityKind === "disabled").length,
-      it: disabilityDeductionCfg.it_wan?.disabled,
-      lt: disabilityDeductionCfg.lt_wan?.disabled,
-    },
-  ].filter((group) => group.count > 0);
-  if (!groups.length) return "対象者なし → 所0万／住0万";
-  const terms = groups
-    .map((group) => `${group.label}${group.count}人（所${fmtWanAuto(group.it)}／住${fmtWanAuto(group.lt)}）`)
-    .join(" ＋ ");
-  return `${terms} ＝ 所${fmtWanAuto(itWan)}／住${fmtWanAuto(ltWan)}`;
-}
-
 function incomeTaxBracket(taxableWan) {
   const yen = Math.max(0, Math.floor(((Number(taxableWan) || 0) * 10000) / 1000) * 1000);
   const bands = [
@@ -564,15 +458,6 @@ function incomeTaxBracket(taxableWan) {
   ];
   const b = bands.find((x) => yen <= x[0]) || bands[bands.length - 1];
   return { rate: b[1], dedYen: b[2] };
-}
-
-function serviceCapYen(detail) {
-  const type = String(detail?.type || "");
-  const age = Number(detail?.age) || 0;
-  if (type === "非課税" || type === "無償化") return 0;
-  if (type === "一般2") return 37200;
-  if (type === "一般1") return age >= 18 ? 9300 : 4600;
-  return 0;
 }
 
 function childDisabilityLabel(c) {
@@ -646,7 +531,6 @@ function BreakdownPanel({ point }) {
   const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
   const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
   const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
-  const spouseRow = rows.find((r) => r.who === "配偶者") || {};
   const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
   const itbr = incomeTaxBracket(taxHead.incomeTax?.taxableWan);
   const dependent = ded.dependent || {};
@@ -690,65 +574,74 @@ function BreakdownPanel({ point }) {
         wide
         rows={[
           {
+            key: "B1a",
+            label: "B1a 給与所得控除（基礎額）",
+            value: fmtWan(headRow.employmentIncomeBaseDeductionWan),
+            formula: "A1の給与帯別控除",
+          },
+          {
+            key: "B1b",
+            label: "B1b 所得金額調整控除",
+            value: fmtWan(headRow.incomeAdjustmentDeductionWan),
+            formula: "A1の所得金額調整",
+          },
+          {
             key: "B1",
-            label: "B1 給与所得控除",
+            label: "B1 給与所得控除 合計",
             value: fmtWan(headRow.employmentIncomeDeductionWan),
-            formula: employmentDeductionFormula(
-              headRow.employmentIncomeDeductionDetail,
-              headRow.employmentIncomeBaseDeductionWan,
-              headRow.incomeAdjustmentDeductionWan
-            ),
+            formula: "B1a ＋ B1b",
+            tone: "strong",
           },
           {
             key: "B2",
             label: "B2 社会保険料控除",
             value: fmtWan(headRow.socialInsuranceWan),
-            formula: `${socialInsuranceFormula(headRow.socialInsuranceBreakdown, headRow.socialInsuranceWan)}（所得税・住民税とも実額控除）`,
+            formula: "A1 × 社保率 ＋ 区分別切片",
           },
           {
             key: "B3",
             label: "B3 基礎控除",
             value: itLt(taxHead.deductions?.basicITWan, taxHead.deductions?.basicLTWan),
-            formula: `${basicDeductionFormula(taxHead.deductions?.basicITDetail, "所得税")}／${basicDeductionFormula(taxHead.deductions?.basicLTDetail, "住民税")}`,
+            formula: "A2の所得帯別（所／住）",
           },
           {
             key: "B4",
             label: "B4 配偶者控除",
             value: itLt(ded.spouse?.itWan, ded.spouse?.ltWan),
-            formula: `配偶者所得 ${fmtWanAuto(spouseRow.totalIncomeWan || 0)}・世帯主総所得 ${fmtWanAuto(headRow.totalIncomeWan)} → 所${fmtWanAuto(ded.spouse?.itWan)}／住${fmtWanAuto(ded.spouse?.ltWan)}`,
+            formula: "配偶者所得 × A2所得帯",
           },
           {
             key: "B5",
             label: "B5 配偶者特別控除",
             value: itLt(ded.spouseSpecial?.itWan, ded.spouseSpecial?.ltWan),
-            formula: `配偶者控除の適用後に判定 → 所${fmtWanAuto(ded.spouseSpecial?.itWan)}／住${fmtWanAuto(ded.spouseSpecial?.ltWan)}`,
+            formula: "B4＝0のとき所得帯別判定",
           },
           {
             key: "B6",
             label: "B6 扶養控除",
             value: itLt(dependent.itWan, dependent.ltWan),
-            formula: `16歳以上の扶養親族を年齢区分別に合計 → 所${fmtWanAuto(dependent.itWan)}／住${fmtWanAuto(dependent.ltWan)}`,
+            formula: "16歳以上の扶養親族を合計",
           },
           {
             key: "B7",
             label: "B7 特定親族特別控除",
             value: itLt(specialKin.itWan, specialKin.ltWan),
-            formula: `19〜22歳の親族の所得帯別控除 → 所${fmtWanAuto(specialKin.itWan)}／住${fmtWanAuto(specialKin.ltWan)}`,
+            formula: "19〜22歳の親族の所得帯別",
           },
           {
             key: "B8",
             label: "B8 障害者控除",
             value: itLt(taxHead.deductions?.disabilityITWan, taxHead.deductions?.disabilityLTWan),
-            formula: disabilityDeductionFormula(rows, taxHead.deductions?.disabilityITWan, taxHead.deductions?.disabilityLTWan),
+            formula: "障害区分別控除 × 対象人数",
           },
           {
             key: "B9",
             label: "B9 その他の人的控除",
             value: itLt(otherPersonalITWan, otherPersonalLTWan),
-            formula: `寡婦・ひとり親・勤労学生控除の合計 → 所${fmtWanAuto(otherPersonalITWan)}／住${fmtWanAuto(otherPersonalLTWan)}`,
+            formula: "寡婦 ＋ ひとり親 ＋ 勤労学生",
           },
         ]}
-        note="16歳未満の子について、廃止された年少扶養控除を通所・M01判定で復活させる処理は行わない。"
+        note="B2〜B9は所得税側・住民税側で金額が異なる場合がある。「所／住」で併記。16歳未満の年少扶養控除は適用しない。"
       />
 
       {/* ===== C. 現金給付の判定（可処分所得に ＋） ===== */}
@@ -756,30 +649,37 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="C. 現金給付：特別児童扶養手当（特児）"
         confidence="strict"
-        note="★特児の「判定所得」は通常の課税所得と異なる（社保控除が8万円固定等の制度固有控除）。B の課税所得と混同しない。"
+        note="T3には特児固有の控除（給与10万円・社保8万円固定、障害者控除等）を含む。通常の課税所得とは異なる。"
         rows={[
-          { key: "class", label: "制度分類", value: "現金給付", formula: "Fの現金給付合計へ加算" },
+          { key: "T0", label: "T0 制度分類", value: "現金給付", formula: "F2へ" },
           {
-            key: "fuyo",
-            label: "扶養人数・限度額",
+            key: "T1",
+            label: "T1 扶養人数",
             value: `${fmt(tcca.fuyoCount)}人`,
-            formula: limitFormula(tcca.headLimit, tcca.headLimitYen),
+            formula: "扶養親族等の実人数",
           },
           {
-            key: "head",
-            label: "本人判定",
-            value: tccaHeadOk ? "通過" : "停止",
-            formula: `${judgmentFormula(tcca.head?.judgmentIncome)} → ${fmtYen(tcca.headAdjustedIncomeYen)} ${tccaHeadOk ? "≤" : ">"} ${fmtYen(tcca.headLimitYen)}`,
+            key: "T2",
+            label: "T2 本人 総所得",
+            value: fmtWan(tcca.head?.judgmentIncome?.totalWan),
+            formula: "A2",
           },
           {
-            key: "family",
-            label: "扶養義務者判定",
-            value: tccaFamilyOk ? "通過" : "停止",
-            formula: familyJudgmentFormula(tcca.family, tcca.familyLimitYen, tccaFamilyOk),
+            key: "T3",
+            label: "T3 特児固有控除 合計",
+            value: fmtWan(tcca.head?.judgmentIncome?.deductionSumWan),
+            formula: "給与10万 ＋ 社保8万 ＋ 障害等",
           },
-          { key: "elig", label: "判定結果", value: tcca.eligible ? "支給" : "不支給", formula: "本人 ∧ 扶養義務者 の両方通過で支給" },
-          { key: "amt", label: "支給額（月額・年額）", value: fmtWan(tcca.annualWan), formula: `${fmtYen(tcca.monthlyYen)} × 12か月 ÷ 10,000 ＝ ${fmtWanAuto(tcca.annualWan)}` },
-          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算", formula: `F現金給付へ ＋${fmtWanAuto(tcca.annualWan)}`, tone: "strong" },
+          { key: "T4", label: "T4 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "max（0, T2 − T3）" },
+          { key: "T5", label: "T5 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },
+          { key: "T6", label: "T6 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T4 ≤ T5" },
+          { key: "T7", label: "T7 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
+          { key: "T8", label: "T8 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: "T1の扶養義務者限度額" },
+          { key: "T9", label: "T9 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T7 ≤ T8" },
+          { key: "T10", label: "T10 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T6 ∧ T9" },
+          { key: "T11", label: "T11 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T10が支給なら等級別月額合計" },
+          { key: "T12", label: "T12 支給年額", value: fmtWan(tcca.annualWan), formula: "T11 × 12 ÷ 10,000" },
+          { key: "T13", label: "T13 最終指標への扱い", value: "可処分所得に加算", formula: "F2 ＝ T12", tone: "strong" },
         ]}
       />
 
@@ -787,29 +687,38 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="C. 現金給付：障害児福祉手当"
         confidence="strict"
+        note="W2は手当固有の判定所得（給与10万円・社保8万円固定等）で、通常の課税所得とは異なる。"
         rows={[
-          { key: "class", label: "制度分類", value: "現金給付", formula: "Fの現金給付合計へ加算" },
-          { key: "fuyo", label: "扶養人数・限度額", value: `${fmt(welfare.fuyoCount)}人`, formula: `扶養義務者限度額表 ${fmt(welfare.fuyoCount)}人 → ${fmtYen(welfare.obligorLimitYen)}` },
-          {
-            key: "obligor",
-            label: "扶養義務者判定",
-            value: welfare.obligorOk ? "通過" : "停止",
-            formula: familyJudgmentFormula(
-              (welfare.obligorJudgmentIncomeDetails || []).map((item) => ({ ...item, judgmentIncome: item })),
-              welfare.obligorLimitYen,
-              welfare.obligorOk
-            ),
-          },
+          { key: "W0", label: "W0 制度分類", value: "現金給付", formula: "F3へ" },
+          { key: "W1", label: "W1 扶養人数", value: `${fmt(welfare.fuyoCount)}人`, formula: "扶養親族等の実人数" },
+          { key: "W2", label: "W2 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
+          { key: "W3", label: "W3 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: "W1の限度額表" },
+          { key: "W4", label: "W4 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W2 ≤ W3" },
           ...((welfare.recipients || []).length
-            ? welfare.recipients.map((rc) => ({
-                key: `wf-${rc.who}`,
-                label: `${rc.who}・本人判定`,
-                value: rc.ok ? "支給" : "不支給",
-                formula: `${judgmentFormula(rc.selfJudgmentIncome)} → ${fmtYen(rc.selfYen)} ${rc.selfOk ? "≤" : ">"} ${fmtYen(rc.selfLimitYen)}（本人${rc.selfOk ? "○" : "×"}・義務者${rc.obligorOk ? "○" : "×"}）`,
-              }))
-            : [{ key: "wf-none", label: "対象者", value: "なし", formula: "受給対象者が存在しない" }]),
-          { key: "amt", label: "支給額（月額・年額）", value: fmtWan(welfare.annualWan), formula: `${fmtYen(welfare.monthlyYen)} × 12か月 ÷ 10,000 ＝ ${fmtWanAuto(welfare.annualWan)}` },
-          { key: "treat", label: "最終指標への扱い", value: "可処分所得に加算", formula: `F現金給付へ ＋${fmtWanAuto(welfare.annualWan)}`, tone: "strong" },
+            ? welfare.recipients.flatMap((rc, index) => [
+                {
+                  key: `wf-income-${rc.who}`,
+                  label: `W5-${index + 1}a ${rc.who} 本人判定所得`,
+                  value: fmtYen(rc.selfYen),
+                  formula: "本人総所得 − 制度固有控除",
+                },
+                {
+                  key: `wf-limit-${rc.who}`,
+                  label: `W5-${index + 1}b ${rc.who} 本人限度額`,
+                  value: fmtYen(rc.selfLimitYen),
+                  formula: "本人限度額表",
+                },
+                {
+                  key: `wf-result-${rc.who}`,
+                  label: `W5-${index + 1}c ${rc.who} 本人判定`,
+                  value: rc.ok ? "支給" : "不支給",
+                  formula: `W5-${index + 1}a ≤ W5-${index + 1}b ∧ W4`,
+                },
+              ])
+            : [{ key: "wf-none", label: "W5 対象者", value: "なし", formula: "対象者なし" }]),
+          { key: "W6", label: "W6 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W5の支給対象者分を合計" },
+          { key: "W7", label: "W7 支給年額", value: fmtWan(welfare.annualWan), formula: "W6 × 12 ÷ 10,000" },
+          { key: "W8", label: "W8 最終指標への扱い", value: "可処分所得に加算", formula: "F3 ＝ W7", tone: "strong" },
         ]}
       />
 
@@ -820,26 +729,15 @@ function BreakdownPanel({ point }) {
         confidence="representative"
         note="現金給付ではなく費用軽減。医療費自己負担の軽減効果を代表値で年額換算。該当時は自己負担0、非該当時に医療費自己負担が立つ。"
         rows={[
-          { key: "class", label: "制度分類", value: "医療費負担軽減", formula: "現金給付には含めず、非該当時の自己負担をFで減算" },
-          {
-            key: "judge",
-            label: "該当判定（区分）",
-            value: m01.status,
-            formula: `世帯所得割 ${fmtYen(m01.judgment?.householdLevyYen)} ${m01.eligible ? "<" : "≥"} ${fmtYen(m01.judgment?.cutoffYen)} → ${m01.status}`,
-          },
-          {
-            key: "burden",
-            label: "医療費自己負担",
-            value: fmtWan(costBurden.medicalCostBurdenWan),
-            formula: `軽減満額（${fmtYen(m01.amountFormula?.annualYenPerRecipient)} × ${fmt(m01.amountFormula?.count)}人 ÷ 10,000）${fmtWanAuto(m01.fullReliefWan)} − 現在の軽減 ${fmtWanAuto(m01.annualWan)} ＝ ${fmtWanAuto(costBurden.medicalCostBurdenWan)}`,
-          },
-          {
-            key: "sens",
-            label: "感度レンジ",
-            value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`,
-            formula: `代表年額レンジ × ${fmt(m01.count)}人 ＝ ${fmtWanAuto(m01.sensitivityRangeWan?.min)}〜${fmtWanAuto(m01.sensitivityRangeWan?.max)}`,
-          },
-          { key: "treat", label: "最終指標への扱い", value: "可処分所得から減算", formula: `F可処分所得から −${fmtWanAuto(costBurden.medicalCostBurdenWan)}`, tone: "strong" },
+          { key: "M0", label: "M0 制度分類", value: "医療費負担軽減", formula: "F7へ" },
+          { key: "M1", label: "M1 世帯所得割", value: fmtYen(m01.judgment?.householdLevyYen), formula: "A6の市町村分合計" },
+          { key: "M2", label: "M2 所得割上限", value: fmtYen(m01.judgment?.cutoffYen), formula: "制度上限" },
+          { key: "M3", label: "M3 該当判定", value: m01.status, formula: "M1 < M2" },
+          { key: "M4", label: "M4 軽減満額", value: fmtWan(m01.fullReliefWan), formula: "代表年額 × 対象人数" },
+          { key: "M5", label: "M5 現在の軽減額", value: fmtWan(m01.annualWan), formula: "M3が該当ならM4、非該当なら0" },
+          { key: "M6", label: "M6 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M4 − M5" },
+          { key: "M7", label: "M7 感度レンジ", value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`, formula: "代表値レンジ × 対象人数" },
+          { key: "M8", label: "M8 最終指標への扱い", value: "可処分所得から減算", formula: "F7 ＝ M6", tone: "strong" },
         ]}
       />
 
@@ -849,26 +747,14 @@ function BreakdownPanel({ point }) {
         confidence="provisional"
         note="現金給付ではなく、教育費の自己負担を軽くする費用軽減。基準は第3区分（補助0＝自己負担フル）。所得が上がって支弁区分が上がるほど補助が縮小＝自己負担が増える。値・符号はコア確定（378e692）に一致。"
         rows={[
-          { key: "class", label: "制度分類", value: "教育費負担軽減（自己負担側）", formula: "現金給付には含めず、第3区分（補助0）との差をFで負担軽減として反映" },
-          {
-            key: "region",
-            label: "区分",
-            value: n04.supportClass,
-            formula: `給与 ${fmtWanAuto(n04.judgment?.salaryManyen)} を境界 ${fmtWanAuto(n04.judgment?.firstToSecondManyen)}・${fmtWanAuto(n04.judgment?.secondToThirdManyen)} と比較 → ${n04.supportClass}`,
-          },
-          {
-            key: "relief",
-            label: "教育費自己負担の軽減額（第3区分基準）",
-            value: fmtWan(n04.annualWan),
-            formula: `${fmtYen(n04.amountFormula?.annualYenPerRecipient)} × ${fmt(n04.amountFormula?.count)}人 ÷ 10,000 ＝ ${fmtWanAuto(n04.annualWan)}`,
-          },
-          {
-            key: "treat",
-            label: "最終指標への扱い",
-            value: "費用軽減（教育費自己負担を軽くする）",
-            formula: `F可処分所得へ負担軽減として ＋${fmtWanAuto(n04.annualWan)}（第3区分は0）`,
-            tone: "strong",
-          },
+          { key: "N0", label: "N0 制度分類", value: "教育費負担軽減", formula: "F10へ" },
+          { key: "N1", label: "N1 給与収入", value: fmtWan(n04.judgment?.salaryManyen, 0), formula: "A1" },
+          { key: "N2", label: "N2 区分境界", value: `${fmt(n04.judgment?.firstToSecondManyen)}万／${fmt(n04.judgment?.secondToThirdManyen)}万`, formula: "第1→2／第2→3" },
+          { key: "N3", label: "N3 支弁区分", value: n04.supportClass, formula: "N1とN2を比較" },
+          { key: "N4", label: "N4 区分別単価", value: fmtYen(n04.amountFormula?.annualYenPerRecipient), formula: "N3の小学部年額" },
+          { key: "N5", label: "N5 対象人数", value: `${fmt(n04.amountFormula?.count)}人`, formula: "対象児童数" },
+          { key: "N6", label: "N6 教育費負担軽減", value: fmtWan(n04.annualWan), formula: "N4 × N5 ÷ 10,000" },
+          { key: "N7", label: "N7 最終指標への扱い", value: "可処分所得に反映", formula: "F10 ＝ N6", tone: "strong" },
         ]}
       />
 
@@ -879,34 +765,28 @@ function BreakdownPanel({ point }) {
         confidence={service.confidence || "strict"}
         note="負担上限月額は世帯単位（複数児でも合算せず最も高い1つ。児福法施行令24条・27条の2）。一般2の実負担は上限37,200円ではなく、東京都R6調査の利用者負担平均10,406円を採用（上限は非拘束）。"
         rows={[
-          { key: "class", label: "制度分類", value: "利用者負担", formula: "現金給付には含めず、世帯年額をFで減算" },
+          { key: "E0", label: "E0 制度分類", value: "利用者負担", formula: "F8へ" },
           {
-            key: "levySum",
-            label: "世帯 所得割合計",
+            key: "E1",
+            label: "E1 世帯 所得割合計",
             value: fmtWan(service.householdLevySumWan, 2),
-            formula: `各人の市町村民税所得割を合算 ＝ ${fmtYen(Number(service.householdLevySumWan || 0) * 10000)}`,
+            formula: "A6の市町村分合計",
           },
-          ...(service.details || []).map((d) => {
-            const capYen = serviceCapYen(d);
-            const candidate = d.rawMonthlyYen == null
-              ? `制度上限 ${fmtYen(capYen)}`
-              : `min（代表値 ${fmtYen(d.rawMonthlyYen)}, 制度上限 ${fmtYen(capYen)}）`;
-            return {
+          ...(service.details || []).map((d, index) => ({
               key: `svc-${d.who}`,
-              label: `${d.who}（${fmt(d.age)}歳）`,
-              value: d.type,
+              label: `E2-${index + 1} ${d.who} 月額候補`,
+              value: fmtYen(d.monthlyUpperYen),
               confidence: d.confidence,
-              formula: `所得割 ${fmtYen(d.householdLevyYen)} → ${d.type} → ${candidate} ＝ ${fmtYen(d.monthlyUpperYen)}/月`,
-            };
-          }),
+              formula: `E1 → ${d.type} → min（代表値, 制度上限）`,
+            })),
           {
-            key: "svc-adopt",
-            label: "世帯月額負担",
+            key: "E3",
+            label: "E3 世帯月額負担",
             value: fmtYen(service.monthlyTotalYen),
-            formula: `max（${(service.calculation?.monthlyCandidateYenByChild || []).map((item) => `${item.who} ${fmtYen(item.monthlyYen)}`).join("、") || "対象児なし"}）＝ ${fmtYen(service.monthlyTotalYen)}（人数倍なし）`,
+            formula: `max（${(service.details || []).map((_, index) => `E2-${index + 1}`).join("，") || "0"}）`,
           },
-          { key: "svc-annual", label: "年額負担", value: fmtWan(service.annualWan), formula: `${fmtYen(service.monthlyTotalYen)} × 12か月 ÷ 10,000 ＝ ${fmtWanAuto(service.annualWan)}` },
-          { key: "treat", label: "最終指標への扱い", value: "可処分所得から減算", formula: `F可処分所得から −${fmtWanAuto(service.annualWan)}`, tone: "strong" },
+          { key: "E4", label: "E4 年額負担", value: fmtWan(service.annualWan), formula: "E3 × 12 ÷ 10,000" },
+          { key: "E5", label: "E5 最終指標への扱い", value: "可処分所得から減算", formula: "F8 ＝ E4", tone: "strong" },
         ]}
       />
 
@@ -918,16 +798,16 @@ function BreakdownPanel({ point }) {
         confidence="strict"
         note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここは実際に現金として受け取る給付だけを合計。"
         rows={[
-          { key: "pension", label: "基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: `本人・配偶者分 ＝ ${fmtWanAuto(allowance.basicDisabilityPensionWan)}` },
-          { key: "tcca", label: "特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: `C特児の年額 ＝ ${fmtWanAuto(allowance.tccaWan)}` },
-          { key: "welfare", label: "障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: `C福祉手当の年額 ＝ ${fmtWanAuto(allowance.welfareAllowanceWan)}` },
-          { key: "childSupport", label: "児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: `ひとり親判定による年額 ＝ ${fmtWanAuto(allowance.childSupportWan)}` },
-          { key: "childAllowance", label: "児童手当", value: fmtWan(allowance.childAllowanceWan), formula: `対象児童の月額合計 × 12 ＝ ${fmtWanAuto(allowance.childAllowanceWan)}` },
+          { key: "F1", label: "F1 基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人分 ＋ 配偶者分" },
+          { key: "F2", label: "F2 特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "T12" },
+          { key: "F3", label: "F3 障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "W7" },
+          { key: "F4", label: "F4 児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親判定年額" },
+          { key: "F5", label: "F5 児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "対象児の月額合計 × 12" },
           {
-            key: "allowance-total",
-            label: "現金給付合計",
+            key: "F6",
+            label: "F6 現金給付合計",
             value: fmtWan(allowance.totalWan),
-            formula: `${fmtWanAuto(allowance.basicDisabilityPensionWan)} ＋ ${fmtWanAuto(allowance.tccaWan)} ＋ ${fmtWanAuto(allowance.welfareAllowanceWan)} ＋ ${fmtWanAuto(allowance.childSupportWan)} ＋ ${fmtWanAuto(allowance.childAllowanceWan)} ＝ ${fmtWanAuto(allowance.totalWan)}`,
+            formula: "F1 ＋ F2 ＋ F3 ＋ F4 ＋ F5",
             tone: "strong",
           },
         ]}
@@ -940,15 +820,15 @@ function BreakdownPanel({ point }) {
         confidence="strict"
         note="現金給付ではない費用側の束。医療費（M01非該当時）・通所は自己負担。就学奨励費(N04)は教育費自己負担の軽減（第3区分＝補助0を基準）で、費用を差し引く方向に効く。符号はコア確定（378e692）。表示名は仮置き。"
         rows={[
-          { key: "medical", label: "医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: `D M01より ＝ ${fmtWanAuto(costBurden.medicalCostBurdenWan)}`, confidence: "representative" },
-          { key: "serviceFee", label: "通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: `E 通所より ＝ ${fmtWanAuto(costBurden.serviceFeeWan)}` },
-          { key: "burden-subtotal", label: "自己負担 小計", value: fmtWan(costBurden.totalWan), formula: `${fmtWanAuto(costBurden.medicalCostBurdenWan)} ＋ ${fmtWanAuto(costBurden.serviceFeeWan)} ＝ ${fmtWanAuto(costBurden.totalWan)}` },
-          { key: "eduRelief", label: "教育費自己負担の軽減（第3区分基準）", value: fmtWan(disposable.educationCostReliefWan), formula: `D N04より ＝ ${fmtWanAuto(disposable.educationCostReliefWan)}`, confidence: "provisional" },
+          { key: "F7", label: "F7 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M6", confidence: "representative" },
+          { key: "F8", label: "F8 通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E4" },
+          { key: "F9", label: "F9 自己負担 小計", value: fmtWan(costBurden.totalWan), formula: "F7 ＋ F8" },
+          { key: "F10", label: "F10 教育費自己負担の軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "N6", confidence: "provisional" },
           {
-            key: "net",
-            label: "純費用（自己負担 − 教育費軽減）",
+            key: "F11",
+            label: "F11 純費用",
             value: fmtWan(Number(costBurden.totalWan) - Number(disposable.educationCostReliefWan)),
-            formula: `${fmtWanAuto(costBurden.totalWan)} − ${fmtWanAuto(disposable.educationCostReliefWan)} ＝ ${fmtWanAuto(Number(costBurden.totalWan) - Number(disposable.educationCostReliefWan))}`,
+            formula: "F9 − F10",
             tone: "strong",
           },
         ]}
@@ -961,16 +841,16 @@ function BreakdownPanel({ point }) {
         confidence="strict"
         note="最終指標は可処分所得の一本。「制度込み家計余力」という第二指標は作らない。"
         rows={[
-          { key: "takeHome", label: "手取り", value: fmtWan(disposable.takeHomeWan), formula: `${fmtWanAuto(b.takeHome?.salaryWan)} − 社保 ${fmtWanAuto(b.takeHome?.socialWan)} − 税 ${fmtWanAuto(b.takeHome?.taxWan)} ＝ ${fmtWanAuto(disposable.takeHomeWan)}` },
-          { key: "allowance", label: "＋ 現金給付", value: fmtWan(disposable.allowanceWan), formula: `F現金給付合計 ＝ ＋${fmtWanAuto(disposable.allowanceWan)}` },
-          { key: "medical", label: "− 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: `D M01 ＝ −${fmtWanAuto(disposable.medicalCostBurdenWan)}`, confidence: "representative" },
-          { key: "serviceFee", label: "− 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: `E 通所 ＝ −${fmtWanAuto(disposable.serviceFeeWan)}` },
-          { key: "eduRelief", label: "＋ 教育費自己負担の軽減（第3区分基準）", value: fmtWan(disposable.educationCostReliefWan), formula: `D N04 ＝ ＋${fmtWanAuto(disposable.educationCostReliefWan)}`, confidence: "provisional" },
+          { key: "F12", label: "F12 手取り", value: fmtWan(disposable.takeHomeWan), formula: "A7" },
+          { key: "F13", label: "F13 現金給付", value: fmtWan(disposable.allowanceWan), formula: "F6" },
+          { key: "F14", label: "F14 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "F7", confidence: "representative" },
+          { key: "F15", label: "F15 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: "F8" },
+          { key: "F16", label: "F16 教育費負担軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "F10", confidence: "provisional" },
           {
-            key: "disposable",
-            label: "可処分所得",
+            key: "F17",
+            label: "F17 可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: `${fmtWanAuto(disposable.takeHomeWan)} ＋ ${fmtWanAuto(disposable.allowanceWan)} − ${fmtWanAuto(disposable.medicalCostBurdenWan)} − ${fmtWanAuto(disposable.serviceFeeWan)} ＋ ${fmtWanAuto(disposable.educationCostReliefWan)} ＝ ${fmtWanAuto(disposable.disposableWan)}`,
+            formula: "F12 ＋ F13 − F14 − F15 ＋ F16",
             tone: "strong",
           },
         ]}

@@ -559,13 +559,11 @@ function BreakdownPanel({ point }) {
           { key: "A4", label: "A4 住民税 課税所得", value: fmtWan(taxHead.residentTax?.taxableWan), formula: "A2 −（B2〜B9：住民税側、千円未満切捨て）" },
           { key: "A5", label: "A5 所得税", value: fmtWan(taxHead.incomeTax?.taxWan), formula: `A3 × ${Math.round(itbr.rate * 100)}% − ${fmtYen(itbr.dedYen)}` },
           {
-            key: "A6a",
-            label: "A6a 住民税 所得割",
-            value: fmtWan(Number(taxHead.residentTax?.computedTaxWan || 0) - Number(taxHead.residentTax?.perCapitaWan || 0)),
-            formula: "A4 × 10% − 調整控除",
+            key: "A6",
+            label: "A6 住民税",
+            value: fmtWan(taxHead.residentTax?.computedTaxWan),
+            formula: `所得割 ${fmtWan(Number(taxHead.residentTax?.computedTaxWan || 0) - Number(taxHead.residentTax?.perCapitaWan || 0))} ＋ 均等割 ${fmtWan(taxHead.residentTax?.perCapitaWan, 2)}`,
           },
-          { key: "A6b", label: "A6b 住民税 均等割", value: fmtWan(taxHead.residentTax?.perCapitaWan, 2), formula: "均等割 年額" },
-          { key: "A6", label: "A6 住民税", value: fmtWan(taxHead.residentTax?.computedTaxWan), formula: "A6a ＋ A6b" },
           { key: "A7", label: "A7 基礎手取額", value: fmtWan(b.takeHome?.takeHomeWan), formula: "A1 − B2 − A5 − A6", tone: "strong" },
         ]}
       />
@@ -595,10 +593,23 @@ function BreakdownPanel({ point }) {
             tone: "strong",
           },
           {
+            key: "B2a",
+            label: "B2a 社会保険料率（近似）",
+            value: `${fmt(Number(headRow.socialInsuranceBreakdown?.rate || 0) * 100, 3)}%`,
+            formula: "選択給与帯・40歳以上の係数",
+          },
+          {
+            key: "B2b",
+            label: "B2b 固定加算額（近似式）",
+            value: fmtWan(Number(headRow.socialInsuranceBreakdown?.interceptYen || 0) / 10000, 2),
+            formula: "選択給与帯の年額調整分",
+          },
+          {
             key: "B2",
             label: "B2 社会保険料控除",
             value: fmtWan(headRow.socialInsuranceWan),
-            formula: "A1 × 社保率 ＋ 区分別切片",
+            formula: "A1 × B2a ＋ B2b",
+            tone: "strong",
           },
           {
             key: "B3",
@@ -643,7 +654,7 @@ function BreakdownPanel({ point }) {
             formula: "寡婦 ＋ ひとり親 ＋ 勤労学生",
           },
         ]}
-        note="B2〜B9は所得税側・住民税側で金額が異なる場合がある。「所／住」で併記。16歳未満の年少扶養控除は適用しない。"
+        note="B2は年収帯別の社会保険料近似式。B2a・B2bは選択給与帯の係数。B3〜B9は所得税側・住民税側で金額が異なる場合があるため「所／住」で併記。16歳未満の年少扶養控除は適用しない。"
       />
 
       {/* ===== C. 現金給付の判定（可処分所得に ＋） ===== */}

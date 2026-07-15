@@ -696,7 +696,7 @@ function BreakdownPanel({ point }) {
               : "0",
             tone: "strong",
           },
-          { key: "T4", label: "T4 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "max（0, A1 − B1a − T3）" },
+          { key: "T4", label: "T4 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "A1 − B1a − T3" },
           { key: "T5", label: "T5 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },
           { key: "T6", label: "T6 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T4 ≤ T5" },
           { key: "T7", label: "T7 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },

@@ -779,7 +779,7 @@ function BreakdownPanel({ point }) {
       {/* ===== D. 費用軽減にともなう自己負担（可処分所得から −） ===== */}
       {/* D 重心医療費助成（M01） */}
       <CalculationTable
-        title="D. 自己負担：重心医療費助成（M01）"
+        title="M. 自己負担：重心医療費助成"
         confidence="representative"
         note="現金給付ではなく費用軽減。医療費自己負担の軽減効果を代表値で年額換算。該当時は自己負担0、非該当時に医療費自己負担が立つ。"
         rows={[

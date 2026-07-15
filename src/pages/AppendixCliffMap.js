@@ -704,8 +704,7 @@ function BreakdownPanel({ point }) {
           { key: "T9", label: "T9 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T7 ≤ T8" },
           { key: "T10", label: "T10 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T6 ∧ T9" },
           { key: "T11", label: "T11 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T10が支給なら等級別月額合計" },
-          { key: "T12", label: "T12 支給年額", value: fmtWan(tcca.annualWan), formula: "T11 × 12 ÷ 10,000" },
-          { key: "T13", label: "T13 最終指標への扱い", value: "可処分所得に加算", formula: "F2 ＝ T12", tone: "strong" },
+          { key: "T12", label: "T12 支給年額", value: fmtWan(tcca.annualWan), formula: "T11 × 12" },
         ]}
       />
 

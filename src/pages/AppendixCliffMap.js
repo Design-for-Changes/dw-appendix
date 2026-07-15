@@ -765,35 +765,13 @@ function BreakdownPanel({ point }) {
           { key: "W3", label: "W3 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: "A1 − B1a − W2" },
           { key: "W4", label: "W4 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: "W1の限度額表" },
           { key: "W5", label: "W5 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W3 ≤ W4" },
-          ...((welfare.recipients || []).length
-            ? welfare.recipients.flatMap((rc, index) => [
-                {
-                  key: `wf-income-${rc.who}`,
-                  label: `W6-${index + 1}a ${rc.who} 本人判定所得`,
-                  value: fmtYen(rc.selfYen),
-                  formula: "本人総所得 − 制度固有控除",
-                },
-                {
-                  key: `wf-limit-${rc.who}`,
-                  label: `W6-${index + 1}b ${rc.who} 本人限度額`,
-                  value: fmtYen(rc.selfLimitYen),
-                  formula: "本人限度額表",
-                },
-                {
-                  key: `wf-self-result-${rc.who}`,
-                  label: `W6-${index + 1}c ${rc.who} 本人判定`,
-                  value: rc.selfOk ? "通過" : "停止",
-                  formula: `W6-${index + 1}a ≤ W6-${index + 1}b`,
-                },
-                {
-                  key: `wf-result-${rc.who}`,
-                  label: `W6-${index + 1}d ${rc.who} 支給判定`,
-                  value: rc.ok ? "支給" : "不支給",
-                  formula: `W5 ∧ W6-${index + 1}c`,
-                },
-              ])
-            : [{ key: "wf-none", label: "W6 対象者", value: "なし", formula: "対象者なし" }]),
-          { key: "W7", label: "W7 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W6の支給対象者分を合計" },
+          {
+            key: "W6",
+            label: "W6 支給判定",
+            value: (welfare.recipients || []).length ? (welfare.monthlyYen > 0 ? "支給" : "不支給") : "対象なし",
+            formula: "W5",
+          },
+          { key: "W7", label: "W7 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W6が支給なら対象児童分を合計" },
           { key: "W8", label: "W8 支給年額", value: fmtWan(welfare.annualWan), formula: "W7 × 12" },
         ]}
       />

@@ -678,7 +678,7 @@ function BreakdownPanel({ point }) {
           },
           {
             key: "T3",
-            label: "T3 特児固有控除 合計",
+            label: "T3 控除額 合計",
             value: fmtWan(tcca.head?.judgmentIncome?.deductionSumWan),
             formula: "給与10万 ＋ 社保8万 ＋ 障害等",
           },

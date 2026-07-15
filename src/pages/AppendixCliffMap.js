@@ -545,7 +545,13 @@ function BreakdownPanel({ point }) {
     Number(widowSingleParent.singleParent?.ltWan || 0) +
     Number(taxHead.deductions?.workingStudentLTWan || 0);
   const tccaDeductions = tcca.head?.judgmentIncome?.deductions || [];
-  const tccaDeductionLabel = (label) => {
+  const welfareObligorDetails = welfare.obligorJudgmentIncomeDetails || [];
+  const welfareMaxObligor = welfareObligorDetails.reduce(
+    (max, detail) => (!max || Number(detail.adjustedYen || 0) > Number(max.adjustedYen || 0) ? detail : max),
+    null
+  );
+  const welfareObligorDeductions = welfareMaxObligor?.deductions || [];
+  const judgmentDeductionLabel = (label) => {
     if (String(label).startsWith("基礎控除引き上げ相当額")) return "基礎控除引き上げ相当額";
     if (String(label).startsWith("社会保険料控除")) return "社会保険料控除（固定）";
     return label;
@@ -679,10 +685,10 @@ function BreakdownPanel({ point }) {
             const code = `T3${String.fromCharCode(97 + index)}`;
             return {
               key: code,
-              label: `${code} ${tccaDeductionLabel(item.label)}`,
+              label: `${code} ${judgmentDeductionLabel(item.label)}`,
               value: fmtWan(item.wan),
               formula: String(item.label).startsWith("基礎控除引き上げ相当額")
-                ? "min（給与・年金所得, 10万）"
+                ? "10万"
                 : "特児の所得判定上の控除",
             };
           }),
@@ -711,38 +717,62 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="W. 現金給付：障害児福祉手当"
         confidence="strict"
-        note="W2は手当固有の判定所得（給与10万円・社保8万円固定等）で、通常の課税所得とは異なる。"
         rows={[
-          { key: "W0", label: "W0 制度分類", value: "現金給付", formula: "F3へ" },
           { key: "W1", label: "W1 扶養人数", value: `${fmt(welfare.fuyoCount)}人`, formula: "扶養親族等の実人数" },
-          { key: "W2", label: "W2 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
-          { key: "W3", label: "W3 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: "W1の限度額表" },
-          { key: "W4", label: "W4 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W2 ≤ W3" },
+          ...welfareObligorDeductions.map((item, index) => {
+            const code = `W2${String.fromCharCode(97 + index)}`;
+            let formula = "手当の所得判定上の控除";
+            if (String(item.label).startsWith("基礎控除引き上げ相当額")) formula = "10万";
+            if (String(item.label).startsWith("社会保険料控除")) formula = "8万（固定）";
+            return {
+              key: code,
+              label: `${code} ${judgmentDeductionLabel(item.label)}`,
+              value: fmtWan(item.wan),
+              formula,
+            };
+          }),
+          {
+            key: "W2",
+            label: "W2 控除額 合計",
+            value: fmtWan(welfareMaxObligor?.deductionSumWan),
+            formula: welfareObligorDeductions.length
+              ? welfareObligorDeductions.map((_, index) => `W2${String.fromCharCode(97 + index)}`).join(" ＋ ")
+              : "0",
+            tone: "strong",
+          },
+          { key: "W3", label: "W3 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: "A1 − B1a − W2" },
+          { key: "W4", label: "W4 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: "W1の限度額表" },
+          { key: "W5", label: "W5 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W3 ≤ W4" },
           ...((welfare.recipients || []).length
             ? welfare.recipients.flatMap((rc, index) => [
                 {
                   key: `wf-income-${rc.who}`,
-                  label: `W5-${index + 1}a ${rc.who} 本人判定所得`,
+                  label: `W6-${index + 1}a ${rc.who} 本人判定所得`,
                   value: fmtYen(rc.selfYen),
                   formula: "本人総所得 − 制度固有控除",
                 },
                 {
                   key: `wf-limit-${rc.who}`,
-                  label: `W5-${index + 1}b ${rc.who} 本人限度額`,
+                  label: `W6-${index + 1}b ${rc.who} 本人限度額`,
                   value: fmtYen(rc.selfLimitYen),
                   formula: "本人限度額表",
                 },
                 {
+                  key: `wf-self-result-${rc.who}`,
+                  label: `W6-${index + 1}c ${rc.who} 本人判定`,
+                  value: rc.selfOk ? "通過" : "停止",
+                  formula: `W6-${index + 1}a ≤ W6-${index + 1}b`,
+                },
+                {
                   key: `wf-result-${rc.who}`,
-                  label: `W5-${index + 1}c ${rc.who} 本人判定`,
+                  label: `W6-${index + 1}d ${rc.who} 支給判定`,
                   value: rc.ok ? "支給" : "不支給",
-                  formula: `W5-${index + 1}a ≤ W5-${index + 1}b ∧ W4`,
+                  formula: `W5 ∧ W6-${index + 1}c`,
                 },
               ])
-            : [{ key: "wf-none", label: "W5 対象者", value: "なし", formula: "対象者なし" }]),
-          { key: "W6", label: "W6 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W5の支給対象者分を合計" },
-          { key: "W7", label: "W7 支給年額", value: fmtWan(welfare.annualWan), formula: "W6 × 12 ÷ 10,000" },
-          { key: "W8", label: "W8 最終指標への扱い", value: "可処分所得に加算", formula: "F3 ＝ W7", tone: "strong" },
+            : [{ key: "wf-none", label: "W6 対象者", value: "なし", formula: "対象者なし" }]),
+          { key: "W7", label: "W7 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W6の支給対象者分を合計" },
+          { key: "W8", label: "W8 支給年額", value: fmtWan(welfare.annualWan), formula: "W7 × 12" },
         ]}
       />
 

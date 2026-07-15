@@ -1367,7 +1367,7 @@ function computePoint(ctx, x) {
         incomeAdjustmentWan: roundWan(incomeAdjustmentWan, 4),
         allowanceTotalWan: roundWan(allowanceTotalWan, 4),
         deductions: compactDeductions([
-          { label: "給与所得控除相当(手当10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+          { label: "基礎控除引き上げ相当額(手当10万上限)", wan: employmentIncomeDeductWan, alwaysShow: true },
           { label: "社会保険料控除(手当8万固定)", wan: socialFixedWan, alwaysShow: true },
           { label: "障害者控除", wan: disWan },
         ]),

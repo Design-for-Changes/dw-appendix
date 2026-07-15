@@ -675,7 +675,7 @@ function BreakdownPanel({ point }) {
             key: "T2",
             label: "T2 本人 総所得",
             value: fmtWan(tcca.head?.judgmentIncome?.totalWan),
-            formula: "A2 ＋ B1b（所得金額調整控除を戻す）",
+            formula: "A1 − B1a",
           },
           {
             key: "T3",

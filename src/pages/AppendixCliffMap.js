@@ -687,9 +687,11 @@ function BreakdownPanel({ point }) {
               key: code,
               label: `${code} ${judgmentDeductionLabel(item.label)}`,
               value: fmtWan(item.wan),
-              formula: String(item.label).startsWith("基礎控除引き上げ相当額")
-                ? "10万"
-                : "特児の所得判定上の控除",
+              formula:
+                String(item.label).startsWith("基礎控除引き上げ相当額") ||
+                String(item.label).startsWith("社会保険料控除")
+                  ? "固定値"
+                  : "特児の所得判定上の控除",
             };
           }),
           {
@@ -722,8 +724,12 @@ function BreakdownPanel({ point }) {
           ...welfareObligorDeductions.map((item, index) => {
             const code = `W2${String.fromCharCode(97 + index)}`;
             let formula = "手当の所得判定上の控除";
-            if (String(item.label).startsWith("基礎控除引き上げ相当額")) formula = "10万";
-            if (String(item.label).startsWith("社会保険料控除")) formula = "8万（固定）";
+            if (
+              String(item.label).startsWith("基礎控除引き上げ相当額") ||
+              String(item.label).startsWith("社会保険料控除")
+            ) {
+              formula = "固定値";
+            }
             return {
               key: code,
               label: `${code} ${judgmentDeductionLabel(item.label)}`,

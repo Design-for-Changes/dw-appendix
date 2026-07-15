@@ -694,7 +694,7 @@ function BreakdownPanel({ point }) {
             formula: "扶養親族等の実人数",
           },
           ...tccaDeductions.map((item, index) => {
-            const code = `T3${String.fromCharCode(97 + index)}`;
+            const code = `T2${String.fromCharCode(97 + index)}`;
             const isFixed =
               String(item.label).startsWith("基礎控除引き上げ相当額") ||
               String(item.label).startsWith("社会保険料控除");
@@ -710,23 +710,23 @@ function BreakdownPanel({ point }) {
             };
           }),
           {
-            key: "T3",
-            label: "T3 控除額 合計",
+            key: "T2",
+            label: "T2 控除額 合計",
             value: fmtWan(tcca.head?.judgmentIncome?.deductionSumWan),
             formula: tccaDeductions.length
-              ? tccaDeductions.map((_, index) => `T3${String.fromCharCode(97 + index)}`).join(" ＋ ")
+              ? tccaDeductions.map((_, index) => `T2${String.fromCharCode(97 + index)}`).join(" ＋ ")
               : "0",
             tone: "strong",
           },
-          { key: "T4", label: "T4 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "A1 − B1a − T3" },
-          { key: "T5", label: "T5 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },
-          { key: "T6", label: "T6 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T4 ≤ T5" },
-          { key: "T7", label: "T7 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
-          { key: "T8", label: "T8 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: "T1の扶養義務者限度額" },
-          { key: "T9", label: "T9 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T7 ≤ T8" },
-          { key: "T10", label: "T10 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T6 ∧ T9" },
-          { key: "T11", label: "T11 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T10が支給なら等級別月額合計" },
-          { key: "T12", label: "T12 支給年額", value: fmtWan(tcca.annualWan), formula: "T11 × 12" },
+          { key: "T3", label: "T3 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "A1 − B1a − T2" },
+          { key: "T4", label: "T4 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },
+          { key: "T5", label: "T5 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T3 ≤ T4" },
+          { key: "T6", label: "T6 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
+          { key: "T7", label: "T7 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: "T1の扶養義務者限度額" },
+          { key: "T8", label: "T8 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T6 ≤ T7" },
+          { key: "T9", label: "T9 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T5 ∧ T8" },
+          { key: "T10", label: "T10 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T9が支給なら等級別月額合計" },
+          { key: "T11", label: "T11 支給年額", value: fmtWan(tcca.annualWan), formula: "T10 × 12" },
         ]}
       />
 
@@ -875,7 +875,7 @@ function BreakdownPanel({ point }) {
         note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここは実際に現金として受け取る給付だけを合計。"
         rows={[
           { key: "F1", label: "F1 基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人分 ＋ 配偶者分" },
-          { key: "F2", label: "F2 特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "T12" },
+          { key: "F2", label: "F2 特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "T11" },
           { key: "F3", label: "F3 障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "W7" },
           { key: "F4", label: "F4 児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親判定年額" },
           { key: "F5", label: "F5 児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "対象児の月額合計 × 12" },

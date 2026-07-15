@@ -556,6 +556,18 @@ function BreakdownPanel({ point }) {
     if (String(label).startsWith("社会保険料控除")) return "社会保険料控除（固定）";
     return label;
   };
+  const judgmentDisabilityFormula = (totalWan) => {
+    const specialCount = rows.filter((row) => row.disabled && row.disabilityKind === "special").length;
+    const ordinaryCount = rows.filter((row) => row.disabled && row.disabilityKind === "disabled").length;
+    const computedWan = specialCount * 40 + ordinaryCount * 27;
+    if (Math.abs(computedWan - Number(totalWan || 0)) > 0.0001) return "区分別控除 × 対象人数";
+    return [
+      specialCount ? `40万 × ${specialCount}名` : "",
+      ordinaryCount ? `27万 × ${ordinaryCount}名` : "",
+    ]
+      .filter(Boolean)
+      .join(" ＋ ");
+  };
 
   return (
     <div className="formula-grid">
@@ -683,14 +695,17 @@ function BreakdownPanel({ point }) {
           },
           ...tccaDeductions.map((item, index) => {
             const code = `T3${String.fromCharCode(97 + index)}`;
+            const isFixed =
+              String(item.label).startsWith("基礎控除引き上げ相当額") ||
+              String(item.label).startsWith("社会保険料控除");
             return {
               key: code,
               label: `${code} ${judgmentDeductionLabel(item.label)}`,
               value: fmtWan(item.wan),
-              formula:
-                String(item.label).startsWith("基礎控除引き上げ相当額") ||
-                String(item.label).startsWith("社会保険料控除")
-                  ? "固定値"
+              formula: isFixed
+                ? "固定値"
+                : String(item.label).startsWith("障害者控除")
+                  ? judgmentDisabilityFormula(item.wan)
                   : "特児の所得判定上の控除",
             };
           }),
@@ -730,6 +745,7 @@ function BreakdownPanel({ point }) {
             ) {
               formula = "固定値";
             }
+            if (String(item.label).startsWith("障害者控除")) formula = judgmentDisabilityFormula(item.wan);
             return {
               key: code,
               label: `${code} ${judgmentDeductionLabel(item.label)}`,

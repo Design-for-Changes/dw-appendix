@@ -710,7 +710,7 @@ function BreakdownPanel({ point }) {
 
       {/* C 障害児福祉手当／特別障害者手当 */}
       <CalculationTable
-        title="C. 現金給付：障害児福祉手当"
+        title="W. 現金給付：障害児福祉手当"
         confidence="strict"
         note="W2は手当固有の判定所得（給与10万円・社保8万円固定等）で、通常の課税所得とは異なる。"
         rows={[

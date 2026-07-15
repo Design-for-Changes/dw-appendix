@@ -546,7 +546,7 @@ function BreakdownPanel({ point }) {
     Number(taxHead.deductions?.workingStudentLTWan || 0);
   const tccaDeductions = tcca.head?.judgmentIncome?.deductions || [];
   const tccaDeductionLabel = (label) => {
-    if (String(label).startsWith("給与所得控除相当")) return "給与所得控除相当（固定）";
+    if (String(label).startsWith("基礎控除引き上げ相当額")) return "基礎控除引き上げ相当額";
     if (String(label).startsWith("社会保険料控除")) return "社会保険料控除（固定）";
     return label;
   };
@@ -668,7 +668,7 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="C. 現金給付：特別児童扶養手当（特児）"
         confidence="strict"
-        note="T3a・T3bは特児の所得判定で定められた固定控除。通常の給与所得控除B1や社会保険料実額B2とは異なる。"
+        note="T3aは基礎控除引き上げに対応する10万円上限の調整。T3bは特児の所得判定で定められた8万円固定の控除。通常の給与所得控除B1や社会保険料実額B2とは異なる。"
         rows={[
           {
             key: "T1",
@@ -688,7 +688,9 @@ function BreakdownPanel({ point }) {
               key: code,
               label: `${code} ${tccaDeductionLabel(item.label)}`,
               value: fmtWan(item.wan),
-              formula: "特児の所得判定上の控除",
+              formula: String(item.label).startsWith("基礎控除引き上げ相当額")
+                ? "min（給与・年金所得, 10万）"
+                : "特児の所得判定上の控除",
             };
           }),
           {

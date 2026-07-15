@@ -901,7 +901,7 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   const headJudgmentIncome = {
     totalWan: roundWan(headTotalWan, 4),
     deductions: compactDeductions([
-      { label: "給与所得控除相当(特児10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+      { label: "基礎控除引き上げ相当額(特児10万上限)", wan: employmentIncomeDeductWan, alwaysShow: true },
       { label: "社会保険料控除(特児8万固定)", wan: socialFixedWan, alwaysShow: true },
       { label: "その他控除", wan: otherDedWan },
       { label: "配偶者特別控除", wan: spouseSpecialWan },
@@ -924,7 +924,7 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
     const judgmentIncome = {
       totalWan: roundWan(totalWan, 4),
       deductions: compactDeductions([
-        { label: "給与所得控除相当(特児10万固定)", wan: employmentIncomeDeductWan, alwaysShow: true },
+        { label: "基礎控除引き上げ相当額(特児10万上限)", wan: employmentIncomeDeductWan, alwaysShow: true },
         { label: "社会保険料控除(特児8万固定)", wan: socialFixedWan, alwaysShow: true },
         { label: "勤労学生控除", wan: wsWan },
         { label: "障害者控除", wan: disWan },

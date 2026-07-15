@@ -544,6 +544,12 @@ function BreakdownPanel({ point }) {
     Number(widowSingleParent.widow?.ltWan || 0) +
     Number(widowSingleParent.singleParent?.ltWan || 0) +
     Number(taxHead.deductions?.workingStudentLTWan || 0);
+  const tccaDeductions = tcca.head?.judgmentIncome?.deductions || [];
+  const tccaDeductionLabel = (label) => {
+    if (String(label).startsWith("給与所得控除相当")) return "給与所得控除相当（固定）";
+    if (String(label).startsWith("社会保険料控除")) return "社会保険料控除（固定）";
+    return label;
+  };
 
   return (
     <div className="formula-grid">
@@ -662,7 +668,7 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="C. 現金給付：特別児童扶養手当（特児）"
         confidence="strict"
-        note="T3には特児固有の控除（給与10万円・社保8万円固定、障害者控除等）を含む。通常の課税所得とは異なる。"
+        note="T3a・T3bは特児の所得判定で定められた固定控除。通常の給与所得控除B1や社会保険料実額B2とは異なる。"
         rows={[
           {
             key: "T1",
@@ -676,11 +682,23 @@ function BreakdownPanel({ point }) {
             value: fmtWan(tcca.head?.judgmentIncome?.totalWan),
             formula: "A1 − B1a",
           },
+          ...tccaDeductions.map((item, index) => {
+            const code = `T3${String.fromCharCode(97 + index)}`;
+            return {
+              key: code,
+              label: `${code} ${tccaDeductionLabel(item.label)}`,
+              value: fmtWan(item.wan),
+              formula: "特児の所得判定上の控除",
+            };
+          }),
           {
             key: "T3",
             label: "T3 控除額 合計",
             value: fmtWan(tcca.head?.judgmentIncome?.deductionSumWan),
-            formula: "給与10万 ＋ 社保8万 ＋ 障害等",
+            formula: tccaDeductions.length
+              ? tccaDeductions.map((_, index) => `T3${String.fromCharCode(97 + index)}`).join(" ＋ ")
+              : "0",
+            tone: "strong",
           },
           { key: "T4", label: "T4 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "max（0, T2 − T3）" },
           { key: "T5", label: "T5 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },

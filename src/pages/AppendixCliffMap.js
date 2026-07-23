@@ -11,7 +11,7 @@ import widowDeductionCfg from "../config/widow_deduction.json";
 import singleParentDeductionCfg from "../config/single_parent_deduction.json";
 import workingStudentDeductionCfg from "../config/working_student_deduction.json";
 import disabilityDeductionCfg from "../config/disability_deduction.json";
-import { computeSeries, buildHousehold } from "../calc/computePoint";
+import { computeSeries, buildHousehold, CALCULATION_SOURCES } from "../calc/computePoint";
 import { explainCliffCauses } from "../calc/cliffCauseAnalysis";
 import { useStaticTables } from "../hooks/useStaticTables";
 
@@ -39,8 +39,6 @@ const PRESENTATION_CASES = [
         m01Count: 1,
         n04: true,
         n04Count: 1,
-        n04Boundary12SalaryManyen: 749,
-        n04Boundary23SalaryManyen: 1082,
       },
       children: [
         {
@@ -67,8 +65,6 @@ const PRESENTATION_CASES = [
         m01Count: 1,
         n04: true,
         n04Count: 1,
-        n04Boundary12SalaryManyen: 749,
-        n04Boundary23SalaryManyen: 1082,
       },
       children: [
         {
@@ -102,8 +98,6 @@ const PRESENTATION_CASES = [
         m01Count: 2,
         n04: true,
         n04Count: 2,
-        n04Boundary12SalaryManyen: 749,
-        n04Boundary23SalaryManyen: 1082,
       },
       children: [
         {
@@ -271,7 +265,8 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
   };
 
   return (
-    <svg
+    <div className="appendix-chart-control">
+      <svg
       className="appendix-chart"
       viewBox={`0 0 ${width} ${height}`}
       role="img"
@@ -312,7 +307,7 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
         <path
           key={d.id}
           d={buildPath(d.series, xScale, yScale)}
-          className="appendix-line"
+          className={`appendix-line${d.id === selectedId ? " selected" : ""}`}
           stroke={d.color}
         />
       ))}
@@ -328,19 +323,6 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
         ))}
       </g>
 
-      {(selected?.cliffs || []).map((c) => (
-        <g
-          key={`cliff-${c.index}`}
-          className="appendix-cliff-marker"
-          transform={`translate(${xScale(c.x)} ${yScale(c.yAfter)})`}
-        >
-          <circle r="8" fill={selected?.color || "#1c2529"} stroke="#ffffff" strokeWidth="1.5" />
-          <text textAnchor="middle" dy="3.2">
-            P{c.index}
-          </text>
-        </g>
-      ))}
-
       {selectedPoint ? (
         <g className="appendix-cursor">
           <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
@@ -355,7 +337,21 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
           </g>
         </g>
       ) : null}
-    </svg>
+      </svg>
+      <label className="appendix-salary-control">
+        <span>選択給与</span>
+        <input
+          type="range"
+          min={X_MIN}
+          max={X_MAX}
+          step="1"
+          value={selectedSalary}
+          onChange={(event) => onSalaryChange(Number(event.currentTarget.value))}
+          onInput={(event) => onSalaryChange(Number(event.currentTarget.value))}
+        />
+        <output>{fmt(selectedSalary)}万円</output>
+      </label>
+    </div>
   );
 }
 
@@ -407,7 +403,16 @@ function CliffTable({ cliffs }) {
   );
 }
 
-function CalculationTable({ title, subtitle, rows, note, wide }) {
+function SourceLink({ href, children }) {
+  if (!href) return <span className="formula-source-missing">根拠未設定</span>;
+  return (
+    <a href={href} target="_blank" rel="noreferrer">
+      {children}
+    </a>
+  );
+}
+
+function CalculationTable({ title, subtitle, rows, note, wide, source }) {
   return (
     <section className={`formula-card${wide ? " wide" : ""}`}>
       <div className="formula-card-head">
@@ -423,6 +428,8 @@ function CalculationTable({ title, subtitle, rows, note, wide }) {
               <th>ラベル</th>
               <th>値</th>
               <th>計算式</th>
+              <th>根拠資料</th>
+              <th>収録資料</th>
             </tr>
           </thead>
           <tbody>
@@ -431,6 +438,12 @@ function CalculationTable({ title, subtitle, rows, note, wide }) {
                 <th scope="row">{row.label}</th>
                 <td className="formula-value">{row.value}</td>
                 <td className="formula-expression">{row.formula}</td>
+                <td className="formula-source">
+                  <SourceLink href={row.sourceUrl || source?.url}>{row.sourceLabel || source?.title || "原典"}</SourceLink>
+                </td>
+                <td className="formula-source">
+                  <SourceLink href={row.archivePath || source?.archivePath}>{row.archiveLabel || "GitHub収録版"}</SourceLink>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -443,21 +456,6 @@ function CalculationTable({ title, subtitle, rows, note, wide }) {
 
 function itLt(itWan, ltWan) {
   return `所${fmtWan(itWan)}／住${fmtWan(ltWan)}`;
-}
-
-function incomeTaxBracket(taxableWan) {
-  const yen = Math.max(0, Math.floor(((Number(taxableWan) || 0) * 10000) / 1000) * 1000);
-  const bands = [
-    [1950000, 0.05, 0],
-    [3300000, 0.1, 97500],
-    [6950000, 0.2, 427500],
-    [9000000, 0.23, 636000],
-    [18000000, 0.33, 1536000],
-    [40000000, 0.4, 2796000],
-    [Infinity, 0.45, 4796000],
-  ];
-  const b = bands.find((x) => yen <= x[0]) || bands[bands.length - 1];
-  return { rate: b[1], dedYen: b[2] };
 }
 
 function childDisabilityLabel(c) {
@@ -532,7 +530,6 @@ function BreakdownPanel({ point }) {
   const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
   const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
   const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
-  const itbr = incomeTaxBracket(taxHead.incomeTax?.taxableWan);
   const dependent = ded.dependent || {};
   const specialKin = ded.specialKin || {};
   const widowSingleParent = ded.widowSingleParent || {};
@@ -553,7 +550,7 @@ function BreakdownPanel({ point }) {
   const welfareObligorDeductions = welfareMaxObligor?.deductions || [];
   const judgmentDeductionLabel = (label) => {
     if (String(label).startsWith("基礎控除引き上げ相当額")) return "基礎控除引き上げ相当額";
-    if (String(label).startsWith("社会保険料控除")) return "社会保険料控除（固定）";
+    if (String(label).startsWith("社会保険料控除")) return "社会保険料控除";
     return label;
   };
   const judgmentDisabilityFormula = (totalWan) => {
@@ -568,6 +565,16 @@ function BreakdownPanel({ point }) {
       .filter(Boolean)
       .join(" ＋ ");
   };
+  const social = headRow.socialInsuranceBreakdown || {};
+  const socialComponents = social.components || {};
+  const socialFormulas = socialComponents.formulas || {};
+  const taxSource = taxHead.incomeTax?.source || CALCULATION_SOURCES.incomeTax;
+  const residentTaxSource = taxHead.residentTax?.source || CALCULATION_SOURCES.residentTax;
+  const n04NeedSource = {
+    sourceUrl: n04.need?.livelihoodSource?.url,
+    sourceLabel: n04.need?.livelihoodSource?.title,
+    archivePath: n04.need?.livelihoodSource?.archivePath,
+  };
 
   return (
     <div className="formula-grid">
@@ -576,17 +583,21 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="A. 基礎計算"
         wide
+        source={taxSource}
         rows={[
           { key: "A1", label: "A1 給与収入", value: fmtWan(headRow.salaryWan, 0), formula: "縦ライン値（S）" },
           { key: "A2", label: "A2 給与所得", value: fmtWan(headRow.employmentIncomeWan), formula: "A1 − B1" },
           { key: "A3", label: "A3 所得税 課税所得", value: fmtWan(taxHead.incomeTax?.taxableWan), formula: "A2 −（B2〜B9：所得税側、千円未満切捨て）" },
-          { key: "A4", label: "A4 住民税 課税所得", value: fmtWan(taxHead.residentTax?.taxableWan), formula: "A2 −（B2〜B9：住民税側、千円未満切捨て）" },
-          { key: "A5", label: "A5 所得税", value: fmtWan(taxHead.incomeTax?.taxWan), formula: `A3 × ${Math.round(itbr.rate * 100)}% − ${fmtYen(itbr.dedYen)}` },
+          { key: "A4", label: "A4 住民税 課税所得", value: fmtWan(taxHead.residentTax?.taxableWan), formula: "A2 −（B2〜B9：住民税側、千円未満切捨て）", sourceUrl: residentTaxSource.url, sourceLabel: residentTaxSource.title, archivePath: residentTaxSource.archivePath },
+          { key: "A5", label: "A5 所得税", value: fmtWan(taxHead.incomeTax?.taxWan), formula: taxHead.incomeTax?.formula },
           {
             key: "A6",
             label: "A6 住民税",
             value: fmtWan(taxHead.residentTax?.computedTaxWan),
-            formula: `所得割 ${fmtWan(Number(taxHead.residentTax?.computedTaxWan || 0) - Number(taxHead.residentTax?.perCapitaWan || 0))} ＋ 均等割 ${fmtWan(taxHead.residentTax?.perCapitaWan, 2)}`,
+            formula: taxHead.residentTax?.formula,
+            sourceUrl: residentTaxSource.url,
+            sourceLabel: residentTaxSource.title,
+            archivePath: residentTaxSource.archivePath,
           },
           { key: "A7", label: "A7 基礎手取額", value: fmtWan(b.takeHome?.takeHomeWan), formula: "A1 − B2 − A5 − A6", tone: "strong" },
         ]}
@@ -596,18 +607,19 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="B. 計算に用いる控除（所得税／住民税）"
         wide
+        source={taxSource}
         rows={[
           {
             key: "B1a",
-            label: "B1a 給与所得控除（基礎額）",
+            label: "B1a 給与所得控除",
             value: fmtWan(headRow.employmentIncomeBaseDeductionWan),
-            formula: "A1の給与帯別控除",
+            formula: headRow.employmentIncomeDeductionDetail?.formula,
           },
           {
             key: "B1b",
             label: "B1b 所得金額調整控除",
             value: fmtWan(headRow.incomeAdjustmentDeductionWan),
-            formula: "A1の所得金額調整",
+            formula: headRow.employmentIncomeDeductionDetail?.incomeAdjustmentFormula,
           },
           {
             key: "B1",
@@ -618,28 +630,61 @@ function BreakdownPanel({ point }) {
           },
           {
             key: "B2a",
-            label: "B2a 社会保険料率（近似）",
-            value: `${fmt(Number(headRow.socialInsuranceBreakdown?.rate || 0) * 100, 3)}%`,
-            formula: "選択給与帯・40歳以上の係数",
+            label: "B2a 健康保険料",
+            value: fmtWan(social.healthWan),
+            formula: socialFormulas.health,
+            sourceUrl: social.sources?.healthCarePensionSupport?.url,
+            sourceLabel: social.sources?.healthCarePensionSupport?.title,
+            archivePath: social.sources?.healthCarePensionSupport?.archivePath,
           },
           {
             key: "B2b",
-            label: "B2b 固定加算額（近似式）",
-            value: fmtWan(Number(headRow.socialInsuranceBreakdown?.interceptYen || 0) / 10000, 2),
-            formula: "選択給与帯の年額調整分",
+            label: "B2b 介護保険料",
+            value: fmtWan(social.careWan),
+            formula: socialFormulas.care,
+            sourceUrl: social.sources?.healthCarePensionSupport?.url,
+            sourceLabel: social.sources?.healthCarePensionSupport?.title,
+            archivePath: social.sources?.healthCarePensionSupport?.archivePath,
+          },
+          {
+            key: "B2c",
+            label: "B2c 子ども・子育て支援金",
+            value: fmtWan(social.childSupportContributionWan),
+            formula: socialFormulas.support,
+            sourceUrl: social.sources?.healthCarePensionSupport?.url,
+            sourceLabel: social.sources?.healthCarePensionSupport?.title,
+            archivePath: social.sources?.healthCarePensionSupport?.archivePath,
+          },
+          {
+            key: "B2d",
+            label: "B2d 厚生年金保険料",
+            value: fmtWan(social.pensionWan),
+            formula: socialFormulas.pension,
+            sourceUrl: social.sources?.healthCarePensionSupport?.url,
+            sourceLabel: social.sources?.healthCarePensionSupport?.title,
+            archivePath: social.sources?.healthCarePensionSupport?.archivePath,
+          },
+          {
+            key: "B2e",
+            label: "B2e 雇用保険料",
+            value: fmtWan(social.employmentWan),
+            formula: socialFormulas.employment,
+            sourceUrl: social.sources?.employment?.url,
+            sourceLabel: social.sources?.employment?.title,
+            archivePath: social.sources?.employment?.archivePath,
           },
           {
             key: "B2",
             label: "B2 社会保険料控除",
             value: fmtWan(headRow.socialInsuranceWan),
-            formula: "A1 × B2a ＋ B2b",
+            formula: socialFormulas.total,
             tone: "strong",
           },
           {
             key: "B3",
             label: "B3 基礎控除",
             value: itLt(taxHead.deductions?.basicITWan, taxHead.deductions?.basicLTWan),
-            formula: "A2の所得帯別（所／住）",
+            formula: `${taxHead.deductions?.basicITDetail?.formula}／${taxHead.deductions?.basicLTDetail?.formula}`,
           },
           {
             key: "B4",
@@ -678,14 +723,16 @@ function BreakdownPanel({ point }) {
             formula: "寡婦 ＋ ひとり親 ＋ 勤労学生",
           },
         ]}
-        note="B2は年収帯別の社会保険料近似式。B2a・B2bは選択給与帯の係数。B3〜B9は所得税側・住民税側で金額が異なる場合があるため「所／住」で併記。16歳未満の年少扶養控除は適用しない。"
+        note="B2はR8・東京都・賞与なし・年収を算定基礎とする率ベース近似。健保・介護・子ども・子育て支援金・厚生年金は本人負担分（保険料率の2分の1）、雇用保険は労働者負担率を用いる。B3〜B9は所得税側・住民税側を「所／住」で併記。"
       />
 
       {/* ===== C. 現金給付の判定（可処分所得に ＋） ===== */}
       {/* C 特別児童扶養手当 */}
       <CalculationTable
-        title="T. 現金給付：特別児童扶養手当（特児）"
+        title="T. 現金給付：特別児童扶養手当"
+        wide
         confidence="strict"
+        source={tcca.source}
         rows={[
           {
             key: "T1",
@@ -718,22 +765,24 @@ function BreakdownPanel({ point }) {
               : "0",
             tone: "strong",
           },
-          { key: "T3", label: "T3 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: "A1 − B1a − T2" },
-          { key: "T4", label: "T4 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: "T1の基準額 ＋ 法定加算" },
+          { key: "T3", label: "T3 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: tcca.formulas?.headJudgmentIncome },
+          { key: "T4", label: "T4 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: tcca.formulas?.headLimit },
           { key: "T5", label: "T5 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T3 ≤ T4" },
           { key: "T6", label: "T6 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
-          { key: "T7", label: "T7 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: "T1の扶養義務者限度額" },
+          { key: "T7", label: "T7 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: tcca.formulas?.familyLimit },
           { key: "T8", label: "T8 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T6 ≤ T7" },
           { key: "T9", label: "T9 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T5 ∧ T8" },
           { key: "T10", label: "T10 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T9が支給なら等級別月額合計" },
-          { key: "T11", label: "T11 支給年額", value: fmtWan(tcca.annualWan), formula: "T10 × 12" },
+          { key: "T11", label: "T11 支給年額", value: fmtWan(tcca.annualWan), formula: tcca.formulas?.annual },
         ]}
       />
 
       {/* C 障害児福祉手当／特別障害者手当 */}
       <CalculationTable
         title="W. 現金給付：障害児福祉手当"
+        wide
         confidence="strict"
+        source={welfare.source}
         rows={[
           { key: "W1", label: "W1 扶養人数", value: `${fmt(welfare.fuyoCount)}人`, formula: "扶養親族等の実人数" },
           ...welfareObligorDeductions.map((item, index) => {
@@ -762,8 +811,8 @@ function BreakdownPanel({ point }) {
               : "0",
             tone: "strong",
           },
-          { key: "W3", label: "W3 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: "A1 − B1a − W2" },
-          { key: "W4", label: "W4 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: "W1の限度額表" },
+          { key: "W3", label: "W3 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: welfare.formulas?.obligorJudgmentIncome },
+          { key: "W4", label: "W4 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: welfare.formulas?.obligorLimit },
           { key: "W5", label: "W5 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W3 ≤ W4" },
           {
             key: "W6",
@@ -772,7 +821,7 @@ function BreakdownPanel({ point }) {
             formula: "W5",
           },
           { key: "W7", label: "W7 支給月額 合計", value: fmtYen(welfare.monthlyYen), formula: "W6が支給なら対象児童分を合計" },
-          { key: "W8", label: "W8 支給年額", value: fmtWan(welfare.annualWan), formula: "W7 × 12" },
+          { key: "W8", label: "W8 支給年額", value: fmtWan(welfare.annualWan), formula: welfare.formulas?.annual },
         ]}
       />
 
@@ -780,31 +829,82 @@ function BreakdownPanel({ point }) {
       {/* D 重心医療費助成（M01） */}
       <CalculationTable
         title="M. 自己負担：重心医療費助成"
+        wide
         confidence="representative"
+        source={m01.judgment?.source}
         rows={[
-          { key: "M1", label: "M1 世帯所得割", value: fmtYen(m01.judgment?.householdLevyYen), formula: "A6の市町村分合計" },
-          { key: "M2", label: "M2 所得割上限", value: fmtYen(m01.judgment?.cutoffYen), formula: "制度上限" },
-          { key: "M3", label: "M3 該当判定", value: m01.status, formula: "M1 < M2" },
-          { key: "M4", label: "M4 軽減満額", value: fmtWan(m01.fullReliefWan), formula: "代表年額 × 対象人数" },
-          { key: "M5", label: "M5 現在の軽減額", value: fmtWan(m01.annualWan), formula: "M3が該当ならM4、非該当なら0" },
-          { key: "M6", label: "M6 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M4 − M5" },
-          { key: "M7", label: "M7 感度レンジ", value: `${fmtWan(m01.sensitivityRangeWan?.min)}〜${fmtWan(m01.sensitivityRangeWan?.max)}`, formula: "代表値レンジ × 対象人数" },
-          { key: "M8", label: "M8 最終指標への扱い", value: "可処分所得から減算", formula: "F7 ＝ M6", tone: "strong" },
+          { key: "M1", label: "M1 世帯所得割", value: fmtYen(m01.judgment?.householdLevyYen), formula: m01.judgment?.levyFormula },
+          {
+            key: "M2",
+            label: "M2 所得割上限",
+            value: fmtYen(m01.judgment?.cutoffYen),
+            formula: m01.judgment?.cutoffFormula,
+            sourceUrl: m01.judgment?.source?.url,
+            sourceLabel: `${m01.judgment?.source?.title || "千葉県事務取扱要領"} ${m01.judgment?.source?.section || ""}`,
+            archivePath: m01.judgment?.source?.archivePath,
+          },
+          { key: "M3", label: "M3 該当判定", value: m01.status, formula: m01.judgment?.formula },
+          {
+            key: "M4",
+            label: "M4 助成対象医療費（代表値）",
+            value: fmtYen(Number(m01.fullReliefWan || 0) * 10000),
+            formula: m01.amountFormula?.formula,
+            sourceUrl: m01.amountFormula?.source?.url,
+            sourceLabel: m01.amountFormula?.source?.title,
+            archivePath: m01.amountFormula?.source?.archivePath,
+          },
+          {
+            key: "M5",
+            label: "M5 医療費自己負担",
+            value: fmtYen(Number(costBurden.medicalCostBurdenWan || 0) * 10000),
+            formula: "M3が該当なら0、非該当ならM4",
+            tone: "strong",
+          },
         ]}
       />
 
       {/* D 就学奨励費（N04）＝教育費自己負担の軽減。基準＝第3区分（補助0）。コア確定378e692 */}
       <CalculationTable
         title="N. 費用軽減：就学奨励費"
+        wide
         confidence="provisional"
+        source={n04.judgment?.source}
         rows={[
-          { key: "N1", label: "N1 給与収入", value: fmtWan(n04.judgment?.salaryManyen, 0), formula: "A1" },
-          { key: "N2", label: "N2 区分境界", value: `${fmt(n04.judgment?.firstToSecondManyen)}万／${fmt(n04.judgment?.secondToThirdManyen)}万`, formula: "第1→2／第2→3" },
-          { key: "N3", label: "N3 支弁区分", value: n04.supportClass, formula: "N1とN2を比較" },
-          { key: "N4", label: "N4 区分別単価", value: fmtYen(n04.amountFormula?.annualYenPerRecipient), formula: "N3の小学部年額" },
-          { key: "N5", label: "N5 対象人数", value: `${fmt(n04.amountFormula?.count)}人`, formula: "対象児童数" },
-          { key: "N6", label: "N6 教育費負担軽減", value: fmtWan(n04.annualWan), formula: "N4 × N5 ÷ 10,000" },
-          { key: "N7", label: "N7 最終指標への扱い", value: "可処分所得に反映", formula: "F10 ＝ N6", tone: "strong" },
+          { key: "N1", label: "N1 世帯総所得", value: fmtWan(n04.judgment?.totalIncomeWan), formula: "世帯員の総所得を合計" },
+          { key: "N2", label: "N2 控除額", value: fmtWan(n04.judgment?.deductionSumWan), formula: "N2a" },
+          { key: "N2a", label: "N2a 社会保険料控除", value: fmtWan(n04.judgment?.deductions?.[0]?.wan), formula: "B2" },
+          { key: "N3", label: "N3 月額収入額", value: fmtYen(n04.judgment?.monthlyMeasuredIncomeYen), formula: "（N1 − N2）÷ 12" },
+          { key: "N4a", label: "N4a 生活扶助 第1類", value: fmtYen(n04.need?.firstClassAdjustedYen), formula: n04.need?.formulas?.firstClass, ...n04NeedSource },
+          { key: "N4b", label: "N4b 生活扶助 第2類", value: fmtYen(n04.need?.secondClassYen), formula: n04.need?.formulas?.secondClass, ...n04NeedSource },
+          { key: "N4c", label: "N4c 臨時加算", value: fmtYen(n04.need?.temporaryAdditionYen), formula: n04.need?.formulas?.temporary, ...n04NeedSource },
+          { key: "N4d", label: "N4d 冬季加算（月平均）", value: fmtYen(n04.need?.winterAnnualizedYen), formula: n04.need?.formulas?.winter, ...n04NeedSource },
+          { key: "N4e", label: "N4e 期末一時扶助（月平均）", value: fmtYen(n04.need?.yearEndAnnualizedYen), formula: n04.need?.formulas?.yearEnd, ...n04NeedSource },
+          { key: "N4f", label: "N4f 障害者加算", value: fmtYen(n04.need?.disabilityAdditionYen), formula: n04.need?.formulas?.disability, ...n04NeedSource },
+          { key: "N4g", label: "N4g 児童養育加算", value: fmtYen(n04.need?.childUpbringingAdditionYen), formula: n04.need?.formulas?.childUpbringing, ...n04NeedSource },
+          { key: "N4h", label: "N4h 教育扶助", value: fmtYen(n04.need?.educationAssistanceYen), formula: n04.need?.formulas?.education, ...n04NeedSource },
+          { key: "N4i", label: "N4i 住宅扶助", value: fmtYen(n04.need?.housingAssistanceYen), formula: n04.need?.formulas?.housing, ...n04NeedSource },
+          {
+            key: "N4",
+            label: "N4 月額需要額",
+            value: fmtYen(n04.need?.monthlyNeedYen),
+            formula: n04.need?.formulas?.total,
+            sourceUrl: n04.need?.livelihoodSource?.url,
+            sourceLabel: n04.need?.livelihoodSource?.title,
+            archivePath: n04.need?.livelihoodSource?.archivePath,
+          },
+          { key: "N5", label: "N5 収入額／需要額", value: fmt(n04.judgment?.ratio, 3), formula: "N3 ÷ N4" },
+          { key: "N6", label: "N6 支弁区分", value: n04.supportClass, formula: n04.judgment?.formula },
+          {
+            key: "N7",
+            label: "N7 区分別軽減単価",
+            value: fmtYen(n04.amountFormula?.annualYenPerRecipient),
+            formula: "N6の小学部モデル年額",
+            sourceUrl: n04.need?.localSource?.url,
+            sourceLabel: n04.need?.localSource?.title,
+            archivePath: n04.need?.localSource?.archivePath,
+          },
+          { key: "N8", label: "N8 対象人数", value: `${fmt(n04.amountFormula?.count)}人`, formula: "対象児童数" },
+          { key: "N9", label: "N9 教育費負担軽減", value: fmtWan(n04.annualWan), formula: n04.amountFormula?.formula, tone: "strong" },
         ]}
       />
 
@@ -813,9 +913,9 @@ function BreakdownPanel({ point }) {
         title="E. 利用者負担：障害児通所支援（世帯上限）"
         wide
         confidence={service.confidence || "strict"}
+        source={CALCULATION_SOURCES.serviceBurden}
         note="負担上限月額は世帯単位（複数児でも合算せず最も高い1つ。児福法施行令24条・27条の2）。一般2の実負担は上限37,200円ではなく、東京都R6調査の利用者負担平均10,406円を採用（上限は非拘束）。"
         rows={[
-          { key: "E0", label: "E0 制度分類", value: "利用者負担", formula: "F8へ" },
           {
             key: "E1",
             label: "E1 世帯 所得割合計",
@@ -827,15 +927,18 @@ function BreakdownPanel({ point }) {
               label: `E2-${index + 1} ${d.who} 月額候補`,
               value: fmtYen(d.monthlyUpperYen),
               confidence: d.confidence,
-              formula: `E1 → ${d.type} → min（代表値, 制度上限）`,
+              formula: d.formula,
+              sourceUrl: d.confidence === "representative" ? d.sources?.representative?.url : d.sources?.statutory?.url,
+              sourceLabel: d.confidence === "representative" ? d.sources?.representative?.title : d.sources?.statutory?.title,
+              archivePath: d.confidence === "representative" ? d.sources?.representative?.archivePath : d.sources?.statutory?.archivePath,
             })),
           {
             key: "E3",
             label: "E3 世帯月額負担",
             value: fmtYen(service.monthlyTotalYen),
-            formula: `max（${(service.details || []).map((_, index) => `E2-${index + 1}`).join("，") || "0"}）`,
+            formula: service.calculation?.formula,
           },
-          { key: "E4", label: "E4 年額負担", value: fmtWan(service.annualWan), formula: "E3 × 12 ÷ 10,000" },
+          { key: "E4", label: "E4 年額負担", value: fmtWan(service.annualWan), formula: service.calculation?.annualFormula },
           { key: "E5", label: "E5 最終指標への扱い", value: "可処分所得から減算", formula: "F8 ＝ E4", tone: "strong" },
         ]}
       />
@@ -846,11 +949,12 @@ function BreakdownPanel({ point }) {
         title="F. 現金給付合計（＋）"
         wide
         confidence="strict"
+        source={CALCULATION_SOURCES.disabilityAllowances}
         note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここは実際に現金として受け取る給付だけを合計。"
         rows={[
           { key: "F1", label: "F1 基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人分 ＋ 配偶者分" },
           { key: "F2", label: "F2 特別児童扶養手当", value: fmtWan(allowance.tccaWan), formula: "T11" },
-          { key: "F3", label: "F3 障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "W7" },
+          { key: "F3", label: "F3 障害児福祉手当", value: fmtWan(allowance.welfareAllowanceWan), formula: "W8" },
           { key: "F4", label: "F4 児童扶養手当", value: fmtWan(allowance.childSupportWan), formula: "ひとり親判定年額" },
           { key: "F5", label: "F5 児童手当", value: fmtWan(allowance.childAllowanceWan), formula: "対象児の月額合計 × 12" },
           {
@@ -868,12 +972,13 @@ function BreakdownPanel({ point }) {
         title="F. 費用（自己負担・軽減）"
         wide
         confidence="strict"
-        note="現金給付ではない費用側の束。医療費（M01非該当時）・通所は自己負担。就学奨励費(N04)は教育費自己負担の軽減（第3区分＝補助0を基準）で、費用を差し引く方向に効く。符号はコア確定（378e692）。表示名は仮置き。"
+        source={CALCULATION_SOURCES.serviceBurden}
+        note="現金給付ではない費用側の束。医療費（M01非該当時）・通所は自己負担。就学奨励費(N04)は第3区分（補助0）を基準とする教育費負担の軽減。"
         rows={[
-          { key: "F7", label: "F7 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M6", confidence: "representative" },
+          { key: "F7", label: "F7 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M5", confidence: "representative" },
           { key: "F8", label: "F8 通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E4" },
           { key: "F9", label: "F9 自己負担 小計", value: fmtWan(costBurden.totalWan), formula: "F7 ＋ F8" },
-          { key: "F10", label: "F10 教育費自己負担の軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "N6", confidence: "provisional" },
+          { key: "F10", label: "F10 教育費自己負担の軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "N9", confidence: "provisional" },
           {
             key: "F11",
             label: "F11 純費用",
@@ -889,6 +994,7 @@ function BreakdownPanel({ point }) {
         title="F. 可処分所得（結論・一本集計）"
         wide
         confidence="strict"
+        source={CALCULATION_SOURCES.incomeTax}
         note="最終指標は可処分所得の一本。「制度込み家計余力」という第二指標は作らない。"
         rows={[
           { key: "F12", label: "F12 手取り", value: fmtWan(disposable.takeHomeWan), formula: "A7" },
@@ -900,7 +1006,7 @@ function BreakdownPanel({ point }) {
             key: "F17",
             label: "F17 可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: "F12 ＋ F13 − F14 − F15 ＋ F16",
+            formula: disposable.formula,
             tone: "strong",
           },
         ]}
@@ -927,7 +1033,7 @@ export default function AppendixCliffMap() {
     return PRESENTATION_CASES.map((caseDef, i) => {
       const series = computeSeries({
         household: buildHousehold(caseDef.household),
-        scenario: "S2_R7",
+        scenario: "S3_R8_R9",
         tables,
         sweep: { min: X_MIN, max: X_MAX, step: 1 },
       });
@@ -952,8 +1058,8 @@ export default function AppendixCliffMap() {
   return (
     <main className="App appendix-page">
       <section className="appendix-hero">
-        <p className="appendix-kicker">WEB APPENDIX</p>
-        <h1>モデル世帯による給付・負担構造</h1>
+        <p className="appendix-kicker">モデル世帯による給付・負担構造</p>
+        <h1>Web Appendix</h1>
       </section>
 
       <section className="appendix-panel appendix-panel-open">

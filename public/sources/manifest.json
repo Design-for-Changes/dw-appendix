@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-07-24",
+  "entries": [
+    {
+      "id": "income-tax",
+      "title": "国税庁 給与所得者と税（令和8年分）",
+      "originalUrl": "https://www.nta.go.jp/publication/pamph/koho/kurashi/html/02_1.htm",
+      "archivePath": "./sources/nta-r8-employment-income-tax.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "277935765b63314ae9c927b4c802c2b2a54a182b4c7b0909fe5edf841d8e3a95",
+      "bytes": 1235171
+    },
+    {
+      "id": "resident-tax",
+      "title": "船橋市 所得割の税率と税額控除",
+      "originalUrl": "https://www.city.funabashi.lg.jp/kurashi/zei/007/003/p028458.html",
+      "archivePath": "./sources/funabashi-resident-tax-calculation.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "77796781fc4282ce3436816c6f1c46b2af434b3f20bac05f18528c5f3713d0a0",
+      "bytes": 1674093
+    },
+    {
+      "id": "social-insurance",
+      "title": "協会けんぽ 令和8年度東京都保険料額表",
+      "originalUrl": "https://www.kyoukaikenpo.or.jp/assets/R8_13tokyo.pdf",
+      "archivePath": "./sources/r8-tokyo-health-insurance-rates.pdf",
+      "accessedOn": "2026-07-24",
+      "sha256": "1c5abc10951aeb941267ce128cf802253498a52042ff35629a65f3cc7012328a",
+      "bytes": 340236
+    },
+    {
+      "id": "employment-insurance",
+      "title": "厚生労働省 令和8年度雇用保険料率",
+      "originalUrl": "https://www.mhlw.go.jp/content/001692566.pdf",
+      "archivePath": "./sources/mhlw-r8-employment-insurance.pdf",
+      "accessedOn": "2026-07-24",
+      "sha256": "69ca914736d051ffa067464756500c2a8cf597186e9cf091b54512a68d3b1be9",
+      "bytes": 360445
+    },
+    {
+      "id": "disability-allowances",
+      "title": "千葉県 障害のある人への手当（令和8年度）",
+      "originalUrl": "https://www.pref.chiba.lg.jp/shoufuku/service/teate.html",
+      "archivePath": "./sources/chiba-r8-disability-allowances.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "6c3450aeab594eae6d95ff882c814cf878715ba94f1f22314cf339d4661fc528",
+      "bytes": 1383230
+    },
+    {
+      "id": "m01-income-limit",
+      "title": "東金市 重度心身障害者医療費の助成",
+      "originalUrl": "https://www.city.togane.chiba.jp/0000000878.html",
+      "archivePath": "./sources/togane-severe-disability-medical-aid.png",
+      "accessedOn": "2026-07-23",
+      "sha256": "3d2f377d8508a7d031215879b808908dfa27f68a16daa47278b6857d267a236a",
+      "bytes": 850294
+    },
+    {
+      "id": "m01-representative",
+      "title": "伊勢原市議会 平成29年度決算に基づく1人当たり助成額",
+      "originalUrl": "https://www.city.isehara.kanagawa.jp/gikai/docs/2019071100012/file_contents/2018-09-10_kyouiku.pdf",
+      "archivePath": "./sources/isehara-h29-medical-aid-record.pdf",
+      "accessedOn": "2026-07-24",
+      "sha256": "dfb0a213fbbbd770a4f060b3f497e07f3660885a28223e4862fa73a0c653fc10",
+      "bytes": 387350
+    },
+    {
+      "id": "n04-method",
+      "title": "特別支援教育就学奨励費に係る収入額・需要額の測定要領",
+      "originalUrl": "https://www.dokyoi.pref.hokkaido.lg.jp/fs/9/7/1/2/4/0/4/_/R7%20%E5%8F%8E%E5%85%A5%E9%A1%8D%E3%83%BB%E9%9C%80%E8%A6%81%E9%A1%8D%E3%81%AE%E6%B8%AC%E5%AE%9A%E8%A6%81%E9%A0%98.pdf",
+      "archivePath": "./sources/n04-income-and-need-measurement-guideline.pdf",
+      "accessedOn": "2026-07-23",
+      "sha256": "f2bf688db155b1ca536d19766cbab4ac8a6b86f293f2e85618daec2a8e3331c5",
+      "bytes": 388367
+    },
+    {
+      "id": "n04-standards",
+      "title": "千葉県 生活保護の基準（令和7年10月1日以降）",
+      "originalUrl": "https://www.pref.chiba.lg.jp/kenshidou/shien/book/seikatsuhogo.html",
+      "archivePath": "./sources/chiba-r7-livelihood-standards.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "f32e26f34a3d31fbb4a99a32c1e6d0fe4ffcad003c713aa8efb2696eb2b4c54a",
+      "bytes": 64160
+    },
+    {
+      "id": "n04-local",
+      "title": "船橋市 特別支援教育就学奨励制度（令和8年度）",
+      "originalUrl": "https://www.city.funabashi.lg.jp/kodomo/teate/005/p1008696.html",
+      "archivePath": "./sources/funabashi-r8-special-education-aid.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "de3dc296a26e990e17f7424a709e98837687aea6758dfcc76cd8c32eccefdb93",
+      "bytes": 1033970
+    },
+    {
+      "id": "service-statutory",
+      "title": "こども家庭庁 障害児支援の利用者負担",
+      "originalUrl": "https://www.cfa.go.jp/policies/shougaijishien/shisaku/futan",
+      "archivePath": "./sources/cfa-child-disability-service-burden.png",
+      "accessedOn": "2026-07-24",
+      "sha256": "2cf896d4d518ae60eb1f30a38d142ba6a52c99c10cd271eeb54937ebf5957239",
+      "bytes": 670684
+    },
+    {
+      "id": "service-representative",
+      "title": "東京都 障害児通所支援事業所の利用状況等調査",
+      "originalUrl": "https://www.fukushi.metro.tokyo.lg.jp/documents/d/fukushi/2025-07-08-143208-132",
+      "archivePath": "./sources/tokyo-r6-child-day-service-survey.pdf",
+      "accessedOn": "2026-07-24",
+      "sha256": "02ac0c1a25b1b242d95978d0e813b96821ca67d51cca49d616e38a2a9540b08e",
+      "bytes": 907242
+    }
+  ]
+}

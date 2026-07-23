@@ -25,7 +25,7 @@ const basicIT = {
     if (agiYen <= 25000000) return 160000;
     return 0;
   },
-  // S2: 令和7〜8（R7〜8）
+  // S2: 令和7（R7）
   s2: (agiYen) => {
     if (agiYen <= 1320000) return 950000;
     if (agiYen <= 3360000) return 880000;
@@ -37,7 +37,7 @@ const basicIT = {
     if (agiYen <= 25000000) return 160000;
     return 0;
   },
-  // S3: 令和9〜（R9〜）※最新合意
+  // S3: 令和8〜9（R8〜9）・令和8年度税制改正
   s3: (agiYen) => {
     if (agiYen <= 4890000) return 1040000;
     if (agiYen <= 6550000) return 670000;
@@ -65,4 +65,3 @@ for (let incomeWan = 0; incomeWan <= 3000; incomeWan += 1) {
 
 fs.writeFileSync(OUT_PATH, JSON.stringify(rows));
 console.log(`wrote: ${OUT_PATH} (len=${rows.length})`);
-

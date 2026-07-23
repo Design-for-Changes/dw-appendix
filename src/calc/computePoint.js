@@ -1,13 +1,102 @@
 import { rowAtKeyInt } from "./tableUtils.js";
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
+export const CALCULATION_SOURCES = {
+  incomeTax: {
+    title: "国税庁 給与所得者と税（令和8年分）",
+    url: "https://www.nta.go.jp/publication/pamph/koho/kurashi/html/02_1.htm",
+    archivePath: "./sources/nta-r8-employment-income-tax.png",
+  },
+  residentTax: {
+    title: "船橋市 市民税・県民税の計算",
+    url: "https://www.city.funabashi.lg.jp/kurashi/zei/007/003/p028458.html",
+    archivePath: "./sources/funabashi-resident-tax-calculation.png",
+  },
+  socialHealth: {
+    title: "協会けんぽ 令和8年度東京都保険料額表",
+    url: "https://www.kyoukaikenpo.or.jp/assets/R8_13tokyo.pdf",
+    archivePath: "./sources/r8-tokyo-health-insurance-rates.pdf",
+  },
+  employmentInsurance: {
+    title: "厚生労働省 令和8年度雇用保険料率",
+    url: "https://www.mhlw.go.jp/content/001692566.pdf",
+    archivePath: "./sources/mhlw-r8-employment-insurance.pdf",
+  },
+  disabilityAllowances: {
+    title: "千葉県 障害のある人への手当（令和8年度）",
+    url: "https://www.pref.chiba.lg.jp/shoufuku/service/teate.html",
+    archivePath: "./sources/chiba-r8-disability-allowances.png",
+  },
+  serviceBurden: {
+    title: "こども家庭庁 障害児支援の利用者負担",
+    url: "https://www.cfa.go.jp/policies/shougaijishien/shisaku/futan",
+    archivePath: "./sources/cfa-child-disability-service-burden.png",
+  },
+  serviceRepresentative: {
+    title: "東京都 障害児通所支援事業所の利用状況等調査（令和6年度）",
+    url: "https://www.fukushi.metro.tokyo.lg.jp/documents/d/fukushi/2025-07-08-143208-132",
+    archivePath: "./sources/tokyo-r6-child-day-service-survey.pdf",
+  },
+  medicalRepresentative: {
+    title: "伊勢原市議会 平成29年度決算に基づく1人当たり助成額",
+    url: "https://www.city.isehara.kanagawa.jp/gikai/docs/2019071100012/file_contents/2018-09-10_kyouiku.pdf",
+    archivePath: "./sources/isehara-h29-medical-aid-record.pdf",
+  },
+};
 export const M01_KENSHIN_ANNUAL_YEN_DEFAULT = 149531;
 export const M01_KENSHIN_ANNUAL_YEN_RANGE = { min: 149531, max: 167929 };
 export const M01_LEVY_CUTOFF_YEN = 235000;
+export const M01_INCOME_LIMIT_SOURCE = {
+  title: "東金市 重度心身障害者医療費の助成",
+  url: "https://www.city.togane.chiba.jp/0000000878.html",
+  archivePath: "./sources/togane-severe-disability-medical-aid.png",
+  section: "対象外要件（基準世帯の市民税所得割23万5千円以上）",
+};
 export const RAW_TSUSHO_CHILD_MONTHLY_YEN = 10406;
 export const N04_SHOGAKU_ANNUAL_YEN = { first: 72945, second: 36473, third: 0 };
-export const N04_BOUNDARY_1_2_SALARY_MANYEN = 747;
-export const N04_BOUNDARY_2_3_SALARY_MANYEN = 1055;
+export const N04_INCOME_NEED_SOURCE = {
+  title: "特別支援教育就学奨励費に係る収入額・需要額の測定要領",
+  url: "https://www.dokyoi.pref.hokkaido.lg.jp/fs/9/7/1/2/4/0/4/_/R7%20%E5%8F%8E%E5%85%A5%E9%A1%8D%E3%83%BB%E9%9C%80%E8%A6%81%E9%A1%8D%E3%81%AE%E6%B8%AC%E5%AE%9A%E8%A6%81%E9%A0%98.pdf",
+  archivePath: "./sources/n04-income-and-need-measurement-guideline.pdf",
+  section: "収入額・需要額の算定、1.5倍・2.5倍による支弁区分",
+};
+export const N04_LIVELIHOOD_SOURCE = {
+  title: "千葉県 生活保護の基準（令和7年10月1日以降）",
+  url: "https://www.pref.chiba.lg.jp/kenshidou/shien/book/seikatsuhogo.html",
+  archivePath: "./sources/chiba-r7-livelihood-standards.png",
+  section: "1級地-2の生活扶助・教育扶助・各種加算",
+};
+export const N04_FUNABASHI_SOURCE = {
+  title: "船橋市 特別支援教育就学奨励制度（令和8年度）",
+  url: "https://www.city.funabashi.lg.jp/kodomo/teate/005/p1008696.html",
+  archivePath: "./sources/funabashi-r8-special-education-aid.png",
+  section: "支弁区分の決定・支給内容",
+};
+const N04_NEED_R7 = {
+  firstClassByAgeYen: [
+    [2, 43240],
+    [5, 43240],
+    [11, 45060],
+    [17, 47790],
+    [19, 45520],
+    [40, 45520],
+    [59, 45520],
+    [64, 45520],
+    [69, 45060],
+    [74, 45060],
+    [Infinity, 38690],
+  ],
+  diminishingRateBySize: { 1: 1, 2: 0.87, 3: 0.75, 4: 0.66, 5: 0.59, 6: 0.58, 7: 0.55, 8: 0.52, 9: 0.5 },
+  secondClassBySizeYen: { 1: 27790, 2: 38060, 3: 44730, 4: 48900, 5: 49180, 6: 55650, 7: 58920, 8: 61910, 9: 64670 },
+  winterBySizeYen: { 1: 2630, 2: 3730, 3: 4240, 4: 4580, 5: 4710, 6: 5010, 7: 5220, 8: 5380, 9: 5560 },
+  yearEndBySizeYen: { 3: 23270, 4: 26170 },
+  temporaryPerPersonYen: 1500,
+  disabilitySpecialYen: 26810,
+  disabilityOrdinaryYen: 17870,
+  childUpbringingYen: 10190,
+  elementaryEducationYen: 3400,
+  housingYen: 56000,
+};
 
 function normalizeScenario(scenario) {
   const s = String(scenario || "s2");
@@ -94,8 +183,7 @@ export function buildHousehold(caseHousehold = {}) {
       m01Count: Math.max(1, Math.trunc(toNumber(programsInput.m01Count, 1))),
       n04: Boolean(caseHousehold.n04 || caseHousehold.n04Enabled || programsInput.n04 || programsInput.n04Enabled),
       n04Count: Math.max(1, Math.trunc(toNumber(programsInput.n04Count, 1))),
-      n04Boundary12SalaryManyen: toNumber(programsInput.n04Boundary12SalaryManyen, N04_BOUNDARY_1_2_SALARY_MANYEN),
-      n04Boundary23SalaryManyen: toNumber(programsInput.n04Boundary23SalaryManyen, N04_BOUNDARY_2_3_SALARY_MANYEN),
+      n04HousingYen: toNumber(programsInput.n04HousingYen, N04_NEED_R7.housingYen),
     },
   };
 }
@@ -249,39 +337,68 @@ function describeEmploymentIncomeDeduction(salaryWan, scenarioKey, tableWan, inc
     roundedSalaryWan: Math.round(s),
     tableValueWan: baseWan,
     incomeAdjustmentDeductionWan: toNumber(incomeAdjustmentWan, 0),
+    incomeAdjustmentFormula:
+      toNumber(incomeAdjustmentWan, 0) > 0
+        ? `(${roundWan(s, 4)}万 − 850万) × 10%（上限15万）`
+        : "適用なし",
     totalDeductionWan: baseWan + toNumber(incomeAdjustmentWan, 0),
     employmentIncomeWan: Math.max(0, s - baseWan - toNumber(incomeAdjustmentWan, 0)),
-    source: "emp_deduction.json + embedded bracket metadata",
+    source: CALCULATION_SOURCES.incomeTax,
   };
 }
 
-const SOCIAL_FIXED_ANNUAL_YEN = {
-  s1: { u40: [131354, 137342, 143330], o40: [136922, 143870, 150818] },
-  s2: { u40: [131111, 137057, 143003], o40: [136644, 143544, 150444] },
-  s3: { u40: [132152, 137750, 143798], o40: [137339, 144360, 151380] },
+const SOCIAL_RATE_RULES = {
+  s1: { health: 0.0998 / 2, care: 0.016 / 2, support: 0, pension: 0.183 / 2, employment: 0.006 },
+  s2: { health: 0.0991 / 2, care: 0.0159 / 2, support: 0, pension: 0.183 / 2, employment: 0.0055 },
+  s3: { health: 0.0985 / 2, care: 0.0162 / 2, support: 0.0023 / 2, pension: 0.183 / 2, employment: 0.005 },
 };
-const SOCIAL_UPPER_RATE_762_1626 = {
-  s1: { u40: 0.05265, o40: 0.06065 },
-  s2: { u40: 0.0523, o40: 0.06025 },
-  s3: { u40: 0.05315, o40: 0.06125 },
-};
-const SOCIAL_UPPER_1627_PLUS = {
-  slope: 0.0055,
-  intercept: {
-    s1: { u40: 1546032, o40: 1679472 },
-    s2: { u40: 1540194, o40: 1672800 },
-    s3: { u40: 1554372, o40: 1689480 },
-  },
-};
+const HEALTH_CAP_THRESHOLD_WAN = 1626;
+const HEALTH_MAX_STANDARD_ANNUAL_WAN = 1668;
+const PENSION_CAP_THRESHOLD_WAN = 762;
+const PENSION_MAX_STANDARD_ANNUAL_WAN = 780;
+
+export function calculateSocialInsuranceComponents(salaryWan, age, scenarioKey) {
+  const salary = Math.max(0, toNumber(salaryWan, 0));
+  const rates = SOCIAL_RATE_RULES[normalizeScenario(scenarioKey)] || SOCIAL_RATE_RULES.s2;
+  const healthBasisWan = salary >= HEALTH_CAP_THRESHOLD_WAN ? HEALTH_MAX_STANDARD_ANNUAL_WAN : salary;
+  const pensionBasisWan = salary >= PENSION_CAP_THRESHOLD_WAN ? PENSION_MAX_STANDARD_ANNUAL_WAN : salary;
+  const careRate = toNumber(age, 0) >= 40 ? rates.care : 0;
+  const healthWan = healthBasisWan * rates.health;
+  const careWan = healthBasisWan * careRate;
+  const childSupportContributionWan = healthBasisWan * rates.support;
+  const pensionWan = pensionBasisWan * rates.pension;
+  const employmentWan = salary * rates.employment;
+  const percent = (rate) => `${roundWan(rate * 100, 4)}%`;
+  return {
+    salaryWan: salary,
+    healthBasisWan,
+    pensionBasisWan,
+    rates: { ...rates, care: careRate },
+    healthWan,
+    careWan,
+    childSupportContributionWan,
+    pensionWan,
+    employmentWan,
+    formulas: {
+      health: `${roundWan(healthBasisWan, 4)}万 × ${percent(rates.health * 2)} ÷ 2`,
+      care: careRate > 0
+        ? `${roundWan(healthBasisWan, 4)}万 × ${percent(careRate * 2)} ÷ 2`
+        : "40歳未満のため適用なし",
+      support: `${roundWan(healthBasisWan, 4)}万 × ${percent(rates.support * 2)} ÷ 2`,
+      pension: `${roundWan(pensionBasisWan, 4)}万 × ${percent(rates.pension * 2)} ÷ 2`,
+      employment: `${roundWan(salary, 4)}万 × ${percent(rates.employment)}`,
+      total: "B2a ＋ B2b ＋ B2c ＋ B2d ＋ B2e",
+    },
+    totalWan: healthWan + careWan + childSupportContributionWan + pensionWan + employmentWan,
+  };
+}
 
 function describeSocialInsuranceDeduction(salaryWan, age, scenarioKey, totalWan, exemptSocial) {
   const s = Math.max(0, toNumber(salaryWan, 0));
   const incomeYen = Math.round(s * 10000);
   const skey = normalizeScenario(scenarioKey);
   const ageKey = toNumber(age, 0) >= 40 ? "o40" : "u40";
-  const fixed = SOCIAL_FIXED_ANNUAL_YEN[skey]?.[ageKey] || [];
-  const upperRate = SOCIAL_UPPER_RATE_762_1626[skey]?.[ageKey] || 0;
-  const upperIntercept = SOCIAL_UPPER_1627_PLUS.intercept[skey]?.[ageKey] || 0;
+  const components = calculateSocialInsuranceComponents(s, age, skey);
   const base = {
     salaryWan: s,
     roundedSalaryWan: Math.round(s),
@@ -290,6 +407,8 @@ function describeSocialInsuranceDeduction(salaryWan, age, scenarioKey, totalWan,
     scenario: skey,
     totalWan: toNumber(totalWan, 0),
     source: "social_u40/social_o40 generated from bracket formulas",
+    approximation: "年収を算定基礎とする率ベース近似（賞与なし）",
+    components,
   };
   if (exemptSocial) {
     return { ...base, bracketLabel: "130万円以下・被扶養扱い", rate: 0, interceptYen: 0, fixedAnnualYen: 0, formula: "130万円以下の被扶養扱いで0" };
@@ -297,22 +416,20 @@ function describeSocialInsuranceDeduction(salaryWan, age, scenarioKey, totalWan,
   if (incomeYen <= 0) {
     return { ...base, bracketLabel: "0円", rate: 0, interceptYen: 0, fixedAnnualYen: 0, formula: "給与収入0のため社会保険料0" };
   }
-  if (incomeYen <= 756000) {
-    return { ...base, bracketLabel: "75.6万円以下", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[0], formula: "固定年額" };
-  }
-  if (incomeYen <= 876000) {
-    return { ...base, bracketLabel: "75.6万円超87.6万円以下", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[1], formula: "固定年額" };
-  }
-  if (incomeYen < 1000000) {
-    return { ...base, bracketLabel: "87.6万円超100万円未満", rate: 0, interceptYen: 0, fixedAnnualYen: fixed[2], formula: "固定年額" };
-  }
-  if (incomeYen >= 7620000 && incomeYen <= 16260000) {
-    return { ...base, bracketLabel: "762万円以上1626万円以下", rate: upperRate, interceptYen: 713700, fixedAnnualYen: null, formula: "収入×区分率 + 713,700円" };
-  }
-  if (incomeYen >= 16270000) {
-    return { ...base, bracketLabel: "1627万円以上", rate: SOCIAL_UPPER_1627_PLUS.slope, interceptYen: upperIntercept, fixedAnnualYen: null, formula: "収入×0.0055 + 区分別切片" };
-  }
-  return { ...base, bracketLabel: "100万円以上762万円未満", rate: upperRate + 0.0915, interceptYen: 0, fixedAnnualYen: null, formula: "収入×(区分率 + 0.0915)" };
+  const bracketLabel =
+    s >= HEALTH_CAP_THRESHOLD_WAN
+      ? "健康保険等・厚生年金とも上限到達"
+      : s >= PENSION_CAP_THRESHOLD_WAN
+        ? "厚生年金の上限到達"
+        : "各制度の本人負担率を適用";
+  return {
+    ...base,
+    bracketLabel,
+    rate: null,
+    interceptYen: null,
+    fixedAnnualYen: null,
+    formula: "健保 + 介護 + 子ども・子育て支援金 + 厚生年金 + 雇用保険",
+  };
 }
 
 function describeBasicDeduction(kind, scenarioKey, totalIncomeWan, amountWan) {
@@ -364,7 +481,7 @@ function describeBasicDeduction(kind, scenarioKey, totalIncomeWan, amountWan) {
     deductionWan: valueWan,
     formulaValueWan: band.amountWan,
     formula: `合計所得金額 ${band.label} → 基礎控除 ${band.amountWan}万円`,
-    source: kind === "it" ? "basic_it.json + embedded bracket metadata" : "basic_lt.json + embedded bracket metadata",
+    source: kind === "it" ? CALCULATION_SOURCES.incomeTax : CALCULATION_SOURCES.residentTax,
   };
 }
 
@@ -379,9 +496,8 @@ function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
   const totalIncomeWan = incomeWan + o;
 
   const exemptSocial = Boolean(opts?.exemptSocialUnder130) && s <= 130;
-  const socArr = toNumber(age, 0) >= 40 ? ctx.socialO40Static : ctx.socialU40Static;
-  const socRow = rowAtKeyInt(socArr, "x", Math.round(s));
-  const socialWan = exemptSocial ? 0 : toNumber(socRow?.[ctx.socialKey], 0);
+  const socialComponents = calculateSocialInsuranceComponents(s, age, ctx.skey);
+  const socialWan = exemptSocial ? 0 : socialComponents.totalWan;
 
   const basicITRow = rowAtKeyInt(ctx.basicITStatic, "income_axis", Math.round(totalIncomeWan));
   const basicLTRow = rowAtKeyInt(ctx.basicLTStatic, "income_axis", Math.round(totalIncomeWan));
@@ -409,11 +525,15 @@ function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
       tableKey: ctx.socialKey,
       table: toNumber(age, 0) >= 40 ? "socialO40" : "socialU40",
       exemptUnder130: exemptSocial,
-      healthWan: null,
-      careWan: null,
-      pensionWan: null,
-      employmentWan: null,
-      childSupportContributionWan: null,
+      healthWan: exemptSocial ? 0 : socialComponents.healthWan,
+      careWan: exemptSocial ? 0 : socialComponents.careWan,
+      pensionWan: exemptSocial ? 0 : socialComponents.pensionWan,
+      employmentWan: exemptSocial ? 0 : socialComponents.employmentWan,
+      childSupportContributionWan: exemptSocial ? 0 : socialComponents.childSupportContributionWan,
+      sources: {
+        healthCarePensionSupport: CALCULATION_SOURCES.socialHealth,
+        employment: CALCULATION_SOURCES.employmentInsurance,
+      },
     },
   };
 }
@@ -959,7 +1079,7 @@ function calcTccaComputedLocal(ctx, cols, spSpLT) {
   const familyTargets = Array.from(familyByWho.values());
   const familyMaxAdjustedYen = familyTargets.length ? Math.max(...familyTargets.map((x) => x.adjustedYen)) : 0;
 
-  const gradeToMonthlyYen = (g) => (g === "1" ? 56800 : g === "2" ? 37830 : 0);
+  const gradeToMonthlyYen = (g) => (g === "1" ? 58450 : g === "2" ? 38930 : 0);
   const baseMonthlyYen = cols
     .filter((r) => String(r?.who || "").startsWith("子ども"))
     .reduce((a, r) => {
@@ -1062,7 +1182,13 @@ function calcM01Detail(ctx, householdLevySumWan) {
       householdLevyYen,
       cutoffYen: M01_LEVY_CUTOFF_YEN,
       eligible,
-      formula: "世帯所得割 < 23.5万円なら該当",
+      comparisonOperator: "<",
+      assessmentUnit: "医療保険単位の世帯",
+      taxBasis: "市町村民税所得割",
+      levyFormula: "（A6 − 均等割）× 60%（市町村分合計）",
+      cutoffFormula: `固定基準額（市町村民税所得割 ${M01_LEVY_CUTOFF_YEN.toLocaleString("ja-JP")}円）`,
+      formula: `${Math.round(householdLevyYen).toLocaleString("ja-JP")}円 < ${M01_LEVY_CUTOFF_YEN.toLocaleString("ja-JP")}円`,
+      source: M01_INCOME_LIMIT_SOURCE,
     },
     amountFormula: {
       annualYenPerRecipient,
@@ -1070,14 +1196,31 @@ function calcM01Detail(ctx, householdLevySumWan) {
       annualWan,
       fullReliefWan: (annualYenPerRecipient * count) / 10000,
       medicalCostBurdenWan: eligible ? 0 : (annualYenPerRecipient * count) / 10000,
-      formula: "代表年額 × 対象人数 = 軽減額 / 非該当時の医療費自己負担",
+      formula: `${annualYenPerRecipient.toLocaleString("ja-JP")}円 × ${count}人`,
+      source: CALCULATION_SOURCES.medicalRepresentative,
     },
     confidence: "representative",
   };
 }
 
 
-function calcN04Detail(ctx, salaryManyen) {
+function n04AmountForAge(age) {
+  const a = Math.max(0, toNumber(age, 0));
+  return N04_NEED_R7.firstClassByAgeYen.find(([upper]) => a <= upper)?.[1] || 0;
+}
+
+function n04BySize(table, size) {
+  const n = Math.max(1, Math.trunc(toNumber(size, 1)));
+  if (n <= 9) return toNumber(table[n], 0);
+  return toNumber(table[9], 0);
+}
+
+function ceilToTenYen(value) {
+  return Math.ceil(toNumber(value, 0) / 10) * 10;
+}
+
+function calcN04Detail(ctx, rows) {
+  const salaryManyen = toNumber(rows?.find((r) => r.who === "世帯主")?.salaryWan, 0);
   if (!ctx.programs?.n04) {
     return {
       enabled: false,
@@ -1090,11 +1233,46 @@ function calcN04Detail(ctx, salaryManyen) {
       confidence: "provisional",
     };
   }
-  const x = toNumber(salaryManyen, 0);
-  const b12 = toNumber(ctx.programs?.n04Boundary12SalaryManyen, N04_BOUNDARY_1_2_SALARY_MANYEN);
-  const b23 = toNumber(ctx.programs?.n04Boundary23SalaryManyen, N04_BOUNDARY_2_3_SALARY_MANYEN);
+  const x = salaryManyen;
   const count = Math.max(1, Math.trunc(toNumber(ctx.programs?.n04Count, 1)));
-  const supportClass = x < b12 ? "第1区分" : x < b23 ? "第2区分" : "第3区分";
+  const householdRows = (Array.isArray(rows) ? rows : []).filter((row) =>
+    ["世帯主", "配偶者"].includes(row.who) || String(row.who).startsWith("子ども")
+  );
+  const householdSize = householdRows.length;
+  const totalIncomeWan = householdRows.reduce((sum, row) => sum + toNumber(row.totalIncomeWan, 0), 0);
+  const socialDeductionWan = householdRows.reduce((sum, row) => sum + toNumber(row.socialWan, 0), 0);
+  const allowedDeductionWan = socialDeductionWan;
+  const annualMeasuredIncomeWan = Math.max(0, totalIncomeWan - allowedDeductionWan);
+  const monthlyMeasuredIncomeYen = (annualMeasuredIncomeWan * 10000) / 12;
+
+  const firstClassRawYen = householdRows.reduce((sum, row) => sum + n04AmountForAge(row.age), 0);
+  const diminishingRate = n04BySize(N04_NEED_R7.diminishingRateBySize, householdSize);
+  const firstClassAdjustedYen = ceilToTenYen(firstClassRawYen * diminishingRate);
+  const secondClassYen = n04BySize(N04_NEED_R7.secondClassBySizeYen, householdSize);
+  const temporaryAdditionYen = N04_NEED_R7.temporaryPerPersonYen * householdSize;
+  const winterAnnualizedYen = n04BySize(N04_NEED_R7.winterBySizeYen, householdSize) * 5 / 12;
+  const yearEndAnnualizedYen = n04BySize(N04_NEED_R7.yearEndBySizeYen, householdSize) / 12;
+  const specialDisabledCount = householdRows.filter((row) => row.tccaSpecial).length;
+  const ordinaryDisabledCount = householdRows.filter((row) => row.disabled && !row.tccaSpecial).length;
+  const disabilityAdditionYen =
+    specialDisabledCount * N04_NEED_R7.disabilitySpecialYen +
+    ordinaryDisabledCount * N04_NEED_R7.disabilityOrdinaryYen;
+  const childUpbringingCount = householdRows.filter((row) => toNumber(row.age, 0) < 18).length;
+  const childUpbringingAdditionYen = childUpbringingCount * N04_NEED_R7.childUpbringingYen;
+  const educationAssistanceYen = N04_NEED_R7.elementaryEducationYen * count;
+  const housingAssistanceYen = toNumber(ctx.programs?.n04HousingYen, N04_NEED_R7.housingYen);
+  const monthlyNeedYen =
+    firstClassAdjustedYen +
+    secondClassYen +
+    temporaryAdditionYen +
+    winterAnnualizedYen +
+    yearEndAnnualizedYen +
+    disabilityAdditionYen +
+    childUpbringingAdditionYen +
+    educationAssistanceYen +
+    housingAssistanceYen;
+  const ratio = monthlyNeedYen > 0 ? monthlyMeasuredIncomeYen / monthlyNeedYen : Infinity;
+  const supportClass = ratio < 1.5 ? "第1区分" : ratio < 2.5 ? "第2区分" : "第3区分";
   const annualYenPerRecipient =
     supportClass === "第1区分"
       ? N04_SHOGAKU_ANNUAL_YEN.first
@@ -1111,16 +1289,58 @@ function calcN04Detail(ctx, salaryManyen) {
     annualWan: (annualYenPerRecipient * count) / 10000,
     educationCostReliefWan: (annualYenPerRecipient * count) / 10000,
     educationCostBurdenWan: 0,
-    boundaries: {
-      firstToSecondManyen: b12,
-      secondToThirdManyen: b23,
-    },
     judgment: {
       salaryManyen: x,
-      firstToSecondManyen: b12,
-      secondToThirdManyen: b23,
+      householdSize,
+      totalIncomeWan,
+      deductions: [
+        { label: "社会保険料控除", wan: socialDeductionWan },
+        { label: "生命保険料控除等", wan: 0 },
+      ],
+      deductionSumWan: allowedDeductionWan,
+      annualMeasuredIncomeWan,
+      monthlyMeasuredIncomeYen,
+      monthlyNeedYen,
+      ratio,
+      firstThresholdYen: monthlyNeedYen * 1.5,
+      secondThresholdYen: monthlyNeedYen * 2.5,
       supportClass,
-      formula: "給与収入で支弁区分を判定",
+      formula: "月額収入額 ÷ 月額需要額（1.5未満=第1、2.5未満=第2、それ以上=第3）",
+      source: N04_INCOME_NEED_SOURCE,
+    },
+    need: {
+      firstClassRawYen,
+      diminishingRate,
+      firstClassAdjustedYen,
+      secondClassYen,
+      temporaryAdditionYen,
+      winterAnnualizedYen,
+      yearEndAnnualizedYen,
+      specialDisabledCount,
+      ordinaryDisabledCount,
+      disabilityAdditionYen,
+      childUpbringingCount,
+      childUpbringingAdditionYen,
+      educationAssistanceYen,
+      housingAssistanceYen,
+      monthlyNeedYen,
+      formulas: {
+        firstClass: `${Math.round(firstClassRawYen).toLocaleString("ja-JP")}円 × ${diminishingRate}`,
+        secondClass: `${Math.round(secondClassYen).toLocaleString("ja-JP")}円`,
+        temporary: `${N04_NEED_R7.temporaryPerPersonYen.toLocaleString("ja-JP")}円 × ${householdSize}人`,
+        winter: `${Math.round(n04BySize(N04_NEED_R7.winterBySizeYen, householdSize)).toLocaleString("ja-JP")}円 × 5か月 ÷ 12`,
+        yearEnd: `${Math.round(n04BySize(N04_NEED_R7.yearEndBySizeYen, householdSize)).toLocaleString("ja-JP")}円 ÷ 12`,
+        disability: `${specialDisabledCount}人 × ${N04_NEED_R7.disabilitySpecialYen.toLocaleString("ja-JP")}円 ＋ ${ordinaryDisabledCount}人 × ${N04_NEED_R7.disabilityOrdinaryYen.toLocaleString("ja-JP")}円`,
+        childUpbringing: `${childUpbringingCount}人 × ${N04_NEED_R7.childUpbringingYen.toLocaleString("ja-JP")}円`,
+        education: `${count}人 × ${N04_NEED_R7.elementaryEducationYen.toLocaleString("ja-JP")}円`,
+        housing: `${Math.round(housingAssistanceYen).toLocaleString("ja-JP")}円（モデル入力）`,
+        total: "N4a ＋ N4b ＋ N4c ＋ N4d ＋ N4e ＋ N4f ＋ N4g ＋ N4h ＋ N4i",
+      },
+      formula: "第1類×逓減率 + 第2類 + 臨時加算 + 冬季加算年平均 + 期末一時扶助月割 + 障害者加算 + 児童養育加算 + 教育扶助 + 住宅扶助",
+      livelihoodSource: N04_LIVELIHOOD_SOURCE,
+      localSource: N04_FUNABASHI_SOURCE,
+      housingConfidence: "provisional",
+      housingNote: "住宅扶助は船橋市3人以上の公開上限56,000円をモデル入力として使用",
     },
     amountFormula: {
       annualYenPerRecipient,
@@ -1128,9 +1348,10 @@ function calcN04Detail(ctx, salaryManyen) {
       annualWan: (annualYenPerRecipient * count) / 10000,
       educationCostReliefWan: (annualYenPerRecipient * count) / 10000,
       formula: "区分別補助単価 × 対象人数 = 高所得側0基準の教育費負担軽減",
+      source: N04_FUNABASHI_SOURCE,
     },
-    needAmountWan: null,
-    ratio: null,
+    needAmountWan: monthlyNeedYen / 10000,
+    ratio,
     confidence: "provisional",
   };
 }
@@ -1198,7 +1419,8 @@ function computePoint(ctx, x) {
         rawTaxYen: incomeTax.rawTaxYen,
         taxYen: incomeTax.taxYen,
         taxWan: toNumber(taxIT, 0),
-        formula: "課税所得(千円未満切捨) × 税率 − 速算控除",
+        formula: `${incomeTax.taxableYen.toLocaleString("ja-JP")}円 × ${roundWan(incomeTax.rate * 100, 2)}% − ${incomeTax.deductionYen.toLocaleString("ja-JP")}円`,
+        source: CALCULATION_SOURCES.incomeTax,
       },
       residentTax: {
         taxableWan: residentTax.taxableWan,
@@ -1216,7 +1438,8 @@ function computePoint(ctx, x) {
         municipalIncomeLevyYen: residentTax.municipalIncomeLevyYen,
         prefecturalIncomeLevyWan: residentTax.prefecturalIncomeLevyWan,
         prefecturalIncomeLevyYen: residentTax.prefecturalIncomeLevyYen,
-        formula: "課税所得(千円未満切捨) × 10% − 調整控除 + 均等割",
+        formula: `${residentTax.taxableYen.toLocaleString("ja-JP")}円 × 10% − ${residentTax.adjustmentDeductionYen.toLocaleString("ja-JP")}円 ＋ ${residentTax.perCapitaYen.toLocaleString("ja-JP")}円`,
+        source: CALCULATION_SOURCES.residentTax,
       },
       deductions: {
         basicITWan: toNumber(r.basicITWan, 0),
@@ -1296,7 +1519,15 @@ function computePoint(ctx, x) {
       monthlyUpperYen: monthlyYen,
       annualFeeWan: (monthlyYen * 12) / 10000,
       rawMonthlyYen: age < 18 && !(age >= 3 && age <= 5) ? RAW_TSUSHO_CHILD_MONTHLY_YEN : null,
+      formula:
+        age < 18 && !(age >= 3 && age <= 5)
+          ? `min(${RAW_TSUSHO_CHILD_MONTHLY_YEN.toLocaleString("ja-JP")}円, ${type}の制度上限)`
+          : `${type}の制度上限`,
       confidence,
+      sources: {
+        statutory: CALCULATION_SOURCES.serviceBurden,
+        representative: CALCULATION_SOURCES.serviceRepresentative,
+      },
     });
   }
   const serviceConfidenceOverall = serviceFeeDetails.some((d) => d.confidence === "representative") ? "representative" : "strict";
@@ -1315,8 +1546,8 @@ function computePoint(ctx, x) {
   const fuyo = toNumber(tcca?.fuyoCount, 0);
   const legacyFuyo = toNumber(tcca?.legacyFuyoCount ?? tcca?.fuyoCount, 0);
 
-  const WELFARE_CHILD_MONTHLY_YEN = 16100;
-  const TOKUBETSU_MONTHLY_YEN = 29590;
+  const WELFARE_CHILD_MONTHLY_YEN = 16560;
+  const TOKUBETSU_MONTHLY_YEN = 30450;
   const limitSelfYen = calcWelfareAllowanceLimitSelfYen(0);
   const limitObligorYen = calcWelfareAllowanceLimitObligorYen(fuyo);
   const obligorCols = [rows.find((r) => r.who === "世帯主"), ctx.spouseEnabled ? rows.find((r) => r.who === "配偶者") : null].filter(Boolean);
@@ -1518,7 +1749,7 @@ function computePoint(ctx, x) {
   })();
 
   const m01Detail = calcM01Detail(ctx, householdLevySumWan);
-  const n04Detail = calcN04Detail(ctx, x);
+  const n04Detail = calcN04Detail(ctx, rows);
   const m01AnnualWan = m01Detail.annualWan;
   const n04AnnualWan = n04Detail.annualWan;
   const m01FullReliefWan = toNumber(m01Detail.fullReliefWan ?? m01Detail.sensitivityRangeWan?.min, 0);
@@ -1578,11 +1809,11 @@ function computePoint(ctx, x) {
     socialInsuranceBreakdown: {
       ...(r.socialInsuranceDetail || {}),
       totalWan: toNumber(r.socialWan, 0),
-      healthWan: null,
-      careWan: null,
-      pensionWan: null,
-      employmentWan: null,
-      childSupportContributionWan: null,
+      healthWan: toNumber(r.socialInsuranceDetail?.healthWan, 0),
+      careWan: toNumber(r.socialInsuranceDetail?.careWan, 0),
+      pensionWan: toNumber(r.socialInsuranceDetail?.pensionWan, 0),
+      employmentWan: toNumber(r.socialInsuranceDetail?.employmentWan, 0),
+      childSupportContributionWan: toNumber(r.socialInsuranceDetail?.childSupportContributionWan, 0),
     },
     disabled: Boolean(r.disabled),
     disabilityKind: r.tccaSpecial ? "special" : r.disabled ? "disabled" : "none",
@@ -1605,6 +1836,13 @@ function computePoint(ctx, x) {
     annualWan: toNumber(tccaAnnualWan, 0),
     head: tcca?.head || null,
     family: Array.from(tcca?.familyByWho?.values?.() || []),
+    source: CALCULATION_SOURCES.disabilityAllowances,
+    formulas: {
+      headJudgmentIncome: "A1 − B1a − T2",
+      headLimit: `${toNumber(tcca?.limits?.head?.baseYen, 0).toLocaleString("ja-JP")}円 ＋ ${toNumber(tcca?.limits?.head?.statutoryAddYen, 0).toLocaleString("ja-JP")}円`,
+      familyLimit: `${toNumber(tcca?.limits?.family?.baseYen, 0).toLocaleString("ja-JP")}円 ＋ ${toNumber(tcca?.limits?.family?.statutoryAddYen, 0).toLocaleString("ja-JP")}円`,
+      annual: "T10 × 12",
+    },
   };
   const welfareAllowanceDetail = {
     confidence: "strict",
@@ -1617,6 +1855,12 @@ function computePoint(ctx, x) {
     recipients,
     monthlyYen: welfareMonthly,
     annualWan: welfareAnnualWan,
+    source: CALCULATION_SOURCES.disabilityAllowances,
+    formulas: {
+      obligorJudgmentIncome: "A1 − B1a − W2",
+      obligorLimit: "W1に対応する扶養義務者限度額表",
+      annual: "W7 × 12",
+    },
   };
   const taxDetail = {
     byWho: taxByWho,
@@ -1692,7 +1936,8 @@ function computePoint(ctx, x) {
             })),
             monthlyTotalYen: serviceFeeMonthlyYenTotal,
             annualWan: serviceFeeWanTotal,
-            formula: "児童ごとの月額候補の最大値を世帯上限として採用し、12か月分を年額化",
+            formula: "児童ごとの月額候補の最大値を世帯月額負担として採用",
+            annualFormula: "世帯月額負担 × 12",
           },
           monthlyTotalYen: serviceFeeMonthlyYenTotal,
           annualWan: serviceFeeWanTotal,
@@ -1714,6 +1959,7 @@ function computePoint(ctx, x) {
         costBurdenWan: costBurdenWanTotal,
         educationCostReliefWan,
         disposableWan,
+        formula: "手取り ＋ 現金給付 − 医療費自己負担 − 通所利用者負担 ＋ 教育費負担軽減",
       },
     },
   };

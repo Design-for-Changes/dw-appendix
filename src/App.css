@@ -228,6 +228,31 @@
   font-variant-numeric: tabular-nums;
 }
 
+.appendix-chart-control {
+  width: 100%;
+}
+
+.appendix-salary-control {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr) 7.5rem;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 14px;
+  color: #34464e;
+  font-weight: 800;
+}
+
+.appendix-salary-control input {
+  width: 100%;
+  accent-color: #1f6655;
+}
+
+.appendix-salary-control output {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .appendix-chart-bg {
   fill: #fbfcfd;
 }
@@ -250,21 +275,18 @@
 
 .appendix-line {
   fill: none;
-  opacity: 0.9;
-  stroke-width: 2;
+  opacity: 0.34;
+  stroke-width: 1.5;
+}
+
+.appendix-line.selected {
+  opacity: 1;
+  stroke-width: 2.4;
 }
 
 .appendix-inlegend text {
   font-size: 15px;
   font-weight: 900;
-}
-
-.appendix-cliff-marker text {
-  fill: #ffffff;
-  font-size: 9px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
 }
 
 .appendix-s-marker text {
@@ -379,9 +401,26 @@
 
 .formula-table {
   width: 100%;
-  min-width: 420px;
+  min-width: 980px;
   border-collapse: collapse;
   table-layout: auto;
+}
+
+.formula-source {
+  min-width: 130px;
+  max-width: 220px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.formula-source a {
+  color: #155b73;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.formula-source-missing {
+  color: #8a969b;
 }
 
 .formula-table th,
@@ -568,6 +607,16 @@
 
   .appendix-chart {
     min-height: 280px;
+  }
+
+  .appendix-salary-control {
+    grid-template-columns: 1fr auto;
+    padding-inline: 8px;
+  }
+
+  .appendix-salary-control input {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .formula-table {

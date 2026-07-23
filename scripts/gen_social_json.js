@@ -6,9 +6,6 @@
 //
 // Notes:
 // - x axis is annual salary in "万円/年" (0..3000, step=1).
-// - Apply the "fixed amount up to annual income bands -> rate calc from 100万円/年" rule
-//   for S1/S2/S3. The fixed amounts are interpreted as *annual* employee
-//   contributions (yen).
 // - Store yen-rounded values in 万円. Avoid 0.1万円 rounding because it creates
 //   visual sawtooth artifacts in the appendix disposable-income curve.
 //
@@ -20,71 +17,48 @@ const path = require("path");
 
 const WAN = 10000;
 
-const SH_FIXED_MONTHLY = {
-  // [~75.6万, 75.7~87.6万, 87.6~99.6万]
-  s1: {
-    u40: [131354, 137342, 143330],
-    o40: [136922, 143870, 150818],
-  },
-  s2: {
-    u40: [131111, 137057, 143003],
-    o40: [136644, 143544, 150444],
-  },
-  s3: {
-    u40: [132152, 137750, 143798],
-    o40: [137339, 144360, 151380],
-  },
-};
 const toWanFromRoundedYen = (yen) => Math.round(Number(yen) || 0) / WAN;
 
-// Upper-band rules (annual, employee contributions in yen).
-// - 762万円以上1626万円以下: income * rate + 713,700 yen
-// - 1627万円以上: income * 0.0055 + intercept
-// NOTE: x axis is in 万円 so boundaries align exactly at x=762/1626/1627.
-// Base-rate rule (user spec):
-// - From UPPER_START (762万円) the 厚年本人負担(9.15%) portion is capped and treated as a fixed yen amount.
-// - Therefore, below that band (>=100万円 and <UPPER_START), we approximate with
-//   (upperRate + 0.0915) as the all-in rate.
-const UPPER_START_YEN = 762 * WAN;
-const SH_UPPER_762_1626 = {
-  s1: { u40: 0.05265, o40: 0.06065 },
-  s2: { u40: 0.0523, o40: 0.06025 },
-  s3: { u40: 0.05315, o40: 0.06125 },
+// Annual-salary approximation of the employee contribution.
+// Health/care/support and pension use the official employee half-rates. Once
+// salary reaches the upper grade threshold, the maximum standard remuneration
+// is used. Employment insurance is charged on the full salary without this cap.
+const SOCIAL_RATE_RULES = {
+  // Tokyo, R6. Employment insurance: general business, employee share.
+  s1: { health: 0.0998 / 2, care: 0.016 / 2, support: 0, pension: 0.183 / 2, employment: 0.006 },
+  // Tokyo, R7. Employment insurance: general business, employee share.
+  s2: { health: 0.0991 / 2, care: 0.0159 / 2, support: 0, pension: 0.183 / 2, employment: 0.0055 },
+  // Tokyo, R8. Child/family support starts in R8.
+  s3: { health: 0.0985 / 2, care: 0.0162 / 2, support: 0.0023 / 2, pension: 0.183 / 2, employment: 0.005 },
 };
-const SH_UPPER_1627_PLUS = {
-  // slope is common 0.0055; intercept differs by scenario/age
-  slope: 0.0055,
-  intercept: {
-    s1: { u40: 1546032, o40: 1679472 },
-    s2: { u40: 1540194, o40: 1672800 },
-    s3: { u40: 1554372, o40: 1689480 },
-  },
-};
+const HEALTH_CAP_THRESHOLD_YEN = 1626 * WAN;
+const HEALTH_MAX_STANDARD_ANNUAL_YEN = 1668 * WAN;
+const PENSION_CAP_THRESHOLD_YEN = 762 * WAN;
+const PENSION_MAX_STANDARD_ANNUAL_YEN = 780 * WAN;
+
+function getSocialComponentsYen(annualIncomeYen, scenarioKey, age) {
+  const income = Math.max(0, Number(annualIncomeYen) || 0);
+  const rates = SOCIAL_RATE_RULES[scenarioKey];
+  if (!rates) return null;
+  const healthBasis = income >= HEALTH_CAP_THRESHOLD_YEN ? HEALTH_MAX_STANDARD_ANNUAL_YEN : income;
+  const pensionBasis = income >= PENSION_CAP_THRESHOLD_YEN ? PENSION_MAX_STANDARD_ANNUAL_YEN : income;
+  const careRate = age >= 40 ? rates.care : 0;
+  return {
+    health: healthBasis * rates.health,
+    care: healthBasis * careRate,
+    support: healthBasis * rates.support,
+    pension: pensionBasis * rates.pension,
+    employment: income * rates.employment,
+  };
+}
 
 function getSocialEmpYen(annualIncomeYen, scenarioKey, age) {
   const income = Math.max(0, Number(annualIncomeYen) || 0);
   if (income <= 0) return 0;
 
-  const ageKey = age >= 40 ? "o40" : "u40";
-  const fixed = SH_FIXED_MONTHLY?.[scenarioKey]?.[ageKey];
-  const upperRate = SH_UPPER_762_1626?.[scenarioKey]?.[ageKey];
-  const upperIntercept = SH_UPPER_1627_PLUS?.intercept?.[scenarioKey]?.[ageKey];
-
-  if (!Array.isArray(fixed) || fixed.length < 3) return 0;
-  if (!Number.isFinite(upperRate) || !Number.isFinite(upperIntercept)) return 0;
-
-  if (income <= 756000) return fixed[0];
-  if (income <= 876000) return fixed[1];
-  if (income < 1000000) return fixed[2];
-
-  // Upper band rules
-  if (income >= UPPER_START_YEN && income <= 16260000) return income * upperRate + 713700;
-  if (income >= 16270000) return income * SH_UPPER_1627_PLUS.slope + upperIntercept;
-
-  // Default linear approximation (>=100万円):
-  // Use "upperRate + 0.0915" so the formula is consistent with the user's
-  // "rate drops by 0.0915 when the fixed 713,700 yen portion starts" spec.
-  return income * (upperRate + 0.0915);
+  const components = getSocialComponentsYen(income, scenarioKey, age);
+  if (!components) return 0;
+  return Object.values(components).reduce((sum, value) => sum + value, 0);
 }
 
 function genRows(age) {

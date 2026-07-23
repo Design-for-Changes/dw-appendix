@@ -232,6 +232,12 @@
   width: 100%;
 }
 
+.appendix-chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 .appendix-salary-control {
   display: grid;
   grid-template-columns: auto minmax(160px, 1fr) 7.5rem;
@@ -417,6 +423,7 @@
   color: #155b73;
   text-decoration: underline;
   text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
 
 .formula-source-missing {
@@ -597,16 +604,45 @@
 
 @media (max-width: 640px) {
   .appendix-page {
-    width: min(94vw, 1360px);
-    padding-top: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 10px 32px;
+  }
+
+  .appendix-hero {
+    padding-top: 10px;
+  }
+
+  .appendix-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .appendix-case-button {
     width: 100%;
+    min-width: 0;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  .appendix-panel {
+    padding: 10px;
+  }
+
+  .appendix-panel-open {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .appendix-chart-scroll {
+    scrollbar-width: thin;
   }
 
   .appendix-chart {
-    min-height: 280px;
+    width: 720px;
+    min-height: 0;
+    height: auto;
+    touch-action: pan-x pan-y;
   }
 
   .appendix-salary-control {
@@ -619,8 +655,125 @@
     grid-row: 2;
   }
 
-  .formula-table {
-    min-width: 460px;
+  .formula-table-wrap,
+  .appendix-table-wrap {
+    overflow: visible;
+  }
+
+  .case-cond-table,
+  .formula-table,
+  .appendix-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .case-cond-table thead,
+  .formula-table thead,
+  .appendix-table thead {
+    display: none;
+  }
+
+  .case-cond-table tbody,
+  .formula-table tbody,
+  .appendix-table tbody {
+    display: block;
+  }
+
+  .case-cond-table tbody tr,
+  .formula-table tbody tr,
+  .appendix-table tbody tr {
+    display: block;
+  }
+
+  .case-cond-table tbody tr + tr,
+  .formula-table tbody tr + tr {
+    margin-top: 8px;
+  }
+
+  .case-cond-table tbody th,
+  .formula-table tbody th {
+    display: block;
+    width: auto;
+    border-top: 1px solid #dce5e9;
+    padding: 9px 8px;
+    background: #f1f5f6;
+    white-space: normal;
+  }
+
+  .case-cond-table tbody td,
+  .formula-table tbody td,
+  .appendix-table tbody td {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 5.2rem minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+    border: 0;
+    padding: 6px 8px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .case-cond-table tbody td::before,
+  .formula-table tbody td::before,
+  .appendix-table tbody td::before {
+    content: attr(data-label);
+    color: #63737b;
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.5;
+  }
+
+  .formula-table .formula-value,
+  .formula-table .formula-expression,
+  .formula-source {
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    padding-right: 8px;
+    white-space: normal;
+  }
+
+  .formula-card {
+    padding: 9px;
+  }
+
+  .formula-card h3 {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .appendix-table-wrap {
+    border: 0;
+    border-radius: 0;
+  }
+
+  .appendix-table tbody tr {
+    margin-bottom: 9px;
+    padding: 6px 4px;
+    border: 1px solid #dce5e9;
+    border-left: 4px solid var(--case-accent, #53646d);
+    border-radius: 6px;
+  }
+
+  .appendix-table .appendix-cause,
+  .appendix-table .appendix-cause div {
+    white-space: normal;
+  }
+
+  .appendix-pnum {
+    color: var(--case-accent, #1c2529);
+    font-weight: 900;
+  }
+
+  .case-cond-summary {
+    font-size: 13px;
+  }
+
+  .case-cond-table tbody th {
+    color: var(--case-accent, #33444c);
   }
 }
 

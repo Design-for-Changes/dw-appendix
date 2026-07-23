@@ -1,125 +1,10 @@
 import "../App.css";
-import { useMemo, useState } from "react";
-import spouseDeductionITCfg from "../config/spouse_deduction_it.json";
-import spouseDeductionLTCfg from "../config/spouse_deduction_lt.json";
-import spouseSpecialDeductionITCfg from "../config/spouse_special_deduction_it.json";
-import spouseSpecialDeductionLTCfg from "../config/spouse_special_deduction_lt.json";
-import dependentDeductionCfg from "../config/dependent_deduction.json";
-import specialKinDeductionITCfg from "../config/special_kin_deduction_it.json";
-import specialKinDeductionLTCfg from "../config/special_kin_deduction_lt.json";
-import widowDeductionCfg from "../config/widow_deduction.json";
-import singleParentDeductionCfg from "../config/single_parent_deduction.json";
-import workingStudentDeductionCfg from "../config/working_student_deduction.json";
-import disabilityDeductionCfg from "../config/disability_deduction.json";
-import { computeSeries, buildHousehold, CALCULATION_SOURCES } from "../calc/computePoint";
-import { explainCliffCauses } from "../calc/cliffCauseAnalysis";
-import { useStaticTables } from "../hooks/useStaticTables";
+import { useEffect, useRef, useState } from "react";
+import { CALCULATION_SOURCES } from "../calc/calculationSources";
+import { useAppendixData } from "../hooks/useAppendixData";
 
 const X_MIN = 200;
 const X_MAX = 1400;
-const COLORS = ["#2358a6", "#8f3d67", "#2f6f5e"];
-
-const COMMON_HOUSEHOLD = {
-  spouseEnabled: true,
-  head: { age: 45 },
-  spouse: { age: 45 },
-};
-
-const PRESENTATION_CASES = [
-  {
-    id: "case1",
-    label: "ケース1",
-    shortLabel: "子1人",
-    description: "7歳・特児1級・特別障害・障害児福祉手当あり",
-    minDropManyen: 2.5,
-    household: {
-      ...COMMON_HOUSEHOLD,
-      programs: {
-        m01: true,
-        m01Count: 1,
-        n04: true,
-        n04Count: 1,
-      },
-      children: [
-        {
-          age: 7,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-      ],
-    },
-  },
-  {
-    id: "case2",
-    label: "ケース2",
-    shortLabel: "子2人・混合",
-    description: "11歳1級特別＋7歳2級一般。福祉手当・重心医療費助成・就学奨励費は1人分",
-    minDropManyen: 2.5,
-    household: {
-      ...COMMON_HOUSEHOLD,
-      programs: {
-        m01: true,
-        m01Count: 1,
-        n04: true,
-        n04Count: 1,
-      },
-      children: [
-        {
-          age: 11,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-        {
-          age: 7,
-          disabled: true,
-          specialDisabled: false,
-          cohabit: true,
-          tccaGrade: "2",
-        },
-      ],
-    },
-  },
-  {
-    id: "case3",
-    label: "ケース3",
-    shortLabel: "子2人・重複",
-    description: "11歳・7歳とも特児1級・特別障害。福祉手当・重心医療費助成・就学奨励費は2人分",
-    minDropManyen: 2.5,
-    household: {
-      ...COMMON_HOUSEHOLD,
-      programs: {
-        m01: true,
-        m01Count: 2,
-        n04: true,
-        n04Count: 2,
-      },
-      children: [
-        {
-          age: 11,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-        {
-          age: 7,
-          disabled: true,
-          specialDisabled: true,
-          cohabit: true,
-          tccaGrade: "1",
-          childWelfareAllowance: true,
-        },
-      ],
-    },
-  },
-];
 
 const IDEAL_CASE = {
   id: "ideal",
@@ -128,29 +13,6 @@ const IDEAL_CASE = {
   description: "崖なし、または大幅緩和した制度設計を後入れする枠。",
   pending: true,
 };
-
-function makeTables(staticTables) {
-  return {
-    emp: staticTables.empStatic,
-    basicIT: staticTables.basicITStatic,
-    basicLT: staticTables.basicLTStatic,
-    socialU40: staticTables.socialU40Static,
-    socialO40: staticTables.socialO40Static,
-    configs: {
-      spouseDeductionITCfg,
-      spouseDeductionLTCfg,
-      spouseSpecialDeductionITCfg,
-      spouseSpecialDeductionLTCfg,
-      dependentDeductionCfg,
-      specialKinDeductionITCfg,
-      specialKinDeductionLTCfg,
-      widowDeductionCfg,
-      singleParentDeductionCfg,
-      workingStudentDeductionCfg,
-      disabilityDeductionCfg,
-    },
-  };
-}
 
 function fmt(n, digits = 0) {
   if (!Number.isFinite(Number(n))) return "—";
@@ -177,56 +39,6 @@ function tintWhite(hex, whiteRatio) {
   return `rgb(${mix(ch(0))}, ${mix(ch(2))}, ${mix(ch(4))})`;
 }
 
-function pointY(point) {
-  return Number(point?.cliffDisposable ?? point?.disposable);
-}
-
-function findQ(series, cliffIndex, yAfter) {
-  for (let i = cliffIndex - 1; i >= 0; i -= 1) {
-    const point = series[i];
-    if (pointY(point) <= yAfter) return point;
-  }
-  return null;
-}
-
-function findR(series, cliffIndex, yBefore) {
-  for (let i = cliffIndex + 1; i < series.length; i += 1) {
-    const point = series[i];
-    if (pointY(point) >= yBefore) return point;
-  }
-  return null;
-}
-
-function detectCliffs(series, caseDef) {
-  const rows = [];
-  for (let i = 1; i < series.length; i += 1) {
-    const prev = series[i - 1];
-    const cur = series[i];
-    if (cur.x < X_MIN || cur.x > X_MAX) continue;
-    const delta = pointY(cur) - pointY(prev);
-    if (delta > -Number(caseDef.minDropManyen || 3)) continue;
-
-    const yBefore = pointY(prev);
-    const yAfter = pointY(cur);
-    const q = findQ(series, i, yAfter);
-    const r = findR(series, i, yBefore);
-    const yAtMax = pointY(series.find((p) => p.x === X_MAX) ?? series[series.length - 1]);
-    const causes = explainCliffCauses(prev, cur);
-    rows.push({
-      index: rows.length + 1,
-      x: Number(cur.x),
-      yBefore,
-      yAfter,
-      drop: delta,
-      causes,
-      q,
-      r,
-      unrecoveredShortfall: r ? 0 : Math.max(0, yBefore - yAtMax),
-    });
-  }
-  return rows;
-}
-
 function buildPath(points, xScale, yScale) {
   const visible = points.filter((p) => p.x >= X_MIN && p.x <= X_MAX);
   return visible.map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.x).toFixed(2)} ${yScale(p.disposable).toFixed(2)}`).join(" ");
@@ -238,6 +50,7 @@ function pointAt(series, salaryWan) {
 }
 
 function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
+  const scrollRef = useRef(null);
   const width = 1040;
   const height = 560;
   const pad = { left: 66, right: 28, top: 26, bottom: 62 };
@@ -264,21 +77,30 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
     onSalaryChange(salaryFromClientX(event.clientX, event.currentTarget));
   };
 
+  useEffect(() => {
+    const viewport = scrollRef.current;
+    if (!viewport || viewport.scrollWidth <= viewport.clientWidth) return;
+    const ratio = (selectedSalary - X_MIN) / (X_MAX - X_MIN);
+    const target = ratio * viewport.scrollWidth - viewport.clientWidth / 2;
+    viewport.scrollLeft = Math.max(0, Math.min(viewport.scrollWidth - viewport.clientWidth, target));
+  }, [selectedSalary]);
+
   return (
     <div className="appendix-chart-control">
-      <svg
-      className="appendix-chart"
-      viewBox={`0 0 ${width} ${height}`}
-      role="img"
-      aria-label="給与と可処分所得の関係。縦線は選択給与を示す。"
-      onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId);
-        moveLine(event);
-      }}
-      onPointerMove={(event) => {
-        if (event.buttons === 1) moveLine(event);
-      }}
-    >
+      <div className="appendix-chart-scroll" ref={scrollRef}>
+        <svg
+        className="appendix-chart"
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label="給与と可処分所得の関係。縦線は選択給与を示す。"
+        onPointerDown={(event) => {
+          event.currentTarget.setPointerCapture(event.pointerId);
+          moveLine(event);
+        }}
+        onPointerMove={(event) => {
+          if (event.buttons === 1) moveLine(event);
+        }}
+      >
       <rect className="appendix-chart-bg" x="0" y="0" width={width} height={height} />
       {yTicks.map((t) => (
         <g key={`y-${t}`}>
@@ -337,7 +159,8 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
           </g>
         </g>
       ) : null}
-      </svg>
+        </svg>
+      </div>
       <label className="appendix-salary-control">
         <span>選択給与</span>
         <input
@@ -377,23 +200,23 @@ function CliffTable({ cliffs }) {
           {cliffs.map((c) => {
             return (
               <tr key={c.index}>
-                <td className="appendix-mono appendix-pnum">P{c.index}</td>
-                <td>
+                <td className="appendix-mono appendix-pnum" data-label="崖">P{c.index}</td>
+                <td data-label="給与収入">
                   <span className="appendix-mono">{fmt(c.x)}万</span>
                 </td>
-                <td className="appendix-cause">
+                <td className="appendix-cause" data-label="原因">
                   {(c.causes || []).map((cause) => (
                     <div key={`${c.index}-${cause.cause}`}>{cause.cause}</div>
                   ))}
                 </td>
-                <td>
+                <td data-label="変化内容">
                   {(c.causes || []).map((cause) => (
                     <div key={`${c.index}-${cause.cause}-${cause.whatHappened}`}>{cause.whatHappened}</div>
                   ))}
                 </td>
-                <td className="appendix-mono">{fmt(Math.abs(c.drop), 1)}万</td>
-                <td className="appendix-mono">{c.q ? `${fmt(c.q.x)}万` : "—"}</td>
-                <td className="appendix-mono">{c.r ? `${fmt(c.r.x)}万` : "回復せず"}</td>
+                <td className="appendix-mono" data-label="落差">{fmt(Math.abs(c.drop), 1)}万</td>
+                <td className="appendix-mono" data-label="後退点">{c.q ? `${fmt(c.q.x)}万` : "—"}</td>
+                <td className="appendix-mono" data-label="復帰点">{c.r ? `${fmt(c.r.x)}万` : "回復せず"}</td>
               </tr>
             );
           })}
@@ -436,12 +259,12 @@ function CalculationTable({ title, subtitle, rows, note, wide, source }) {
             {rows.map((row) => (
               <tr key={row.key || row.label} className={row.tone || ""}>
                 <th scope="row">{row.label}</th>
-                <td className="formula-value">{row.value}</td>
-                <td className="formula-expression">{row.formula}</td>
-                <td className="formula-source">
+                <td className="formula-value" data-label="値">{row.value}</td>
+                <td className="formula-expression" data-label="計算式">{row.formula}</td>
+                <td className="formula-source" data-label="根拠資料">
                   <SourceLink href={row.sourceUrl || source?.url}>{row.sourceLabel || source?.title || "原典"}</SourceLink>
                 </td>
-                <td className="formula-source">
+                <td className="formula-source" data-label="収録資料">
                   <SourceLink href={row.archivePath || source?.archivePath}>{row.archiveLabel || "GitHub収録版"}</SourceLink>
                 </td>
               </tr>
@@ -496,11 +319,11 @@ function CaseConditions({ caseDef }) {
             {children.map((c, i) => (
               <tr key={`child-${i}`}>
                 <th scope="row">子ども{i + 1}</th>
-                <td>{fmt(c.age)}歳</td>
-                <td>{childDisabilityLabel(c)}</td>
-                <td>{childTccaLabel(c)}</td>
-                <td>{c.cohabit !== false ? "同居" : "別居"}</td>
-                <td>{c.childWelfareAllowance ? "あり" : "—"}</td>
+                <td data-label="年齢">{fmt(c.age)}歳</td>
+                <td data-label="障害区分">{childDisabilityLabel(c)}</td>
+                <td data-label="特別児童扶養手当">{childTccaLabel(c)}</td>
+                <td data-label="同居">{c.cohabit !== false ? "同居" : "別居"}</td>
+                <td data-label="障害児福祉手当">{c.childWelfareAllowance ? "あり" : "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -1018,36 +841,10 @@ function BreakdownPanel({ point }) {
 export default function AppendixCliffMap() {
   const [selectedId, setSelectedId] = useState("case3");
   const [selectedSalary, setSelectedSalary] = useState(900);
-  const staticTables = useStaticTables();
-  const ready =
-    staticTables.staticReady &&
-    staticTables.empStatic?.length &&
-    staticTables.basicITStatic?.length &&
-    staticTables.basicLTStatic?.length &&
-    staticTables.socialU40Static?.length &&
-    staticTables.socialO40Static?.length;
-
-  const data = useMemo(() => {
-    if (!ready) return [];
-    const tables = makeTables(staticTables);
-    return PRESENTATION_CASES.map((caseDef, i) => {
-      const series = computeSeries({
-        household: buildHousehold(caseDef.household),
-        scenario: "S3_R8_R9",
-        tables,
-        sweep: { min: X_MIN, max: X_MAX, step: 1 },
-      });
-      return {
-        ...caseDef,
-        color: COLORS[i % COLORS.length],
-        series,
-        cliffs: detectCliffs(series, caseDef),
-      };
-    });
-  }, [ready, staticTables]);
+  const appendixData = useAppendixData(selectedId, selectedSalary);
+  const { data, ready, selectedPoint } = appendixData;
 
   const selected = data.find((d) => d.id === selectedId) || data[0];
-  const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
   const caseAccent = selected?.color || "#9aa7ad";
   const caseSectionStyle = {
     "--case-accent": caseAccent,
@@ -1064,7 +861,9 @@ export default function AppendixCliffMap() {
 
       <section className="appendix-panel appendix-panel-open">
         {!ready ? (
-          <div className="appendix-empty">計算テーブルを読み込んでいます。</div>
+          <div className="appendix-empty">
+            {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}
+          </div>
         ) : (
           <>
             <Graph data={data} selectedId={selected?.id} selectedSalary={selectedSalary} onSalaryChange={setSelectedSalary} />
@@ -1073,7 +872,7 @@ export default function AppendixCliffMap() {
       </section>
 
       <section className="appendix-controls" aria-label="表示ケース">
-        {[...PRESENTATION_CASES, IDEAL_CASE].map((c) => {
+        {[...data, IDEAL_CASE].map((c) => {
           const caseColor = data.find((d) => d.id === c.id)?.color || "#9aa7ad";
           return (
             <button
@@ -1117,7 +916,11 @@ export default function AppendixCliffMap() {
             <p>S値＝{fmt(selectedPoint?.x)}万円</p>
           </div>
         </div>
-        <BreakdownPanel point={selectedPoint} />
+        {appendixData.detailReady ? (
+          <BreakdownPanel point={selectedPoint} />
+        ) : (
+          <div className="appendix-empty">選択給与の計算内訳を読み込んでいます。</div>
+        )}
       </section>
 
       <section className="appendix-panel ideal-slot">

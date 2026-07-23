@@ -10,6 +10,7 @@
 
 # production
 /build
+/public/generated/appendix
 
 # misc
 .DS_Store

@@ -18,7 +18,10 @@ for (const entry of manifest.entries || []) {
 for (const filename of await readdir("public/sources")) {
   if (!expectedFiles.has(filename)) failures.push(`${filename}: not registered in manifest`);
 }
-const source = await readFile("src/calc/computePoint.js", "utf8");
+const source = [
+  await readFile("src/calc/computePoint.js", "utf8"),
+  await readFile("src/calc/calculationSources.js", "utf8"),
+].join("\n");
 for (const entry of manifest.entries || []) {
   if (!source.includes(entry.archivePath)) failures.push(`${entry.id}: archive not referenced by core`);
   if (!source.includes(entry.originalUrl)) failures.push(`${entry.id}: original URL not referenced by core`);

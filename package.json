@@ -14,14 +14,18 @@
   },
   "homepage": ".",
   "scripts": {
+    "prestart": "npm run generate:appendix",
     "start": "react-scripts start",
+    "prebuild": "npm run generate:appendix",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "gen:basic": "node scripts/gen_basic_json.js",
     "gen:social": "node scripts/gen_social_json.js",
     "gen:data": "npm run gen:basic && npm run gen:social",
-    "verify": "node scripts/verify-social-insurance.mjs && node scripts/verify-independent-oracle.mjs && node scripts/verify-source-coverage.mjs && node scripts/verify.mjs",
+    "generate:appendix": "node scripts/generate-appendix-data.mjs",
+    "preverify": "npm run generate:appendix",
+    "verify": "node scripts/verify-social-insurance.mjs && node scripts/verify-independent-oracle.mjs && node scripts/verify-source-coverage.mjs && node scripts/verify.mjs && node scripts/verify-appendix-data.mjs",
     "report:cliff-causes": "node scripts/report-cliff-causes.mjs"
   },
   "eslintConfig": {

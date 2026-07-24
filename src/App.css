@@ -412,6 +412,10 @@
   table-layout: auto;
 }
 
+.formula-table.no-sources {
+  min-width: 620px;
+}
+
 .formula-source {
   min-width: 130px;
   max-width: 220px;

@@ -235,7 +235,7 @@ function SourceLink({ href, children }) {
   );
 }
 
-function CalculationTable({ title, subtitle, rows, note, wide, source }) {
+function CalculationTable({ title, subtitle, rows, note, wide, source, showSources = true }) {
   return (
     <section className={`formula-card${wide ? " wide" : ""}`}>
       <div className="formula-card-head">
@@ -245,14 +245,14 @@ function CalculationTable({ title, subtitle, rows, note, wide, source }) {
         </h3>
       </div>
       <div className="formula-table-wrap">
-        <table className="formula-table">
+        <table className={`formula-table${showSources ? "" : " no-sources"}`}>
           <thead>
             <tr>
               <th>ラベル</th>
               <th>値</th>
               <th>計算式</th>
-              <th>根拠資料</th>
-              <th>収録資料</th>
+              {showSources ? <th>根拠資料</th> : null}
+              {showSources ? <th>収録資料</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -261,12 +261,16 @@ function CalculationTable({ title, subtitle, rows, note, wide, source }) {
                 <th scope="row">{row.label}</th>
                 <td className="formula-value" data-label="値">{row.value}</td>
                 <td className="formula-expression" data-label="計算式">{row.formula}</td>
-                <td className="formula-source" data-label="根拠資料">
-                  <SourceLink href={row.sourceUrl || source?.url}>{row.sourceLabel || source?.title || "原典"}</SourceLink>
-                </td>
-                <td className="formula-source" data-label="収録資料">
-                  <SourceLink href={row.archivePath || source?.archivePath}>{row.archiveLabel || "GitHub収録版"}</SourceLink>
-                </td>
+                {showSources ? (
+                  <td className="formula-source" data-label="根拠資料">
+                    <SourceLink href={row.sourceUrl || source?.url}>{row.sourceLabel || source?.title || "原典"}</SourceLink>
+                  </td>
+                ) : null}
+                {showSources ? (
+                  <td className="formula-source" data-label="収録資料">
+                    <SourceLink href={row.archivePath || source?.archivePath}>{row.archiveLabel || "GitHub収録版"}</SourceLink>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>
@@ -762,7 +766,7 @@ function BreakdownPanel({ point }) {
             formula: service.calculation?.formula,
           },
           { key: "E4", label: "E4 年額負担", value: fmtWan(service.annualWan), formula: service.calculation?.annualFormula },
-          { key: "E5", label: "E5 最終指標への扱い", value: "可処分所得から減算", formula: "F8 ＝ E4", tone: "strong" },
+          { key: "E5", label: "E5 最終指標への扱い", value: "可処分所得から減算", formula: "G2 ＝ E4", tone: "strong" },
         ]}
       />
 
@@ -771,8 +775,7 @@ function BreakdownPanel({ point }) {
       <CalculationTable
         title="F. 現金給付合計（＋）"
         wide
-        confidence="strict"
-        source={CALCULATION_SOURCES.disabilityAllowances}
+        showSources={false}
         note="M01・N04は現金給付ではなく費用軽減として負担側に分離。ここは実際に現金として受け取る給付だけを合計。"
         rows={[
           { key: "F1", label: "F1 基礎障害年金", value: fmtWan(allowance.basicDisabilityPensionWan), formula: "本人分 ＋ 配偶者分" },
@@ -790,46 +793,44 @@ function BreakdownPanel({ point }) {
         ]}
       />
 
-      {/* F 費用（自己負担・軽減）: 医療・通所は自己負担、N04は教育費自己負担の軽減。給付側から分離 */}
+      {/* G 費用（自己負担・軽減）: 医療・通所は自己負担、N04は教育費自己負担の軽減。給付側から分離 */}
       <CalculationTable
-        title="F. 費用（自己負担・軽減）"
+        title="G. 費用（自己負担・軽減）"
         wide
-        confidence="strict"
-        source={CALCULATION_SOURCES.serviceBurden}
+        showSources={false}
         note="現金給付ではない費用側の束。医療費（M01非該当時）・通所は自己負担。就学奨励費(N04)は第3区分（補助0）を基準とする教育費負担の軽減。"
         rows={[
-          { key: "F7", label: "F7 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M5", confidence: "representative" },
-          { key: "F8", label: "F8 通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E4" },
-          { key: "F9", label: "F9 自己負担 小計", value: fmtWan(costBurden.totalWan), formula: "F7 ＋ F8" },
-          { key: "F10", label: "F10 教育費自己負担の軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "N9", confidence: "provisional" },
+          { key: "G1", label: "G1 医療費自己負担", value: fmtWan(costBurden.medicalCostBurdenWan), formula: "M5", confidence: "representative" },
+          { key: "G2", label: "G2 通所利用者負担", value: fmtWan(costBurden.serviceFeeWan), formula: "E4" },
+          { key: "G3", label: "G3 自己負担 小計", value: fmtWan(costBurden.totalWan), formula: "G1 ＋ G2" },
+          { key: "G4", label: "G4 教育費自己負担の軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "N9", confidence: "provisional" },
           {
-            key: "F11",
-            label: "F11 純費用",
+            key: "G5",
+            label: "G5 純費用",
             value: fmtWan(Number(costBurden.totalWan) - Number(disposable.educationCostReliefWan)),
-            formula: "F9 − F10",
+            formula: "G3 − G4",
             tone: "strong",
           },
         ]}
       />
 
-      {/* F 可処分所得（結論・一本集計） */}
+      {/* H 可処分所得（結論・一本集計） */}
       <CalculationTable
-        title="F. 可処分所得（結論・一本集計）"
+        title="H. 可処分所得（結論・一本集計）"
         wide
-        confidence="strict"
-        source={CALCULATION_SOURCES.incomeTax}
+        showSources={false}
         note="最終指標は可処分所得の一本。「制度込み家計余力」という第二指標は作らない。"
         rows={[
-          { key: "F12", label: "F12 手取り", value: fmtWan(disposable.takeHomeWan), formula: "A7" },
-          { key: "F13", label: "F13 現金給付", value: fmtWan(disposable.allowanceWan), formula: "F6" },
-          { key: "F14", label: "F14 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "F7", confidence: "representative" },
-          { key: "F15", label: "F15 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: "F8" },
-          { key: "F16", label: "F16 教育費負担軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "F10", confidence: "provisional" },
+          { key: "H1", label: "H1 手取り", value: fmtWan(disposable.takeHomeWan), formula: "A7" },
+          { key: "H2", label: "H2 現金給付", value: fmtWan(disposable.allowanceWan), formula: "F6" },
+          { key: "H3", label: "H3 医療費自己負担", value: fmtWan(disposable.medicalCostBurdenWan), formula: "G1", confidence: "representative" },
+          { key: "H4", label: "H4 通所利用者負担", value: fmtWan(disposable.serviceFeeWan), formula: "G2" },
+          { key: "H5", label: "H5 教育費負担軽減", value: fmtWan(disposable.educationCostReliefWan), formula: "G4", confidence: "provisional" },
           {
-            key: "F17",
-            label: "F17 可処分所得",
+            key: "H6",
+            label: "H6 可処分所得",
             value: fmtWan(disposable.disposableWan),
-            formula: disposable.formula,
+            formula: "H1 ＋ H2 − H3 − H4 ＋ H5",
             tone: "strong",
           },
         ]}

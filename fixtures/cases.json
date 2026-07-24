@@ -1,0 +1,985 @@
+{
+  "$schema_note": "各ケースは給与掃引で現れる崖の期待値。限度額判定に渡す扶養人数は実人数＋法定加算のみとし、障害を理由とする人数加算は含めない。特児停止・障害児福祉手当停止は制度式による値、通所境界は計算コアの住民税所得割による値。",
+  "model_baseline": {
+    "household": "単身世帯（配偶者なし）。世帯主＝就労する親（給与を掃引）。障害児は10歳・同居・特別障害者。",
+    "head": {
+      "age": 40,
+      "note": "40歳以上＝介護保険料あり(social_o40)。"
+    },
+    "child_disability": "特児判定では特別障害者40万円控除、住民税側では同居特別障害者53万円控除。",
+    "fuyoCount_rule": "限度額判定に渡す扶養人数は扶養親族等の実人数＋法定加算（特定扶養・老人扶養等）のみ。障害を理由とする人数加算は含めない。10歳児は法定加算ゼロ。",
+    "welfare_allowance_income_rule": "障害児福祉手当の扶養義務者判定所得は、所得金額調整控除を入れない給与所得−10万円（給与調整）−8万円（社保相当固定）−障害者控除（本ケースは特別障害者40万円×人数）。実社会保険料・基礎控除・住民税用障害者控除は使わない。",
+    "scenario": "S3_R8_R9",
+    "scenario_note": "税制シナリオS3＝令和8〜9年度（2026〜2027）。scenarios.json の key='s3' に対応。",
+    "units": "salaryManyen・dropManyen はいずれも万円。dropは負値（下向きの崖）。"
+  },
+  "tolerance": {
+    "salaryTolManyen": 1,
+    "dropTolManyen": 1,
+    "note": "掃引ステップが1万なら salary は±1万、落差は±1.0万を許容。回帰検出用でありこの範囲を超えたら差分とみなす。"
+  },
+  "cases": [
+    {
+      "id": "A",
+      "label": "特児2級×1人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ],
+        "gapManyen": 152
+      },
+      "previous_fixture": {
+        "tcca_stop": 757,
+        "tsusho_jump": 860
+      }
+    },
+    {
+      "id": "E",
+      "label": "特児2級×2人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 827,
+            "dropManyen": -92.7,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 93.4万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 959,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ],
+        "gapManyen": 129
+      },
+      "previous_fixture": {
+        "tcca_stop": 871,
+        "tsusho_jump": 891
+      }
+    },
+    {
+      "id": "F",
+      "label": "特児1級＋障害児福祉手当×1人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -69.5,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 70.1万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "third_cliff",
+            "salaryManyen": 907,
+            "dropManyen": -19.2,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 19.9万→0.0万"
+          }
+        ],
+        "gapManyen": 152
+      },
+      "previous_fixture": {
+        "tcca_stop": 813,
+        "tsusho_jump": 892,
+        "third_cliff": 1082
+      }
+    },
+    {
+      "id": "G",
+      "label": "特児1級＋障害児福祉手当×2人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 827,
+            "dropManyen": -139.5,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 140.3万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 959,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "third_cliff",
+            "salaryManyen": 968,
+            "dropManyen": -39,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 39.7万→0.0万"
+          }
+        ],
+        "gapManyen": 129
+      },
+      "previous_fixture": {
+        "tcca_stop": 985,
+        "tsusho_jump": 956,
+        "third_cliff": 1194
+      }
+    },
+    {
+      "id": "B",
+      "label": "配偶者ありケース（定義未確定）",
+      "status": "to_define",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "children": []
+      },
+      "expected": {
+        "cliffs": []
+      },
+      "note": "配偶者ありの基準ケース。世帯構成（配偶者の就労有無・所得、障害児の等級・人数）を確定してから、モデルで実測して埋める。"
+    },
+    {
+      "id": "C",
+      "label": "配偶者ありケース（定義未確定）",
+      "status": "to_define",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "children": []
+      },
+      "expected": {
+        "cliffs": []
+      },
+      "note": "同上。"
+    },
+    {
+      "id": "D",
+      "label": "配偶者ありケース（定義未確定）",
+      "status": "to_define",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "children": []
+      },
+      "expected": {
+        "cliffs": []
+      },
+      "note": "同上。"
+    },
+    {
+      "id": "V0",
+      "label": "障害なし・子1人（土台検証）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "income_tax_basic_deduction_drop",
+            "salaryManyen": 667,
+            "dropManyen": -3,
+            "positionExact": true,
+            "cause": "税 52.8万→56.6万 / 社会保険料 103.2万→103.4万"
+          }
+        ],
+        "note": "障害福祉制度は非該当。R8税制に固有の基礎控除縮小による下向き段差だけを検証する。"
+      }
+    },
+    {
+      "id": "V1",
+      "label": "普通障害者・子1人（障害者控除27万の効き）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": false,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 726,
+            "dropManyen": -46.1,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 864,
+            "dropManyen": -6.3,
+            "positionExact": false,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "V2",
+      "label": "特別障害者・同居・子1人（控除27→40/53万）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "V3",
+      "label": "特別障害者・同居・子2人（fuyoCountバグ検出）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 827,
+            "dropManyen": -92.7,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 93.4万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 959,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "V4",
+      "label": "特別障害者・同居・子1人＋障害児福祉手当（判定所得バグ検出）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "welfare_allowance_stop",
+            "salaryManyen": 907,
+            "dropManyen": -19.2,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 19.9万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "V5",
+      "label": "特別障害者・同居・子1人・16歳以上（通常扶養控除の有無）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 16,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 935,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M01_V2",
+      "label": "M01有効・特別障害者・同居・子1人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "m01": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "m01_stop",
+            "salaryManyen": 806,
+            "dropManyen": -14.3,
+            "positionExact": true,
+            "cause": "該当→非該当、医療費自己負担 0.0万→15.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "M01_V3",
+      "label": "M01有効・特別障害者・同居・子2人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "m01": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 827,
+            "dropManyen": -92.7,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 93.4万→0.0万"
+          },
+          {
+            "name": "m01_stop",
+            "salaryManyen": 870,
+            "dropManyen": -14.3,
+            "positionExact": true,
+            "cause": "該当→非該当、医療費自己負担 0.0万→15.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 959,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "N04_V2",
+      "label": "N04有効・小学部・特別障害者・同居・子1人",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "n04": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "minDropManyen": 2.5,
+        "cliffs": [
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 740,
+            "dropManyen": -46,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 46.7万→0.0万"
+          },
+          {
+            "name": "n04_first_to_second",
+            "salaryManyen": 674,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第1区分→第2区分、教育費負担軽減 7.3万→3.6万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 896,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "n04_second_to_third",
+            "salaryManyen": 999,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第2区分→第3区分、教育費負担軽減 3.6万→0.0万"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P1",
+      "label": "提示ケース1（配偶者あり・子1人・全制度）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "expected": {
+        "minDropManyen": 2.5,
+        "cliffs": [
+          {
+            "name": "tsusho_non_taxable_to_general1",
+            "salaryManyen": 261,
+            "dropManyen": -5.2,
+            "positionExact": true,
+            "cause": "非課税→一般1、月額負担 0円→4,600円"
+          },
+          {
+            "name": "n04_first_to_second",
+            "salaryManyen": 756,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第1区分→第2区分、教育費負担軽減 7.3万→3.6万"
+          },
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 782,
+            "dropManyen": -69.4,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 70.1万→0.0万"
+          },
+          {
+            "name": "m01_stop",
+            "salaryManyen": 846,
+            "dropManyen": -14.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "該当→非該当、医療費自己負担 0.0万→15.0万"
+          },
+          {
+            "name": "welfare_allowance_stop",
+            "salaryManyen": 928,
+            "dropManyen": -19.2,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 19.9万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 935,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "n04_second_to_third",
+            "salaryManyen": 1106,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第2区分→第3区分、教育費負担軽減 3.6万→0.0万"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P2",
+      "label": "提示ケース2（配偶者あり・子2人混合・全制度）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 11,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": false,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "expected": {
+        "minDropManyen": 2.5,
+        "cliffs": [
+          {
+            "name": "tsusho_non_taxable_to_general1",
+            "salaryManyen": 309,
+            "dropManyen": -5.2,
+            "positionExact": true,
+            "cause": "非課税→一般1、月額負担 0円→4,600円"
+          },
+          {
+            "name": "n04_first_to_second",
+            "salaryManyen": 869,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第1区分→第2区分、教育費負担軽減 7.3万→3.6万"
+          },
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 854,
+            "dropManyen": -116.2,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 116.9万→0.0万"
+          },
+          {
+            "name": "m01_stop",
+            "salaryManyen": 877,
+            "dropManyen": -14.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "該当→非該当、医療費自己負担 0.0万→15.0万"
+          },
+          {
+            "name": "welfare_allowance_stop",
+            "salaryManyen": 950,
+            "dropManyen": -19.2,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 19.9万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 967,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "n04_second_to_third",
+            "salaryManyen": 1272,
+            "dropManyen": -3,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第2区分→第3区分、教育費負担軽減 3.6万→0.0万"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P3",
+      "label": "提示ケース3（配偶者あり・子2人重複・全制度）",
+      "status": "baseline_confirmed",
+      "scenario": "S3_R8_R9",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 2,
+          "n04": true,
+          "n04Count": 2
+        },
+        "children": [
+          {
+            "age": 11,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "expected": {
+        "minDropManyen": 2.5,
+        "cliffs": [
+          {
+            "name": "tsusho_non_taxable_to_general1",
+            "salaryManyen": 358,
+            "dropManyen": -5.2,
+            "positionExact": true,
+            "cause": "非課税→一般1、月額負担 0円→4,600円"
+          },
+          {
+            "name": "n04_first_to_second",
+            "salaryManyen": 896,
+            "dropManyen": -6.5,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第1区分→第2区分、教育費負担軽減 14.6万→7.3万"
+          },
+          {
+            "name": "tcca_stop",
+            "salaryManyen": 867,
+            "dropManyen": -139.5,
+            "positionExact": true,
+            "cause": "支給→不支給、年額 140.3万→0.0万"
+          },
+          {
+            "name": "m01_stop",
+            "salaryManyen": 909,
+            "dropManyen": -29.1,
+            "positionExact": true,
+            "representative": true,
+            "cause": "該当→非該当、医療費自己負担 0.0万→29.9万"
+          },
+          {
+            "name": "welfare_allowance_stop",
+            "salaryManyen": 990,
+            "dropManyen": -39,
+            "positionExact": true,
+            "cause": "扶養義務者判定 通過→停止、年額 39.7万→0.0万"
+          },
+          {
+            "name": "tsusho_jump",
+            "salaryManyen": 999,
+            "dropManyen": -6.3,
+            "positionExact": true,
+            "representative": true,
+            "cause": "一般1→一般2、月額負担 4,600円→10,406円（制度上限 4,600円→37,200円、代表値 10,406円を採用）"
+          },
+          {
+            "name": "n04_second_to_third",
+            "salaryManyen": 1311,
+            "dropManyen": -6.7,
+            "positionExact": true,
+            "provisional": true,
+            "cause": "支弁区分 第2区分→第3区分、教育費負担軽減 7.3万→0.0万"
+          }
+        ]
+      }
+    }
+  ]
+}

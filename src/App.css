@@ -265,6 +265,37 @@
   width: 100%;
 }
 
+.appendix-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 2px 18px 10px;
+  color: #34464e;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.appendix-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.appendix-chart-legend-swatch {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--legend-color);
+}
+
+.appendix-chart-legend-swatch.dot {
+  width: 10px;
+  height: 10px;
+}
+
 .appendix-chart-scroll {
   width: 100%;
   overflow-x: auto;
@@ -343,6 +374,25 @@
   stroke-width: 2.2;
 }
 
+.income-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.income-line.take-home {
+  stroke-dasharray: 7 6;
+  stroke-width: 2;
+}
+
+.income-line.current-disposable {
+  stroke-width: 2.2;
+}
+
+.income-line.optimal-disposable {
+  stroke-width: 3.4;
+}
+
 .optimal-zero-line {
   stroke: #718189;
   stroke-width: 1.8;
@@ -358,9 +408,84 @@
   gap: 14px;
 }
 
+.optimal-definition-section {
+  display: grid;
+  gap: 8px;
+}
+
+.optimal-definition-section h3,
+.optimal-definition-section p,
+.optimal-subsection-head h3,
+.optimal-subsection-head p {
+  margin: 0;
+}
+
+.optimal-definition-section h3,
+.optimal-subsection-head h3 {
+  color: #2f4149;
+  font-size: 16px;
+}
+
+.optimal-definition-section p,
+.optimal-subsection-head p {
+  color: #5c6d75;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.optimal-variable-table {
+  min-width: 1040px;
+}
+
+.optimal-variable-table td:first-child,
+.optimal-parameter-table td:first-child,
+.optimal-parameter-table td:nth-child(2) {
+  font-weight: 900;
+}
+
+.optimal-variable-table td:nth-child(2) {
+  min-width: 150px;
+  font-weight: 800;
+}
+
+.optimal-variable-table td:nth-child(3) {
+  min-width: 480px;
+  line-height: 1.6;
+}
+
+.optimal-parameter-table {
+  min-width: 760px;
+}
+
+.optimal-parameter-table td:nth-child(3) {
+  min-width: 300px;
+  line-height: 1.6;
+}
+
+.optimal-procedure {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 12px 16px 12px 38px;
+  border: 1px solid #dce5e9;
+  border-radius: 8px;
+  background: #fbfcfd;
+  color: #34464e;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.optimal-subsection-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 2px;
+}
+
 .optimal-metric-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
 }
 
@@ -432,11 +557,6 @@
   color: #465860;
   font-size: 12px;
   line-height: 1.75;
-}
-
-.appendix-inlegend text {
-  font-size: 15px;
-  font-weight: 900;
 }
 
 .appendix-s-marker text {
@@ -801,6 +921,12 @@
 
   .appendix-chart-scroll {
     scrollbar-width: thin;
+  }
+
+  .appendix-chart-legend {
+    gap: 6px 14px;
+    padding-inline: 8px;
+    font-size: 13px;
   }
 
   .appendix-chart {

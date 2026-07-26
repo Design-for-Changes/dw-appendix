@@ -4,7 +4,8 @@ import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { useAppendixData } from "../hooks/useAppendixData";
 
 const X_MIN = 200;
-const X_MAX = 1400;
+const X_MAX = 1500;
+const X_TICKS = [200, 400, 600, 800, 1000, 1200, 1400, 1500];
 
 function fmt(n, digits = 0) {
   if (!Number.isFinite(Number(n))) return "—";
@@ -21,6 +22,23 @@ function fmtWan(n, digits = 1) {
 function fmtYen(n) {
   if (!Number.isFinite(Number(n))) return "—";
   return `${Math.round(Number(n)).toLocaleString("ja-JP")}円`;
+}
+
+function ChartLegend({ items, marker = "line" }) {
+  return (
+    <div className="appendix-chart-legend" aria-label="グラフの凡例">
+      {items.map((item) => (
+        <span className="appendix-chart-legend-item" key={item.key || item.id}>
+          <i
+            className={`appendix-chart-legend-swatch ${marker}`}
+            style={{ "--legend-color": item.color }}
+            aria-hidden="true"
+          />
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function tintWhite(hex, whiteRatio) {
@@ -68,7 +86,7 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
   };
   const selected = data.find((d) => d.id === selectedId);
   const selectedPoint = selected ? pointAt(selected.series, selectedSalary) : null;
-  const xTicks = [200, 400, 600, 800, 1000, 1200, 1400];
+  const xTicks = X_TICKS;
   const yTicks = Array.from({ length: 6 }, (_, i) => yMin + ((yMax - yMin) / 5) * i);
 
   const moveLine = (event) => {
@@ -86,6 +104,7 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
 
   return (
     <div className="appendix-chart-control">
+      <ChartLegend items={data} marker="dot" />
       <div className="appendix-chart-scroll" ref={scrollRef}>
         <svg
         className="appendix-chart"
@@ -133,17 +152,6 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
         />
       ))}
 
-      <g className="appendix-inlegend">
-        {data.map((d, i) => (
-          <g key={d.id} transform={`translate(${pad.left + 14} ${pad.top + 16 + i * 22})`}>
-            <circle cx="0" cy="-4" r="5" fill={d.color} />
-            <text x="13" y="0" fill={d.color}>
-              {d.label}
-            </text>
-          </g>
-        ))}
-      </g>
-
       {selectedPoint ? (
         <g className="appendix-cursor">
           <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
@@ -187,16 +195,18 @@ function OptimalModelGraph({ caseDef, selectedSalary, onSalaryChange }) {
   const values = series.flatMap((point) => [
     Number(point.balanceWan),
     Number(point.directSupportWan),
-    -Number(point.burdenCapWan),
+    Number(point.burdenCapWan),
     Number(point.currentBalanceWan),
   ]);
-  const maxAbs = Math.max(50, ...values.map((value) => Math.abs(value)));
-  const yStep = maxAbs > 150 ? 50 : maxAbs > 80 ? 25 : 20;
-  const yMin = -Math.ceil((maxAbs + yStep) / yStep) * yStep;
-  const yMax = Math.ceil((maxAbs + yStep) / yStep) * yStep;
+  const yMinRaw = Math.min(...values);
+  const yMaxRaw = Math.max(...values);
+  const maxSpanValue = Math.max(Math.abs(yMinRaw), Math.abs(yMaxRaw));
+  const yStep = maxSpanValue > 150 ? 50 : maxSpanValue > 80 ? 25 : 20;
+  const yMin = Math.floor((yMinRaw - yStep) / yStep) * yStep;
+  const yMax = Math.ceil((yMaxRaw + yStep) / yStep) * yStep;
   const xScale = (x) => pad.left + ((Number(x) - X_MIN) / (X_MAX - X_MIN)) * (width - pad.left - pad.right);
   const yScale = (y) => pad.top + ((yMax - Number(y)) / (yMax - yMin)) * (height - pad.top - pad.bottom);
-  const xTicks = [200, 400, 600, 800, 1000, 1200, 1400];
+  const xTicks = X_TICKS;
   const yTicks = Array.from({ length: Math.round((yMax - yMin) / yStep) + 1 }, (_, i) => yMin + yStep * i);
   const salaryFromClientX = (clientX, svg) => {
     const rect = svg.getBoundingClientRect();
@@ -223,13 +233,14 @@ function OptimalModelGraph({ caseDef, selectedSalary, onSalaryChange }) {
 
   const lines = [
     { key: "currentBalanceWan", label: "現行制度の収支", color: "#7b878d", className: "optimal-line current" },
-    { key: "balanceWan", label: "総合収支差額 G−U", color: caseDef.color, className: "optimal-line balance" },
-    { key: "directSupportWan", label: "式による支給額 G", color: "#23805f", className: "optimal-line support" },
-    { key: "burdenCapWan", label: "負担上限 −U", color: "#b34d39", className: "optimal-line burden", sign: -1 },
+    { key: "directSupportWan", label: "Hから算出した支給額 G", color: "#23805f", className: "optimal-line support" },
+    { key: "burdenCapWan", label: "総合負担上限 U", color: "#b34d39", className: "optimal-line burden" },
+    { key: "balanceWan", label: "提案モデルの収支差額 Δ", color: "#163f73", className: "optimal-line balance" },
   ];
 
   return (
     <div className="appendix-chart-control">
+      <ChartLegend items={lines} />
       <div className="appendix-chart-scroll" ref={scrollRef}>
         <svg
           className="appendix-chart optimal-chart"
@@ -283,17 +294,6 @@ function OptimalModelGraph({ caseDef, selectedSalary, onSalaryChange }) {
             />
           ))}
 
-          <g className="appendix-inlegend optimal-legend">
-            {lines.map((line, index) => (
-              <g key={line.key} transform={`translate(${pad.left + 14} ${pad.top + 16 + index * 22})`}>
-                <line x1="-5" x2="7" y1="-4" y2="-4" stroke={line.color} strokeWidth="4" />
-                <text x="15" y="0" fill={line.color}>
-                  {line.label}
-                </text>
-              </g>
-            ))}
-          </g>
-
           {selectedPoint ? (
             <g className="appendix-cursor">
               <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
@@ -329,18 +329,267 @@ function OptimalModelGraph({ caseDef, selectedSalary, onSalaryChange }) {
   );
 }
 
+function IncomeComparisonGraph({ caseDef, selectedSalary, onSalaryChange }) {
+  const scrollRef = useRef(null);
+  const width = 1040;
+  const height = 520;
+  const pad = { left: 72, right: 28, top: 34, bottom: 62 };
+  const series = caseDef?.optimalModel?.series || [];
+  const selectedPoint = series.length ? pointAt(series, selectedSalary) : null;
+  const allValues = series.flatMap((point) => [
+    Number(point.takeHomeWan),
+    Number(point.currentDisposableWan),
+    Number(point.optimalDisposableWan),
+  ]);
+  const yMinRaw = Math.min(...allValues);
+  const yMaxRaw = Math.max(...allValues);
+  const yMin = Math.floor((yMinRaw - 30) / 100) * 100;
+  const yMax = Math.ceil((yMaxRaw + 30) / 100) * 100;
+  const xScale = (x) => pad.left + ((Number(x) - X_MIN) / (X_MAX - X_MIN)) * (width - pad.left - pad.right);
+  const yScale = (y) => pad.top + ((yMax - Number(y)) / (yMax - yMin)) * (height - pad.top - pad.bottom);
+  const xTicks = X_TICKS;
+  const yTicks = Array.from({ length: Math.round((yMax - yMin) / 100) + 1 }, (_, index) => yMin + index * 100);
+  const salaryFromClientX = (clientX, svg) => {
+    const rect = svg.getBoundingClientRect();
+    const viewX = ((clientX - rect.left) / rect.width) * width;
+    const t = (viewX - pad.left) / (width - pad.left - pad.right);
+    return Math.max(X_MIN, Math.min(X_MAX, Math.round(X_MIN + t * (X_MAX - X_MIN))));
+  };
+  const moveLine = (event) => {
+    if (!event.currentTarget) return;
+    onSalaryChange(salaryFromClientX(event.clientX, event.currentTarget));
+  };
+
+  useEffect(() => {
+    const viewport = scrollRef.current;
+    if (!viewport || viewport.scrollWidth <= viewport.clientWidth) return;
+    const ratio = (selectedSalary - X_MIN) / (X_MAX - X_MIN);
+    const target = ratio * viewport.scrollWidth - viewport.clientWidth / 2;
+    viewport.scrollLeft = Math.max(0, Math.min(viewport.scrollWidth - viewport.clientWidth, target));
+  }, [selectedSalary]);
+
+  if (!series.length) {
+    return <div className="appendix-empty">手取額の比較データがありません。</div>;
+  }
+
+  const lines = [
+    { key: "takeHomeWan", label: "税・社会保険料控除後の手取額", color: "#68767d", className: "income-line take-home" },
+    { key: "currentDisposableWan", label: "現行制度後の可処分所得", color: "#a35b73", className: "income-line current-disposable" },
+    { key: "optimalDisposableWan", label: "全体最適モデル後の可処分所得", color: "#163f73", className: "income-line optimal-disposable" },
+  ];
+
+  return (
+    <div className="appendix-chart-control">
+      <ChartLegend items={lines} />
+      <div className="appendix-chart-scroll" ref={scrollRef}>
+        <svg
+          className="appendix-chart income-comparison-chart"
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={`${caseDef.label}の給与収入、手取額、現行制度と全体最適モデルの可処分所得比較`}
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            moveLine(event);
+          }}
+          onPointerMove={(event) => {
+            if (event.buttons === 1) moveLine(event);
+          }}
+        >
+          <rect className="appendix-chart-bg" x="0" y="0" width={width} height={height} />
+          {yTicks.map((tick) => (
+            <g key={`income-y-${tick}`}>
+              <line className="appendix-grid" x1={pad.left} x2={width - pad.right} y1={yScale(tick)} y2={yScale(tick)} />
+              <text className="appendix-axis-label" x={pad.left - 10} y={yScale(tick) + 4} textAnchor="end">
+                {fmt(tick)}
+              </text>
+            </g>
+          ))}
+          {xTicks.map((tick) => (
+            <g key={`income-x-${tick}`}>
+              <line className="appendix-grid appendix-grid-x" x1={xScale(tick)} x2={xScale(tick)} y1={pad.top} y2={height - pad.bottom} />
+              <text className="appendix-axis-label" x={xScale(tick)} y={height - 24} textAnchor="middle">
+                {tick}
+              </text>
+            </g>
+          ))}
+          <text className="appendix-axis-title" x={width / 2} y={height - 8} textAnchor="middle">
+            給与収入（万円）
+          </text>
+          <text className="appendix-axis-title" transform={`translate(18 ${height / 2}) rotate(-90)`} textAnchor="middle">
+            年間手取額・可処分所得（万円）
+          </text>
+
+          {lines.map((line) => (
+            <path
+              key={line.key}
+              d={buildMetricPath(series, line.key, xScale, yScale)}
+              className={line.className}
+              stroke={line.color}
+            />
+          ))}
+
+          {selectedPoint ? (
+            <g className="appendix-cursor">
+              <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
+              <text x={xScale(selectedPoint.x) + 8} y={pad.top + 18}>
+                S＝{fmt(selectedPoint.x)}万
+              </text>
+              <circle
+                cx={xScale(selectedPoint.x)}
+                cy={yScale(selectedPoint.optimalDisposableWan)}
+                r="7"
+                fill="#163f73"
+                stroke="#ffffff"
+                strokeWidth="2"
+              />
+            </g>
+          ) : null}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 function OptimalModelSummary({ caseDef, selectedSalary }) {
   const model = caseDef?.optimalModel;
   const point = model?.series?.length ? pointAt(model.series, selectedSalary) : null;
   if (!model || !point) return <div className="appendix-empty">選択給与のモデル値を算出できません。</div>;
-  const refundFormula = "R ＝ max｛0,（E − A）− U｝";
+  const variableRows = [
+    ["S", "給与収入", "世帯主の年間給与収入。グラフの横軸および選択値。", "万円／年"],
+    ["T", "税・社会保険料控除後手取額", "Sから所得税、住民税および社会保険料を控除した年間手取額。", "万円／年"],
+    ["C", "独立現金給付", "児童手当等、提案モデルによる調整対象外としてTに加算する現金給付。", "万円／年"],
+    ["T₀", "支給前資源", "T＋C。提案モデルの支給額Gを加える前に世帯が利用できる年間資源。", "万円／年"],
+    ["D₀", "基礎年間需要額", "世帯構成と生活保護基準を基礎に算出する、障害追加需要を含まない年間需要額。", "万円／年"],
+    ["H_d", "障害程度加算", "障害程度および人数に応じてD₀へ加える年間需要額。", "万円／年"],
+    ["H_c", "常時介護加算", "常時介護を必要とする子どもの人数に応じてD₀へ加える年間需要額。", "万円／年"],
+    ["H", "年間追加需要", "H_d＋H_c。本試算で数値化した障害関連の追加需要。", "万円／年"],
+    ["D", "年間需要額", "D₀＋H。支給判定と負担能力判定に共通して用いる需要額。", "万円／年"],
+    ["B", "年間支給満額", "κH。支給逓減前の年間支給基準額。", "万円／年"],
+    ["qG", "支給判定比率", "T₀÷D。支給前資源を年間需要額と比較した比率。", "比率"],
+    ["rG", "支給逓減率", "clip((qG−qL)÷(qH−qL),0,1)。", "0〜1"],
+    ["G", "年間支給額", "B(1−rG)。定期払いする提案モデルの現金支給額。", "万円／年"],
+    ["T₁", "支給後資源", "T₀＋G。負担能力の判定に用いる支給後の全手取り。", "万円／年"],
+    ["qU", "支給後負担能力比率", "T₁÷D。支給を含む利用可能資源を需要額と比較した比率。", "比率"],
+    ["rU", "負担逓増率", "clip((qU−qL)÷(qH−qL),0,1)。", "0〜1"],
+    ["U", "年間総合負担上限", "αDrU。制度横断で世帯が最終的に負担する年間上限。", "万円／年"],
+    ["Eplan", "年間計画支出", "通所、リハビリ、定期受診等、事前相談により計画へ登録する対象支出。", "万円／年"],
+    ["Eextra", "追加認定支出", "急変、入院、治療変更等について医師の指示やレセプトにより追加する対象支出。", "万円／年"],
+    ["E*", "年間認定対象支出", "Eplan＋Eextra。総合負担上限との精算対象となる年間支出。", "万円／年"],
+    ["P", "最終自己負担", "min(E*,U)。年次精算後に世帯が負担する対象支出。", "万円／年"],
+    ["F", "還付・公費補填額", "max(0,E*−P)。立替額等から最終自己負担を超える部分。", "万円／年"],
+    ["Δ", "提案モデルの収支差額", "G−P。正値は支給超過、負値は世帯負担を示す。", "万円／年"],
+    ["Y", "年間可処分所得", "T₀＋G−P。提案モデルによる年次精算後の可処分所得。", "万円／年"],
+    ["Ymin", "年間可処分所得の下限", "T₀＋G−U。E*がU以上の場合に一致し、支出が増えても下回らない値。", "万円／年"],
+    ["Δcur", "現行制度の収支差額", "現行給付・費用軽減から現行の対象自己負担を控除した値。", "万円／年"],
+    ["J", "現行制度との差", "Δ−Δcur。提案モデルと現行制度の年間収支差。", "万円／年"],
+  ];
+  const parameterRows = [
+    ["κ", fmt(model.supportMultiplier, 2), "共通保障係数。B＝κHに用いる。", "暫定政策値"],
+    ["qL", fmt(model.lowerRatio, 1), "支給満額・負担ゼロとなる逓減区間の下端。", "就学奨励費の需要比率を参照"],
+    ["qH", fmt(model.upperRatio, 1), "支給ゼロ・負担上限到達となる逓減区間の上端。", "就学奨励費の需要比率を参照"],
+    ["α", fmt(model.burdenRate, 2), "年間需要額Dに対する総合負担上限の最大割合。", "暫定政策値"],
+  ];
   return (
     <div className="optimal-model-content">
+      <section className="optimal-definition-section" aria-labelledby="optimal-variable-title">
+        <div>
+          <h3 id="optimal-variable-title">変数の定義</h3>
+          <p>
+            金額はすべて世帯単位の年額（万円）で表す。支給側は支給前資源T₀、負担側は支給額Gを加えた支給後資源T₁を用いて判定する。
+          </p>
+        </div>
+        <div className="appendix-table-wrap optimal-variable-table-wrap">
+          <table className="appendix-table optimal-variable-table">
+            <thead>
+              <tr>
+                <th>記号</th>
+                <th>名称</th>
+                <th>定義</th>
+                <th>単位</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variableRows.map(([symbol, name, definition, unit]) => (
+                <tr key={symbol}>
+                  <td className="appendix-mono" data-label="記号">{symbol}</td>
+                  <td data-label="名称">{name}</td>
+                  <td data-label="定義">{definition}</td>
+                  <td data-label="単位">{unit}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="optimal-definition-section" aria-labelledby="optimal-parameter-title">
+        <div>
+          <h3 id="optimal-parameter-title">政策パラメータ</h3>
+          <p>以下は制度設計を比較するための暫定値であり、実証推定値ではない。</p>
+        </div>
+        <div className="appendix-table-wrap optimal-parameter-table-wrap">
+          <table className="appendix-table optimal-parameter-table">
+            <thead>
+              <tr>
+                <th>記号</th>
+                <th>採用値</th>
+                <th>役割</th>
+                <th>位置づけ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {parameterRows.map(([symbol, value, role, status]) => (
+                <tr key={symbol}>
+                  <td className="appendix-mono" data-label="記号">{symbol}</td>
+                  <td className="appendix-mono" data-label="採用値">{value}</td>
+                  <td data-label="役割">{role}</td>
+                  <td data-label="位置づけ">{status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="optimal-definition-section" aria-labelledby="optimal-procedure-title">
+        <div>
+          <h3 id="optimal-procedure-title">算定手順</h3>
+        </div>
+        <ol className="optimal-procedure">
+          <li>Sから税・社会保険料を控除して手取額Tを求め、独立現金給付Cを加えてT₀を算出する。</li>
+          <li>D₀にH_dとH_cを加えてDを求め、B＝κHによって年間支給満額を設定する。</li>
+          <li>qG＝T₀÷DとrGから年間支給額Gを決定する。</li>
+          <li>T₁＝T₀＋Gを求め、qU＝T₁÷Dによって支給後の負担能力を判定する。</li>
+          <li>qUから年間総合負担上限Uを決定する。</li>
+          <li>EplanとEextraを合算してE*を確定し、P＝min(E*,U)として年次精算する。</li>
+          <li>Δ、Y、Yminおよび現行制度との差Jを算出する。</li>
+        </ol>
+      </section>
+
+      <div className="optimal-subsection-head">
+        <h3>選択給与での算定値</h3>
+        <p>S＝{fmtWan(point.x)}</p>
+      </div>
       <div className="optimal-metric-grid">
         <article>
-          <span>負担能力指数 q</span>
-          <strong>{fmt(point.ratio, 3)}</strong>
-          <small>I ÷ D</small>
+          <span>支給判定比率 qG</span>
+          <strong>{fmt(point.supportRatio, 3)}</strong>
+          <small>T₀ ÷ D</small>
+        </article>
+        <article>
+          <span>支給後負担能力 qU</span>
+          <strong>{fmt(point.burdenRatio, 3)}</strong>
+          <small>T₁ ÷ D</small>
+        </article>
+        <article>
+          <span>年間追加需要 H</span>
+          <strong>{fmtWan(point.additionalNeedAnnualWan)}</strong>
+          <small>障害程度＋常時介護</small>
+        </article>
+        <article>
+          <span>満額 B</span>
+          <strong>{fmtWan(model.baseSupportWan)}</strong>
+          <small>2.18 × H</small>
         </article>
         <article>
           <span>式による年間支給額 G</span>
@@ -352,35 +601,86 @@ function OptimalModelSummary({ caseDef, selectedSalary }) {
           <strong>{fmtWan(point.burdenCapWan)}</strong>
           <small>月額換算 {fmtYen(point.burdenCapWan * 10000 / 12)}</small>
         </article>
+        <article>
+          <span>式による最終負担 P</span>
+          <strong>{fmtWan(point.modelBurdenWan)}</strong>
+          <small>min（E*, U）</small>
+        </article>
+        <article>
+          <span>還付・公費補填額 F</span>
+          <strong>{fmtWan(point.refundWan)}</strong>
+          <small>max（0, E* − P）</small>
+        </article>
+        <article>
+          <span>可処分所得の下限 Ymin</span>
+          <strong>{fmtWan(point.disposableFloorWan)}</strong>
+          <small>T₀ ＋ G − U</small>
+        </article>
         <article className={point.balanceWan >= 0 ? "positive" : "negative"}>
-          <span>総合収支差額 G−U</span>
+          <span>提案モデルの収支差額 Δ</span>
           <strong>{point.balanceWan >= 0 ? "＋" : "▲"}{fmtWan(Math.abs(point.balanceWan))}</strong>
           <small>{point.balanceWan >= 0 ? "支給超過" : "世帯負担"}</small>
+        </article>
+        <article>
+          <span>現行制度との差 J</span>
+          <strong>{point.adjustmentWan >= 0 ? "＋" : "▲"}{fmtWan(Math.abs(point.adjustmentWan))}</strong>
+          <small>Δ − 現行制度の収支</small>
         </article>
       </div>
       <div className="optimal-formula-grid">
         <div>
-          <h3>共通算定</h3>
-          <p>q ＝ I ÷ D</p>
-          <p>r ＝ clip（q − 1.5, 0, 1）</p>
-          <p>年間需要額 D ＝ {fmtWan(point.needAnnualWan)}</p>
+          <h3>追加需要と年間需要額</h3>
+          <p>H ＝ H_d ＋ H_c</p>
+          <p>H_d ＝ {fmtWan(point.disabilityNeedAnnualWan)}</p>
+          <p>H_c ＝ {fmtWan(point.careNeedAnnualWan)}</p>
+          <p>D ＝ D₀ ＋ H ＝ {fmtWan(point.needAnnualWan)}</p>
         </div>
         <div>
-          <h3>支給・負担</h3>
-          <p>G ＝ B（1 − r）</p>
-          <p>U ＝ 0.10Dr</p>
-          <p>基準支給額 B ＝ {fmtWan(model.baseSupportWan)}</p>
+          <h3>共通保障係数</h3>
+          <p>B ＝ 2.18H</p>
+          <p>B ＝ {fmtWan(model.baseSupportWan)}</p>
+          <p>一般・重度・常時介護の追加需要に同じ係数を適用する。</p>
         </div>
         <div>
-          <h3>実費補填後の還付</h3>
-          <p>{refundFormula}</p>
-          <p>E：対象支出　A：就学奨励費等の既補填額</p>
-          <p>奨励費Aは支給として表示し、還付額から控除する。</p>
+          <h3>支給前資源と支給額</h3>
+          <p>T₀ ＝ 手取額 ＋ その他の現金給付</p>
+          <p>T₀ ＝ {fmtWan(point.preSupportResourcesWan)}</p>
+          <p>qG ＝ T₀ ÷ D</p>
+          <p>rG ＝ clip（(qG − qL) ÷ (qH − qL), 0, 1）</p>
+          <p>G ＝ B（1 − rG）</p>
+        </div>
+        <div>
+          <h3>支給後の負担能力</h3>
+          <p>T₁ ＝ T₀ ＋ G ＝ {fmtWan(point.postSupportResourcesWan)}</p>
+          <p>qU ＝ T₁ ÷ D</p>
+          <p>rU ＝ clip（(qU − qL) ÷ (qH − qL), 0, 1）</p>
+          <p>U ＝ αDrU</p>
+        </div>
+        <div>
+          <h3>認定対象支出と年次精算</h3>
+          <p>E* ＝ Eplan ＋ Eextra</p>
+          <p>Eplan ＝ {fmtWan(point.plannedExpenseWan)}</p>
+          <p>Eextra ＝ {fmtWan(point.additionalExpenseWan)}</p>
+          <p>P ＝ min（E*, U）</p>
+          <p>F ＝ max（0, E* − P）</p>
+        </div>
+        <div>
+          <h3>総合収支・可処分所得・現行差</h3>
+          <p>Δ ＝ G − P</p>
+          <p>Y ＝ T₀ ＋ G − P</p>
+          <p>Ymin ＝ T₀ ＋ G − U</p>
+          <p>J ＝ Δ − Δcur</p>
         </div>
       </div>
       <p className="optimal-model-note">
         現行制度の収支は、特児・障害児福祉手当・就学奨励費から、モデル上の医療費自己負担と通所利用者負担を差し引いた値。
-        提案モデルの総合収支差額は、対象支出が総合負担上限に達した場合の G−U を表示する。
+        提案モデルでは、特児等の現行満額を直接用いず、障害程度と常時介護による追加需要Hに共通保障係数2.18を乗じて満額Bを算出する。
+        支給前資源T₀から支給額Gを決め、Gを加えた支給後資源T₁によって総合負担上限Uを決定する。
+        Eplanは通所・リハビリ・定期受診等の計画可能な支出、Eextraは急変・入院・治療変更等の追加認定支出を想定する。
+        現在の数値試算では、現行制度から得た代表的な対象支出をEplanへ置き、Eextraを0としている。
+        就学奨励費等の既存給付は年次調整の既払い額として扱い、提案モデルの目標収支Δには含めず、現行制度との比較Jに反映する。
+        本試算では特児2級を一般、特児1級を重度、障害児福祉手当の対象を常時介護と暫定的にみなす。
+        本モデルは必要な医療・支援の総量または公費総額を上限Uで制限するものではなく、認定対象支出が変動しても世帯の最終自己負担と可処分所得下限を予測可能にする制度設計を示す。
       </p>
     </div>
   );
@@ -1049,7 +1349,7 @@ function BreakdownPanel({ point }) {
 
 export default function AppendixCliffMap() {
   const [viewMode, setViewMode] = useState("current");
-  const [selectedId, setSelectedId] = useState("case3");
+  const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
   const { data, ready, selectedPoint } = appendixData;
@@ -1158,7 +1458,7 @@ export default function AppendixCliffMap() {
                 <p className="appendix-kicker">制度横断の連続算定</p>
                 <h2>全体最適モデル：{selected?.label}</h2>
                 <p>
-                  就学奨励費の収入額／需要額の考え方を連続式として用い、支給額と総合負担上限を同じ負担能力指数から算出する。
+                  追加需要Hを年間需要額Dへ加算し、共通保障係数2.18で満額Bを算出する。支給前のqGで支給額を決め、支給後のqUで総合負担上限を連続的に決定する。
                 </p>
               </div>
             </div>
@@ -1173,8 +1473,21 @@ export default function AppendixCliffMap() {
           <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
             <div className="appendix-section-head">
               <div>
-                <h2>選択給与でのモデル値</h2>
-                <p>S値＝{fmt(selectedSalary)}万円</p>
+                <h2>給与収入と手取額・可処分所得</h2>
+                <p>税・社会保険料控除後の手取額を基準に、現行制度と全体最適モデルの帰結を同じ給与軸で比較する。</p>
+              </div>
+            </div>
+            <IncomeComparisonGraph
+              caseDef={selected}
+              selectedSalary={selectedSalary}
+              onSalaryChange={setSelectedSalary}
+            />
+          </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>モデル式・変数定義と選択給与での算定</h2>
+                <p>変数、政策パラメータ、算定順序およびS値での結果を示す。</p>
               </div>
             </div>
             <OptimalModelSummary caseDef={selected} selectedSalary={selectedSalary} />

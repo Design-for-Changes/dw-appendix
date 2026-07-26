@@ -10,12 +10,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUTPUT_DIR = path.join(ROOT, "public", "generated", "appendix");
 const DETAILS_DIR = path.join(OUTPUT_DIR, "details");
 const X_MIN = 200;
-const X_MAX = 1400;
+const X_MAX = 1500;
 const CHUNK_SIZE = 25;
 const OPTIMAL_MODEL = {
   lowerRatio: 1.5,
   upperRatio: 2.5,
   burdenRate: 0.1,
+  supportMultiplier: 2.18,
+  careNeedMonthlyYen: 16100,
 };
 
 const DISPLAY_CASES = [
@@ -263,50 +265,131 @@ const cases = DISPLAY_CASES.map((displayCase) => {
     tables,
     sweep: { min: X_MIN, max: X_MAX, step: 1 },
   });
-  const baseSupportWan = Math.max(
+  const referenceN04 = series[0]?.breakdown?.programs?.n04 || {};
+  const disabilityNeedAnnualWan =
+    Number(referenceN04.need?.disabilityAdditionYen || 0) * 12 / 10000;
+  const careNeedCount = (fixture.household?.children || [])
+    .filter((child) => Boolean(child.childWelfareAllowance)).length;
+  const careNeedAnnualWan =
+    careNeedCount * OPTIMAL_MODEL.careNeedMonthlyYen * 12 / 10000;
+  const additionalNeedAnnualWan =
+    disabilityNeedAnnualWan + careNeedAnnualWan;
+  const currentNeedAnnualWan =
+    Number(referenceN04.judgment?.monthlyNeedYen || 0) * 12 / 10000;
+  const baseNeedAnnualWan =
+    currentNeedAnnualWan - disabilityNeedAnnualWan;
+  const needAnnualWan =
+    baseNeedAnnualWan + additionalNeedAnnualWan;
+  const baseSupportWan =
+    OPTIMAL_MODEL.supportMultiplier * additionalNeedAnnualWan;
+  const maxCurrentBurdenWan = Math.max(
     ...series.map((point) => {
-      const allowance = point.breakdown?.allowance || {};
-      return Number(allowance.tccaWan || 0) + Number(allowance.welfareAllowanceWan || 0);
+      const disposable = point.breakdown?.disposable || {};
+      return (
+        Number(disposable.medicalCostBurdenWan || 0) +
+        Number(disposable.serviceFeeWan || 0) +
+        Number(disposable.educationCostBurdenWan || 0)
+      );
     })
   );
-  const optimalSeries = series.map((point) => {
+  const maxExistingExpenseReliefWan = Math.max(
+    ...series.map((point) =>
+      Number(point.breakdown?.programs?.n04?.educationCostReliefWan || 0)
+    )
+  );
+  const plannedExpenseWan =
+    maxCurrentBurdenWan + maxExistingExpenseReliefWan;
+  const additionalExpenseWan = 0;
+  const eligibleExpenseWan =
+    plannedExpenseWan + additionalExpenseWan;
+  const rawOptimalSeries = series.map((point) => {
     const programs = point.breakdown?.programs || {};
     const n04 = programs.n04 || {};
     const allowance = point.breakdown?.allowance || {};
     const disposable = point.breakdown?.disposable || {};
-    const needAnnualWan = Number(n04.judgment?.monthlyNeedYen || 0) * 12 / 10000;
-    const ratio = Number(n04.judgment?.ratio);
-    const transition = Number.isFinite(ratio)
+    const currentDirectSupportWan =
+      Number(allowance.tccaWan || 0) + Number(allowance.welfareAllowanceWan || 0);
+    const otherCashSupportWan = Math.max(
+      0,
+      Number(allowance.totalWan || 0) - currentDirectSupportWan
+    );
+    const takeHomeWan = Number(point.breakdown?.takeHome?.takeHomeWan || 0);
+    const preSupportResourcesWan = takeHomeWan + otherCashSupportWan;
+    const supportRatio =
+      needAnnualWan > 0 ? preSupportResourcesWan / needAnnualWan : Infinity;
+    const supportTransition = Number.isFinite(supportRatio)
       ? clamp(
-          (ratio - OPTIMAL_MODEL.lowerRatio) /
+          (supportRatio - OPTIMAL_MODEL.lowerRatio) /
             (OPTIMAL_MODEL.upperRatio - OPTIMAL_MODEL.lowerRatio),
           0,
           1
         )
       : 1;
-    const directSupportWan = baseSupportWan * (1 - transition);
-    const burdenCapWan = OPTIMAL_MODEL.burdenRate * needAnnualWan * transition;
-    const balanceWan = directSupportWan - burdenCapWan;
-    const currentDirectSupportWan =
-      Number(allowance.tccaWan || 0) + Number(allowance.welfareAllowanceWan || 0);
+    const directSupportWan = baseSupportWan * (1 - supportTransition);
+    const postSupportResourcesWan = preSupportResourcesWan + directSupportWan;
+    const burdenRatio =
+      needAnnualWan > 0 ? postSupportResourcesWan / needAnnualWan : Infinity;
+    const burdenTransition = Number.isFinite(burdenRatio)
+      ? clamp(
+          (burdenRatio - OPTIMAL_MODEL.lowerRatio) /
+            (OPTIMAL_MODEL.upperRatio - OPTIMAL_MODEL.lowerRatio),
+          0,
+          1
+        )
+      : 1;
+    const burdenCapWan =
+      OPTIMAL_MODEL.burdenRate * needAnnualWan * burdenTransition;
+    const referenceBalanceWan = directSupportWan - burdenCapWan;
     const existingExpenseReliefWan = Number(n04.educationCostReliefWan || 0);
     const currentBurdenWan =
       Number(disposable.medicalCostBurdenWan || 0) +
       Number(disposable.serviceFeeWan || 0) +
       Number(disposable.educationCostBurdenWan || 0);
+    const currentBalanceWan =
+      currentDirectSupportWan + existingExpenseReliefWan - currentBurdenWan;
+    const modelBurdenWan = Math.min(eligibleExpenseWan, burdenCapWan);
+    const rawModelBalanceWan = directSupportWan - modelBurdenWan;
     return {
       x: Number(point.x),
-      ratio,
       needAnnualWan,
-      transition,
+      baseNeedAnnualWan,
+      disabilityNeedAnnualWan,
+      careNeedAnnualWan,
+      additionalNeedAnnualWan,
+      preSupportResourcesWan,
+      supportRatio,
+      supportTransition,
       directSupportWan,
+      postSupportResourcesWan,
+      burdenRatio,
+      burdenTransition,
       burdenCapWan,
-      balanceWan,
-      currentBalanceWan:
-        currentDirectSupportWan + existingExpenseReliefWan - currentBurdenWan,
+      referenceBalanceWan,
+      rawModelBalanceWan,
+      currentBalanceWan,
       currentDirectSupportWan,
+      otherCashSupportWan,
       existingExpenseReliefWan,
       currentBurdenWan,
+      plannedExpenseWan,
+      additionalExpenseWan,
+      eligibleExpenseWan,
+      modelBurdenWan,
+      refundWan: Math.max(0, eligibleExpenseWan - modelBurdenWan),
+      disposableFloorWan:
+        postSupportResourcesWan - burdenCapWan,
+      takeHomeWan,
+      currentDisposableWan: Number(disposable.disposableWan || 0),
+    };
+  });
+  const optimalSeries = rawOptimalSeries.map((point) => {
+    const balanceWan = point.rawModelBalanceWan;
+    return {
+      ...point,
+      balanceWan,
+      adjustmentWan: balanceWan - point.currentBalanceWan,
+      optimalDisposableWan:
+        point.takeHomeWan + point.otherCashSupportWan + balanceWan,
     };
   });
 
@@ -336,6 +419,15 @@ const cases = DISPLAY_CASES.map((displayCase) => {
     optimalModel: {
       ...OPTIMAL_MODEL,
       baseSupportWan,
+      baseNeedAnnualWan,
+      disabilityNeedAnnualWan,
+      careNeedCount,
+      careNeedAnnualWan,
+      additionalNeedAnnualWan,
+      needAnnualWan,
+      plannedExpenseWan,
+      additionalExpenseWan,
+      eligibleExpenseWan,
       series: optimalSeries,
     },
   };

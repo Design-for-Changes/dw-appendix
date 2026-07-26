@@ -30,10 +30,29 @@ for (const displayCase of summary.cases) {
   const fixture = fixtures.cases.find((candidate) => candidate.id === fixtureId);
   if (!fixture) fail(`${displayCase.id}: fixture missing`);
   if (displayCase.series?.length !== 1201) fail(`${displayCase.id}: series length`);
+  if (displayCase.optimalModel?.series?.length !== 1201) fail(`${displayCase.id}: optimal series length`);
+  if (!(displayCase.optimalModel?.baseSupportWan > 0)) fail(`${displayCase.id}: optimal base support`);
 
   displayCase.series.forEach((point, index) => {
     if (point.x !== 200 + index) fail(`${displayCase.id}: non-contiguous x at ${index}`);
     if (!Number.isFinite(point.disposable)) fail(`${displayCase.id}: invalid disposable at ${point.x}`);
+  });
+
+  displayCase.optimalModel.series.forEach((point, index) => {
+    const expectedX = 200 + index;
+    if (point.x !== expectedX) fail(`${displayCase.id}: optimal non-contiguous x at ${index}`);
+    for (const key of ["ratio", "needAnnualWan", "directSupportWan", "burdenCapWan", "balanceWan", "currentBalanceWan"]) {
+      if (!Number.isFinite(point[key])) fail(`${displayCase.id}: invalid optimal ${key} at ${point.x}`);
+    }
+    if (Math.abs(point.balanceWan - (point.directSupportWan - point.burdenCapWan)) > 1e-9) {
+      fail(`${displayCase.id}: optimal balance identity at ${point.x}`);
+    }
+    if (point.ratio <= 1.5 && (Math.abs(point.directSupportWan - displayCase.optimalModel.baseSupportWan) > 1e-9 || Math.abs(point.burdenCapWan) > 1e-9)) {
+      fail(`${displayCase.id}: optimal lower anchor at ${point.x}`);
+    }
+    if (point.ratio >= 2.5 && (Math.abs(point.directSupportWan) > 1e-9 || Math.abs(point.burdenCapWan - 0.1 * point.needAnnualWan) > 1e-9)) {
+      fail(`${displayCase.id}: optimal upper anchor at ${point.x}`);
+    }
   });
 
   const expectedCliffs = fixture.expected?.cliffs || [];

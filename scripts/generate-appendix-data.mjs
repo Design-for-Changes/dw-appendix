@@ -12,6 +12,11 @@ const DETAILS_DIR = path.join(OUTPUT_DIR, "details");
 const X_MIN = 200;
 const X_MAX = 1400;
 const CHUNK_SIZE = 25;
+const OPTIMAL_MODEL = {
+  lowerRatio: 1.5,
+  upperRatio: 2.5,
+  burdenRate: 0.1,
+};
 
 const DISPLAY_CASES = [
   {
@@ -71,6 +76,10 @@ function loadTables() {
 
 function pointY(point) {
   return Number(point?.cliffDisposable ?? point?.disposable);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, Number(value)));
 }
 
 function trimPoint(point) {
@@ -254,6 +263,52 @@ const cases = DISPLAY_CASES.map((displayCase) => {
     tables,
     sweep: { min: X_MIN, max: X_MAX, step: 1 },
   });
+  const baseSupportWan = Math.max(
+    ...series.map((point) => {
+      const allowance = point.breakdown?.allowance || {};
+      return Number(allowance.tccaWan || 0) + Number(allowance.welfareAllowanceWan || 0);
+    })
+  );
+  const optimalSeries = series.map((point) => {
+    const programs = point.breakdown?.programs || {};
+    const n04 = programs.n04 || {};
+    const allowance = point.breakdown?.allowance || {};
+    const disposable = point.breakdown?.disposable || {};
+    const needAnnualWan = Number(n04.judgment?.monthlyNeedYen || 0) * 12 / 10000;
+    const ratio = Number(n04.judgment?.ratio);
+    const transition = Number.isFinite(ratio)
+      ? clamp(
+          (ratio - OPTIMAL_MODEL.lowerRatio) /
+            (OPTIMAL_MODEL.upperRatio - OPTIMAL_MODEL.lowerRatio),
+          0,
+          1
+        )
+      : 1;
+    const directSupportWan = baseSupportWan * (1 - transition);
+    const burdenCapWan = OPTIMAL_MODEL.burdenRate * needAnnualWan * transition;
+    const balanceWan = directSupportWan - burdenCapWan;
+    const currentDirectSupportWan =
+      Number(allowance.tccaWan || 0) + Number(allowance.welfareAllowanceWan || 0);
+    const existingExpenseReliefWan = Number(n04.educationCostReliefWan || 0);
+    const currentBurdenWan =
+      Number(disposable.medicalCostBurdenWan || 0) +
+      Number(disposable.serviceFeeWan || 0) +
+      Number(disposable.educationCostBurdenWan || 0);
+    return {
+      x: Number(point.x),
+      ratio,
+      needAnnualWan,
+      transition,
+      directSupportWan,
+      burdenCapWan,
+      balanceWan,
+      currentBalanceWan:
+        currentDirectSupportWan + existingExpenseReliefWan - currentBurdenWan,
+      currentDirectSupportWan,
+      existingExpenseReliefWan,
+      currentBurdenWan,
+    };
+  });
 
   for (let start = X_MIN; start <= X_MAX; start += CHUNK_SIZE) {
     const end = Math.min(X_MAX, start + CHUNK_SIZE - 1);
@@ -278,6 +333,11 @@ const cases = DISPLAY_CASES.map((displayCase) => {
       disposable: Number(point.disposable),
     })),
     cliffs: detectCliffs(series, fixture.expected?.minDropManyen),
+    optimalModel: {
+      ...OPTIMAL_MODEL,
+      baseSupportWan,
+      series: optimalSeries,
+    },
   };
 });
 

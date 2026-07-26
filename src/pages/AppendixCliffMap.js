@@ -6,14 +6,6 @@ import { useAppendixData } from "../hooks/useAppendixData";
 const X_MIN = 200;
 const X_MAX = 1400;
 
-const IDEAL_CASE = {
-  id: "ideal",
-  label: "第4ケース",
-  shortLabel: "全体最適モデル",
-  description: "崖なし、または大幅緩和した制度設計を後入れする枠。",
-  pending: true,
-};
-
 function fmt(n, digits = 0) {
   if (!Number.isFinite(Number(n))) return "—";
   return Number(n).toLocaleString("ja-JP", {
@@ -42,6 +34,13 @@ function tintWhite(hex, whiteRatio) {
 function buildPath(points, xScale, yScale) {
   const visible = points.filter((p) => p.x >= X_MIN && p.x <= X_MAX);
   return visible.map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.x).toFixed(2)} ${yScale(p.disposable).toFixed(2)}`).join(" ");
+}
+
+function buildMetricPath(points, key, xScale, yScale, sign = 1) {
+  const visible = points.filter((p) => p.x >= X_MIN && p.x <= X_MAX);
+  return visible
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(p.x).toFixed(2)} ${yScale(Number(p[key]) * sign).toFixed(2)}`)
+    .join(" ");
 }
 
 function pointAt(series, salaryWan) {
@@ -174,6 +173,215 @@ function Graph({ data, selectedId, selectedSalary, onSalaryChange }) {
         />
         <output>{fmt(selectedSalary)}万円</output>
       </label>
+    </div>
+  );
+}
+
+function OptimalModelGraph({ caseDef, selectedSalary, onSalaryChange }) {
+  const scrollRef = useRef(null);
+  const width = 1040;
+  const height = 560;
+  const pad = { left: 72, right: 28, top: 34, bottom: 62 };
+  const series = caseDef?.optimalModel?.series || [];
+  const selectedPoint = series.length ? pointAt(series, selectedSalary) : null;
+  const values = series.flatMap((point) => [
+    Number(point.balanceWan),
+    Number(point.directSupportWan),
+    -Number(point.burdenCapWan),
+    Number(point.currentBalanceWan),
+  ]);
+  const maxAbs = Math.max(50, ...values.map((value) => Math.abs(value)));
+  const yStep = maxAbs > 150 ? 50 : maxAbs > 80 ? 25 : 20;
+  const yMin = -Math.ceil((maxAbs + yStep) / yStep) * yStep;
+  const yMax = Math.ceil((maxAbs + yStep) / yStep) * yStep;
+  const xScale = (x) => pad.left + ((Number(x) - X_MIN) / (X_MAX - X_MIN)) * (width - pad.left - pad.right);
+  const yScale = (y) => pad.top + ((yMax - Number(y)) / (yMax - yMin)) * (height - pad.top - pad.bottom);
+  const xTicks = [200, 400, 600, 800, 1000, 1200, 1400];
+  const yTicks = Array.from({ length: Math.round((yMax - yMin) / yStep) + 1 }, (_, i) => yMin + yStep * i);
+  const salaryFromClientX = (clientX, svg) => {
+    const rect = svg.getBoundingClientRect();
+    const viewX = ((clientX - rect.left) / rect.width) * width;
+    const t = (viewX - pad.left) / (width - pad.left - pad.right);
+    return Math.max(X_MIN, Math.min(X_MAX, Math.round(X_MIN + t * (X_MAX - X_MIN))));
+  };
+  const moveLine = (event) => {
+    if (!event.currentTarget) return;
+    onSalaryChange(salaryFromClientX(event.clientX, event.currentTarget));
+  };
+
+  useEffect(() => {
+    const viewport = scrollRef.current;
+    if (!viewport || viewport.scrollWidth <= viewport.clientWidth) return;
+    const ratio = (selectedSalary - X_MIN) / (X_MAX - X_MIN);
+    const target = ratio * viewport.scrollWidth - viewport.clientWidth / 2;
+    viewport.scrollLeft = Math.max(0, Math.min(viewport.scrollWidth - viewport.clientWidth, target));
+  }, [selectedSalary]);
+
+  if (!series.length) {
+    return <div className="appendix-empty">全体最適モデルの表示データがありません。</div>;
+  }
+
+  const lines = [
+    { key: "currentBalanceWan", label: "現行制度の収支", color: "#7b878d", className: "optimal-line current" },
+    { key: "balanceWan", label: "総合収支差額 G−U", color: caseDef.color, className: "optimal-line balance" },
+    { key: "directSupportWan", label: "式による支給額 G", color: "#23805f", className: "optimal-line support" },
+    { key: "burdenCapWan", label: "負担上限 −U", color: "#b34d39", className: "optimal-line burden", sign: -1 },
+  ];
+
+  return (
+    <div className="appendix-chart-control">
+      <div className="appendix-chart-scroll" ref={scrollRef}>
+        <svg
+          className="appendix-chart optimal-chart"
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={`${caseDef.label}の現行制度と全体最適モデルの総合収支比較`}
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            moveLine(event);
+          }}
+          onPointerMove={(event) => {
+            if (event.buttons === 1) moveLine(event);
+          }}
+        >
+          <rect className="appendix-chart-bg" x="0" y="0" width={width} height={height} />
+          {yTicks.map((tick) => (
+            <g key={`optimal-y-${tick}`}>
+              <line
+                className={`appendix-grid${tick === 0 ? " optimal-zero-line" : ""}`}
+                x1={pad.left}
+                x2={width - pad.right}
+                y1={yScale(tick)}
+                y2={yScale(tick)}
+              />
+              <text className="appendix-axis-label" x={pad.left - 10} y={yScale(tick) + 4} textAnchor="end">
+                {fmt(tick)}
+              </text>
+            </g>
+          ))}
+          {xTicks.map((tick) => (
+            <g key={`optimal-x-${tick}`}>
+              <line className="appendix-grid appendix-grid-x" x1={xScale(tick)} x2={xScale(tick)} y1={pad.top} y2={height - pad.bottom} />
+              <text className="appendix-axis-label" x={xScale(tick)} y={height - 24} textAnchor="middle">
+                {tick}
+              </text>
+            </g>
+          ))}
+          <text className="appendix-axis-title" x={width / 2} y={height - 8} textAnchor="middle">
+            給与収入（万円）
+          </text>
+          <text className="appendix-axis-title" transform={`translate(18 ${height / 2}) rotate(-90)`} textAnchor="middle">
+            年間収支（万円）
+          </text>
+
+          {lines.map((line) => (
+            <path
+              key={line.key}
+              d={buildMetricPath(series, line.key, xScale, yScale, line.sign || 1)}
+              className={line.className}
+              stroke={line.color}
+            />
+          ))}
+
+          <g className="appendix-inlegend optimal-legend">
+            {lines.map((line, index) => (
+              <g key={line.key} transform={`translate(${pad.left + 14} ${pad.top + 16 + index * 22})`}>
+                <line x1="-5" x2="7" y1="-4" y2="-4" stroke={line.color} strokeWidth="4" />
+                <text x="15" y="0" fill={line.color}>
+                  {line.label}
+                </text>
+              </g>
+            ))}
+          </g>
+
+          {selectedPoint ? (
+            <g className="appendix-cursor">
+              <line x1={xScale(selectedPoint.x)} x2={xScale(selectedPoint.x)} y1={pad.top} y2={height - pad.bottom} />
+              <text x={xScale(selectedPoint.x) + 8} y={pad.top + 18}>
+                S＝{fmt(selectedPoint.x)}万
+              </text>
+              <circle
+                cx={xScale(selectedPoint.x)}
+                cy={yScale(selectedPoint.balanceWan)}
+                r="7"
+                fill={caseDef.color}
+                stroke="#ffffff"
+                strokeWidth="2"
+              />
+            </g>
+          ) : null}
+        </svg>
+      </div>
+      <label className="appendix-salary-control">
+        <span>選択給与</span>
+        <input
+          type="range"
+          min={X_MIN}
+          max={X_MAX}
+          step="1"
+          value={selectedSalary}
+          onChange={(event) => onSalaryChange(Number(event.currentTarget.value))}
+          onInput={(event) => onSalaryChange(Number(event.currentTarget.value))}
+        />
+        <output>{fmt(selectedSalary)}万円</output>
+      </label>
+    </div>
+  );
+}
+
+function OptimalModelSummary({ caseDef, selectedSalary }) {
+  const model = caseDef?.optimalModel;
+  const point = model?.series?.length ? pointAt(model.series, selectedSalary) : null;
+  if (!model || !point) return <div className="appendix-empty">選択給与のモデル値を算出できません。</div>;
+  const refundFormula = "R ＝ max｛0,（E − A）− U｝";
+  return (
+    <div className="optimal-model-content">
+      <div className="optimal-metric-grid">
+        <article>
+          <span>負担能力指数 q</span>
+          <strong>{fmt(point.ratio, 3)}</strong>
+          <small>I ÷ D</small>
+        </article>
+        <article>
+          <span>式による年間支給額 G</span>
+          <strong>{fmtWan(point.directSupportWan)}</strong>
+          <small>月額換算 {fmtYen(point.directSupportWan * 10000 / 12)}</small>
+        </article>
+        <article>
+          <span>年間総合負担上限 U</span>
+          <strong>{fmtWan(point.burdenCapWan)}</strong>
+          <small>月額換算 {fmtYen(point.burdenCapWan * 10000 / 12)}</small>
+        </article>
+        <article className={point.balanceWan >= 0 ? "positive" : "negative"}>
+          <span>総合収支差額 G−U</span>
+          <strong>{point.balanceWan >= 0 ? "＋" : "▲"}{fmtWan(Math.abs(point.balanceWan))}</strong>
+          <small>{point.balanceWan >= 0 ? "支給超過" : "世帯負担"}</small>
+        </article>
+      </div>
+      <div className="optimal-formula-grid">
+        <div>
+          <h3>共通算定</h3>
+          <p>q ＝ I ÷ D</p>
+          <p>r ＝ clip（q − 1.5, 0, 1）</p>
+          <p>年間需要額 D ＝ {fmtWan(point.needAnnualWan)}</p>
+        </div>
+        <div>
+          <h3>支給・負担</h3>
+          <p>G ＝ B（1 − r）</p>
+          <p>U ＝ 0.10Dr</p>
+          <p>基準支給額 B ＝ {fmtWan(model.baseSupportWan)}</p>
+        </div>
+        <div>
+          <h3>実費補填後の還付</h3>
+          <p>{refundFormula}</p>
+          <p>E：対象支出　A：就学奨励費等の既補填額</p>
+          <p>奨励費Aは支給として表示し、還付額から控除する。</p>
+        </div>
+      </div>
+      <p className="optimal-model-note">
+        現行制度の収支は、特児・障害児福祉手当・就学奨励費から、モデル上の医療費自己負担と通所利用者負担を差し引いた値。
+        提案モデルの総合収支差額は、対象支出が総合負担上限に達した場合の G−U を表示する。
+      </p>
     </div>
   );
 }
@@ -840,6 +1048,7 @@ function BreakdownPanel({ point }) {
 }
 
 export default function AppendixCliffMap() {
+  const [viewMode, setViewMode] = useState("current");
   const [selectedId, setSelectedId] = useState("case3");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
@@ -860,21 +1069,28 @@ export default function AppendixCliffMap() {
         <h1>Web Appendix</h1>
       </section>
 
-      <section className="appendix-panel appendix-panel-open">
-        {!ready ? (
-          <div className="appendix-empty">
-            {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}
-          </div>
-        ) : (
-          <>
-            <Graph data={data} selectedId={selected?.id} selectedSalary={selectedSalary} onSalaryChange={setSelectedSalary} />
-          </>
-        )}
-      </section>
+      <nav className="appendix-mode-tabs" aria-label="分析モード">
+        <button
+          type="button"
+          className={viewMode === "current" ? "active" : ""}
+          aria-pressed={viewMode === "current"}
+          onClick={() => setViewMode("current")}
+        >
+          現行制度
+        </button>
+        <button
+          type="button"
+          className={viewMode === "optimal" ? "active" : ""}
+          aria-pressed={viewMode === "optimal"}
+          onClick={() => setViewMode("optimal")}
+        >
+          全体最適モデル
+        </button>
+      </nav>
 
       <section className="appendix-controls" aria-label="表示ケース">
-        {[...data, IDEAL_CASE].map((c) => {
-          const caseColor = data.find((d) => d.id === c.id)?.color || "#9aa7ad";
+        {data.map((c) => {
+          const caseColor = c.color || "#9aa7ad";
           return (
             <button
               key={c.id}
@@ -882,9 +1098,7 @@ export default function AppendixCliffMap() {
               className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
               style={{ "--case-color": caseColor }}
               aria-pressed={selectedId === c.id}
-              onClick={() => {
-                if (!c.pending) setSelectedId(c.id);
-              }}
+              onClick={() => setSelectedId(c.id)}
             >
               {c.label}
             </button>
@@ -892,45 +1106,89 @@ export default function AppendixCliffMap() {
         })}
       </section>
 
-      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
-        <div className="appendix-section-head">
-          <div>
-            <h2>モデルケースの条件</h2>
+      {!ready ? (
+        <section className="appendix-panel">
+          <div className="appendix-empty">
+            {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}
           </div>
-        </div>
-        <CaseConditions caseDef={selected} />
-      </section>
+        </section>
+      ) : viewMode === "current" ? (
+        <>
+          <section className="appendix-panel appendix-panel-open">
+            <Graph data={data} selectedId={selected?.id} selectedSalary={selectedSalary} onSalaryChange={setSelectedSalary} />
+          </section>
 
-      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
-        <div className="appendix-section-head">
-          <div>
-            <h2>可処分所得の変化点</h2>
-          </div>
-        </div>
-        <CliffTable cliffs={selected?.cliffs || []} />
-      </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>モデルケースの条件</h2>
+              </div>
+            </div>
+            <CaseConditions caseDef={selected} />
+          </section>
 
-      <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
-        <div className="appendix-section-head">
-          <div>
-            <h2>S値での計算過程</h2>
-            <p>S値＝{fmt(selectedPoint?.x)}万円</p>
-          </div>
-        </div>
-        {appendixData.detailReady ? (
-          <BreakdownPanel point={selectedPoint} />
-        ) : (
-          <div className="appendix-empty">選択給与の計算内訳を読み込んでいます。</div>
-        )}
-      </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>可処分所得の変化点</h2>
+              </div>
+            </div>
+            <CliffTable cliffs={selected?.cliffs || []} />
+          </section>
 
-      <section className="appendix-panel ideal-slot">
-        <h2>第4ケース：全体最適モデル</h2>
-        <p>
-          後続設計で、崖なしまたは大幅緩和した制度モデルを同じP/Q/R表示器へ差し込む。
-          現時点では比較枠だけを固定し、恣意的な数値を置かない。
-        </p>
-      </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>S値での計算過程</h2>
+                <p>S値＝{fmt(selectedPoint?.x)}万円</p>
+              </div>
+            </div>
+            {appendixData.detailReady ? (
+              <BreakdownPanel point={selectedPoint} />
+            ) : (
+              <div className="appendix-empty">選択給与の計算内訳を読み込んでいます。</div>
+            )}
+          </section>
+        </>
+      ) : (
+        <>
+          <section className="appendix-panel optimal-intro" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <p className="appendix-kicker">制度横断の連続算定</p>
+                <h2>全体最適モデル：{selected?.label}</h2>
+                <p>
+                  就学奨励費の収入額／需要額の考え方を連続式として用い、支給額と総合負担上限を同じ負担能力指数から算出する。
+                </p>
+              </div>
+            </div>
+          </section>
+          <section className="appendix-panel appendix-panel-open">
+            <OptimalModelGraph
+              caseDef={selected}
+              selectedSalary={selectedSalary}
+              onSalaryChange={setSelectedSalary}
+            />
+          </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>選択給与でのモデル値</h2>
+                <p>S値＝{fmt(selectedSalary)}万円</p>
+              </div>
+            </div>
+            <OptimalModelSummary caseDef={selected} selectedSalary={selectedSalary} />
+          </section>
+          <section className="appendix-panel appendix-panel-case" style={caseSectionStyle}>
+            <div className="appendix-section-head">
+              <div>
+                <h2>モデルケースの条件</h2>
+              </div>
+            </div>
+            <CaseConditions caseDef={selected} />
+          </section>
+        </>
+      )}
     </main>
   );
 }

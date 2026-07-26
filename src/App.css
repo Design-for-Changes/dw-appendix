@@ -46,6 +46,39 @@
   margin: 14px 0 12px;
 }
 
+.appendix-mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 4px;
+  border: 1px solid #cdd8dd;
+  border-radius: 10px;
+  background: #eef3f5;
+}
+
+.appendix-mode-tabs button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #45575f;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 850;
+  padding: 10px 18px;
+}
+
+.appendix-mode-tabs button:hover,
+.appendix-mode-tabs button:focus-visible {
+  outline: 2px solid #73858d;
+  outline-offset: -2px;
+}
+
+.appendix-mode-tabs button.active {
+  background: #1f3540;
+  color: #ffffff;
+}
+
 .appendix-case-button {
   min-width: 110px;
   border: 1px solid #cdd8dd;
@@ -288,6 +321,117 @@
 .appendix-line.selected {
   opacity: 1;
   stroke-width: 2.4;
+}
+
+.optimal-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.optimal-line.current {
+  stroke-dasharray: 7 6;
+  stroke-width: 2;
+}
+
+.optimal-line.balance {
+  stroke-width: 3.5;
+}
+
+.optimal-line.support,
+.optimal-line.burden {
+  stroke-width: 2.2;
+}
+
+.optimal-zero-line {
+  stroke: #718189;
+  stroke-width: 1.8;
+}
+
+.optimal-intro {
+  background: var(--case-bg, #f7fafb);
+  border-left: 6px solid var(--case-accent, #2f6f5e);
+}
+
+.optimal-model-content {
+  display: grid;
+  gap: 14px;
+}
+
+.optimal-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.optimal-metric-grid article {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #d8e3e7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.optimal-metric-grid article span,
+.optimal-metric-grid article small {
+  color: #52636b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.optimal-metric-grid article span {
+  font-weight: 850;
+}
+
+.optimal-metric-grid article strong {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: clamp(20px, 3vw, 28px);
+  font-variant-numeric: tabular-nums;
+}
+
+.optimal-metric-grid article.positive strong {
+  color: #176349;
+}
+
+.optimal-metric-grid article.negative strong {
+  color: #a03f31;
+}
+
+.optimal-formula-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.optimal-formula-grid > div {
+  padding: 14px;
+  border: 1px solid #d8e3e7;
+  border-radius: 8px;
+  background: var(--case-card, #fbfcfd);
+}
+
+.optimal-formula-grid h3 {
+  margin: 0 0 9px;
+  font-size: 15px;
+}
+
+.optimal-formula-grid p {
+  margin: 5px 0;
+  color: #3f5159;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.optimal-model-note {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 4px solid #778990;
+  background: #f6f8f9;
+  color: #465860;
+  font-size: 12px;
+  line-height: 1.75;
 }
 
 .appendix-inlegend text {
@@ -601,8 +745,13 @@
   }
 
   .formula-grid,
-  .appendix-notes {
+  .appendix-notes,
+  .optimal-formula-grid {
     grid-template-columns: 1fr;
+  }
+
+  .optimal-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -620,6 +769,18 @@
   .appendix-controls {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .appendix-mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .appendix-mode-tabs button {
+    padding: 9px 8px;
+    font-size: 14px;
   }
 
   .appendix-case-button {
@@ -657,6 +818,10 @@
   .appendix-salary-control input {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+
+  .optimal-metric-grid {
+    grid-template-columns: 1fr;
   }
 
   .formula-table-wrap,

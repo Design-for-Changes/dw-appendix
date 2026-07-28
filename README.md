@@ -38,7 +38,7 @@ npm run fetch:egov-screening
 ## Web Appendixの使用データ
 - 表1　e-Gov法令検索による抽出母集団と採否（186件）
 
-採用した8法律と自治体制度19類型は本文の表Ⅱ-1・表Ⅱ-2に掲載する。
+採用した8法律と自治体制度19類型は本文の表1・表2に掲載する。
 対応データは `public/data/research/egov-law-screening.json` と
 `public/data/research/municipal-program-types.json` に保存する。
 

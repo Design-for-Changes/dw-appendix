@@ -174,14 +174,14 @@ export default function ResearchDataAppendix() {
           <h2>法令・自治体制度の抽出データ</h2>
           <p>
             抽出母集団186件の全件と採否を表1に示す。採用8法と自治体制度19類型は
-            本文の表Ⅱ-1・表Ⅱ-2に掲載し、公開用JSONも併せて提供する。
+            本文の表1・表2に掲載し、公開用JSONも併せて提供する。
           </p>
           <div className="research-resource-links">
             <DataDownload href={`${base}/data/research/egov-law-screening.json`}>
-              本文表Ⅱ-1対応JSON
+              本文表1対応JSON
             </DataDownload>
             <DataDownload href={`${base}/data/research/municipal-program-types.json`}>
-              本文表Ⅱ-2対応JSON
+              本文表2対応JSON
             </DataDownload>
           </div>
         </div>

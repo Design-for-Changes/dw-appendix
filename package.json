@@ -24,6 +24,7 @@
     "gen:social": "node scripts/gen_social_json.js",
     "gen:data": "npm run gen:basic && npm run gen:social",
     "generate:appendix": "node scripts/generate-appendix-data.mjs",
+    "fetch:egov-screening": "node scripts/fetch-egov-law-screening.mjs",
     "preverify": "npm run generate:appendix",
     "verify": "node scripts/verify-social-insurance.mjs && node scripts/verify-independent-oracle.mjs && node scripts/verify-source-coverage.mjs && node scripts/verify.mjs && node scripts/verify-appendix-data.mjs",
     "report:cliff-causes": "node scripts/report-cliff-causes.mjs"

@@ -1,7 +1,8 @@
-# dw-appendix — 障害福祉 給付・負担 崖シミュレーター（論文 web appendix）
+# dw-appendix — 障害福祉における給付・負担の制度間相互作用と全体最適
 
-社会保障研究 投稿論文「部分最適と全体最適の観点からみた障害福祉制度の課題と展望」の
-web appendix。障害児世帯モデルで、世帯主の給与に対する可処分所得の「崖」を可視化する。
+社会保障研究 投稿論文「障害福祉における給付・負担の制度間相互作用と全体最適」の
+Web Appendix。障害児世帯モデルで、世帯主の給与に対する可処分所得の「崖」と
+全体調整モデルを可視化する。
 
 ## 概要
 給与収入を掃引し、特別児童扶養手当、障害児福祉手当、障害児通所支援の利用者負担、
@@ -25,9 +26,26 @@ npm run build
 npm run verify
 ```
 
+e-Gov法令API Version 2から法令抽出母集団を再取得する場合は、次を実行する。
+
+```
+npm run fetch:egov-screening
+```
+
+基準日は既定で2026年6月30日、出力先は
+`public/data/research/egov-law-screening.json` である。
+
+## Web Appendixの使用データ
+- 表1　e-Gov法令検索による抽出母集団と採否（186件）
+
+採用した8法律と自治体制度19類型は本文の表Ⅱ-1・表Ⅱ-2に掲載する。
+対応データは `public/data/research/egov-law-screening.json` と
+`public/data/research/municipal-program-types.json` に保存する。
+
 ## ドキュメント
 - `docs/model-household.md`：提示ケースとモデル条件。
 - `docs/model-social-insurance.md`：社会保険料の近似式と検算。
 - `docs/calculation-source-registry.md`：計算根拠と確度。
 - `docs/appendix-data-pipeline.md`：計算コアと表示用データの分離・整合性検証。
 - `docs/verification-methodology.md`：回帰検証の方法。
+- `docs/research-data.md`：法令・自治体制度データの抽出条件と公開方法。

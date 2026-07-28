@@ -26,8 +26,8 @@
 .appendix-hero h1 {
   max-width: 980px;
   margin: 0;
-  font-size: clamp(25px, 4.8vw, 44px);
-  line-height: 1.18;
+  font-size: clamp(23px, 3.6vw, 36px);
+  line-height: 1.28;
   letter-spacing: 0;
 }
 
@@ -37,6 +37,15 @@
   color: #405058;
   font-size: clamp(14px, 2vw, 16px);
   line-height: 1.8;
+}
+
+.appendix-hero .appendix-hero-subtitle {
+  margin-top: 6px;
+  color: #52636b;
+  font-size: clamp(14px, 1.8vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
 }
 
 .appendix-controls {
@@ -811,6 +820,208 @@
   border-bottom: none;
 }
 
+.research-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 22px;
+  border-left: 6px solid #53646d;
+}
+
+.research-overview h2 {
+  margin: 0;
+  font-size: clamp(18px, 3vw, 25px);
+}
+
+.research-overview p {
+  max-width: 760px;
+  margin: 7px 0 0;
+  color: #52636b;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.research-resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.research-overview dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.research-overview dl div {
+  min-width: 110px;
+  padding: 10px 12px;
+  border: 1px solid #d8e3e7;
+  border-radius: 8px;
+  background: #f7f9fa;
+}
+
+.research-overview dt {
+  color: #52636b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.research-overview dd {
+  margin: 3px 0 0;
+  color: #1f3540;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.research-section {
+  --case-accent: #53646d;
+  border-left: 6px solid var(--case-accent);
+}
+
+.research-download {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #7b8d95;
+  border-radius: 7px;
+  color: #33464f;
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.research-download:hover,
+.research-download:focus-visible {
+  background: #eef3f5;
+  outline: 2px solid #73858d;
+  outline-offset: 2px;
+}
+
+.research-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f3f6f7;
+}
+
+.research-controls label:first-child {
+  display: grid;
+  flex: 1 1 280px;
+  gap: 4px;
+  color: #405159;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.research-controls input[type="search"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #b8c6cc;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c2529;
+  font: inherit;
+}
+
+.research-controls input[type="search"]:focus {
+  border-color: #526d79;
+  outline: 2px solid #b7cbd4;
+  outline-offset: 1px;
+}
+
+.research-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  color: #33464f;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.research-check input {
+  width: 17px;
+  height: 17px;
+  accent-color: #1f6655;
+}
+
+.research-controls output {
+  min-width: 76px;
+  padding-bottom: 10px;
+  color: #52636b;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.research-law-table {
+  min-width: 1320px;
+}
+
+.research-law-table td:nth-child(2) {
+  font-size: 11px;
+}
+
+.research-law-table td:nth-child(3) {
+  min-width: 210px;
+  font-weight: 800;
+}
+
+.research-law-table td:nth-child(7) {
+  min-width: 360px;
+  line-height: 1.55;
+}
+
+.research-compact-table {
+  min-width: 760px;
+}
+
+.research-compact-table td:last-child {
+  min-width: 320px;
+  line-height: 1.55;
+}
+
+.research-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.research-status.included {
+  background: #dcefe7;
+  color: #176349;
+}
+
+.research-status.excluded {
+  background: #edf1f3;
+  color: #5a6b73;
+}
+
+.research-note {
+  margin: 10px 2px 0;
+  color: #607078;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
 .appendix-mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-variant-numeric: tabular-nums;
@@ -860,6 +1071,10 @@
     flex-direction: column;
   }
 
+  .research-overview {
+    grid-template-columns: 1fr;
+  }
+
   .appendix-big-number {
     text-align: left;
   }
@@ -893,7 +1108,7 @@
 
   .appendix-mode-tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
     box-sizing: border-box;
   }
@@ -917,6 +1132,28 @@
   .appendix-panel-open {
     padding-right: 0;
     padding-left: 0;
+  }
+
+  .research-overview dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .research-overview dl div {
+    min-width: 0;
+    padding: 9px;
+  }
+
+  .research-overview dd {
+    font-size: 18px;
+  }
+
+  .research-controls {
+    align-items: stretch;
+  }
+
+  .research-controls output {
+    padding-bottom: 0;
+    text-align: left;
   }
 
   .appendix-chart-scroll {

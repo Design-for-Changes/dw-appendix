@@ -2,6 +2,7 @@ import "../App.css";
 import { useEffect, useRef, useState } from "react";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { useAppendixData } from "../hooks/useAppendixData";
+import ResearchDataAppendix from "./ResearchDataAppendix";
 
 const X_MIN = 200;
 const X_MAX = 1500;
@@ -1365,8 +1366,9 @@ export default function AppendixCliffMap() {
   return (
     <main className="App appendix-page">
       <section className="appendix-hero">
-        <p className="appendix-kicker">モデル世帯による給付・負担構造</p>
-        <h1>Web Appendix</h1>
+        <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
+        <h1>障害福祉における給付・負担の制度間相互作用と全体最適</h1>
+        <p className="appendix-hero-subtitle">Web Appendix</p>
       </section>
 
       <nav className="appendix-mode-tabs" aria-label="分析モード">
@@ -1386,27 +1388,39 @@ export default function AppendixCliffMap() {
         >
           全体最適モデル
         </button>
+        <button
+          type="button"
+          className={viewMode === "research" ? "active" : ""}
+          aria-pressed={viewMode === "research"}
+          onClick={() => setViewMode("research")}
+        >
+          使用データ
+        </button>
       </nav>
 
-      <section className="appendix-controls" aria-label="表示ケース">
-        {data.map((c) => {
-          const caseColor = c.color || "#9aa7ad";
-          return (
-            <button
-              key={c.id}
-              type="button"
-              className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
-              style={{ "--case-color": caseColor }}
-              aria-pressed={selectedId === c.id}
-              onClick={() => setSelectedId(c.id)}
-            >
-              {c.label}
-            </button>
-          );
-        })}
-      </section>
+      {viewMode !== "research" ? (
+        <section className="appendix-controls" aria-label="表示ケース">
+          {data.map((c) => {
+            const caseColor = c.color || "#9aa7ad";
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className={`appendix-case-button ${selectedId === c.id ? "active" : ""}`}
+                style={{ "--case-color": caseColor }}
+                aria-pressed={selectedId === c.id}
+                onClick={() => setSelectedId(c.id)}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </section>
+      ) : null}
 
-      {!ready ? (
+      {viewMode === "research" ? (
+        <ResearchDataAppendix />
+      ) : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

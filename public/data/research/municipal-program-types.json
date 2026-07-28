@@ -1,0 +1,137 @@
+{
+  "schema_version": "1.0.0",
+  "title": "障害児世帯の可処分所得に作用しうる自治体制度の類型と普及度",
+  "research_as_of": "2026-06-30",
+  "method": {
+    "population": "政令指定都市20市および人口50万人以上の中核市6市",
+    "unit": "制度類型",
+    "classification_rule": "自治体ごとに異なる制度名称を、制度内容と給付・負担上の性質に基づいて類型化した。",
+    "exclusion_rule": "子ども医療費・乳幼児医療費助成等、障害の有無を要件としない普遍的制度は除外した。",
+    "prevalence_bands": {
+      "ほぼすべての市": "20市以上",
+      "半分ぐらいの市": "10〜19市",
+      "一部の市": "10市未満"
+    },
+    "limitation": "未確認は制度が実施されていないことを意味しない。旧調査の市別確認票は未回収のため、本データは論文正本の集計表をサルベージしたものである。"
+  },
+  "counts": {
+    "municipalities": 26,
+    "program_types": 19
+  },
+  "program_types": [
+    {
+      "id": "M01",
+      "program_type": "重度心身障害者(児)医療費助成",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M02",
+      "program_type": "住宅改修費助成",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M03",
+      "program_type": "日常生活用具・福祉機器購入費助成",
+      "effect": "現物給付・実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M04",
+      "program_type": "福祉タクシー券・燃料費助成",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M05",
+      "program_type": "公営住宅の優先入居・家賃減免",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M06",
+      "program_type": "公共料金・公共施設利用料等の減免",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M07",
+      "program_type": "自動車税・軽自動車税の減免",
+      "effect": "実費補填",
+      "prevalence": "ほぼすべての市"
+    },
+    {
+      "id": "M08",
+      "program_type": "心身障害者(児)福祉手当（自治体独自）",
+      "effect": "現金給付",
+      "prevalence": "半分ぐらいの市"
+    },
+    {
+      "id": "M09",
+      "program_type": "在宅医療機器・非常用電源・電気料金助成",
+      "effect": "現物給付・実費補填",
+      "prevalence": "半分ぐらいの市"
+    },
+    {
+      "id": "M10",
+      "program_type": "小児慢性特定疾病・難病の自治体上乗せ助成",
+      "effect": "実費補填",
+      "prevalence": "半分ぐらいの市"
+    },
+    {
+      "id": "M11",
+      "program_type": "通学交通費助成・通学支援",
+      "effect": "実費補填",
+      "prevalence": "半分ぐらいの市"
+    },
+    {
+      "id": "M12",
+      "program_type": "就学援助・就学奨励費の自治体上乗せ",
+      "effect": "実費補填",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M13",
+      "program_type": "障害児保育・加配・保育料減免",
+      "effect": "実費補填",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M14",
+      "program_type": "在宅重度障害者手当等",
+      "effect": "現金給付",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M15",
+      "program_type": "精神障害者医療費助成",
+      "effect": "実費補填",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M16",
+      "program_type": "医療的ケア児レスパイト等助成",
+      "effect": "現物給付",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M17",
+      "program_type": "補装具費自己負担助成・差額助成",
+      "effect": "実費補填",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M18",
+      "program_type": "自立支援医療・育成医療の自治体上乗せ助成",
+      "effect": "実費補填",
+      "prevalence": "一部の市"
+    },
+    {
+      "id": "M19",
+      "program_type": "医療的ケア児支援手当・家族支援給付",
+      "effect": "現金給付",
+      "prevalence": "一部の市"
+    }
+  ]
+}

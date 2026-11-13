@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0.0",
+  "schema_version": "2.1.0",
   "title": "e-Gov法令検索による抽出結果と選定候補",
   "research_as_of": "2026-11-13",
   "retrieved_at": "2026-11-13T09:22:20.076Z",
@@ -17,19 +17,41 @@
       "特別支援学校"
     ],
     "combination": "各検索語による結果の法令ID単位の和集合",
-    "inclusion_criterion": "障害を要件として、障害児世帯の給付、利用者負担、控除・減免等の家計に作用しうる法律を、適用年齢・職域・障害原因・時期等の限定がある場合も含め、選定候補として収録する。",
-    "exclusion_criterion": "現行扱いでない法律、障害を要件としない普遍的制度、又は障害児世帯の給付・負担との直接的関係を確認できない組織・資格・一般的施策等の規定。",
-    "current_law_rule": "CurrentEnforcedかつrepeal_status=Noneの法律を現行扱いとする。asof指定だけでは廃止法を除外できないため、取得後に改正情報を照合する。",
-    "candidate_note": "選定候補への収録はモデル世帯の試算への採用を意味しない。適用条件の確認が必要な法律はその旨を区別する。",
-    "review_status_note": "原典確認済みは、記載した根拠条文との照合を終えたことを示す。研究範囲への最終的な採用や、モデル世帯の試算への採用を確定するものではない。"
+    "inclusion_criterion": "障害を要件として、障害児世帯の手当・給付、利用者負担、控除・減免等を通じて可処分所得に直接作用する規定を含む法律。",
+    "exclusion_criterion": "障害児世帯の可処分所得に直接作用する規定を含まないもの。障害を要件としないもの。就労・職域・災害・特定の障害原因等を前提とするもの。障害固有の給付・負担要件が本則に定められていないもの。",
+    "candidate_note": "候補への収録は試算への採用を意味しない。",
+    "review_status_note": "原典確認済みは、記載した根拠条文との照合を終えたことを示す。研究範囲への最終的な採用や、モデル世帯の試算への採用を確定するものではない。",
+    "exclusion_categories": [
+      {
+        "id": "C1",
+        "label": "障害児世帯の可処分所得に直接作用する規定を含まないもの"
+      },
+      {
+        "id": "C5",
+        "label": "障害を要件としないもの"
+      },
+      {
+        "id": "C2",
+        "label": "就労・職域・災害・特定の障害原因等を前提とするもの"
+      },
+      {
+        "id": "C4",
+        "label": "障害固有の給付・負担要件が本則に定められていないもの"
+      }
+    ]
   },
   "counts": {
-    "total_laws": 186,
+    "total_laws": 184,
     "current_laws": 184,
-    "candidate_laws": 49,
-    "excluded_laws": 137,
-    "scope_review_laws": 41,
-    "noncurrent_laws": 2
+    "candidate_laws": 24,
+    "excluded_laws": 160,
+    "scope_review_laws": 24,
+    "exclusions_by_category": {
+      "C1": 115,
+      "C5": 19,
+      "C2": 23,
+      "C4": 3
+    }
   },
   "query_statistics": [
     {
@@ -84,7 +106,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/140AC0000000045",
       "current_status": {
@@ -121,7 +145,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "disability_tariff_exemption",
-        "reason": "第14条16号は身体障害者用に特に製作された器具等の関税免除を定める。障害を要件とする購入・輸入時の費用軽減として抽出基準に該当しうる。家計による輸入等を対象に含めるか確認が必要である。",
+        "reason": "第14条16号は、身体障害者用に特に製作された器具等として政令で定める輸入貨物の関税を免除する。",
         "evidence": [
           {
             "article": "第十四条",
@@ -130,7 +154,10 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "障害児世帯による個人輸入に係る関税免除を、世帯の可処分所得への直接作用に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/143AC0000000054",
       "current_status": {
@@ -198,7 +225,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "general_education_rule",
-        "reason": "第72条等は特別支援教育の対象・目的を定める。第6条の国公立義務教育の授業料不徴収は障害を要件としない共通制度であり、障害児世帯固有の給付・減免としては抽出しない。",
+        "reason": "第6条の国公立義務教育の授業料不徴収は、特別支援学校だけでなく小中学校等に共通する。障害の有無を要件としない普遍的な経費取扱いであり、第72条等の特別支援教育の目的規定も直接の家計給付を定めないため、除外する。",
         "evidence": [
           {
             "article": "第六条",
@@ -213,7 +240,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000026",
       "current_status": {
@@ -258,11 +287,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "workers_compensation_scope",
-        "reason": "労災の障害補償に加え、第16条の2第1項4号は通常の年齢要件を満たさない子等について障害状態を遺族補償年金の受給要件とする。就労児本人又は被災労働者の障害児を含める場合に直接作用するため、職域・災害原因に限定した給付を調査対象から除くかの明示が必要。",
+        "reason": "障害補償や障害のある遺族の受給資格延長を定めるが、労働災害及び被災労働者との生計関係を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十六条の二",
@@ -277,7 +306,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000050",
       "current_status": {
@@ -335,7 +366,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000067",
       "current_status": {
@@ -405,9 +438,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "child_disability_service_benefit",
-        "reason": "第21条の5の3が障害児通所給付費の保護者への支給と家計の負担能力をしん酌した自己負担相当額を規定し、障害児世帯の利用者負担に直接作用する。",
+        "reason": "第21条の5の3は、障害児通所支援の費用について保護者への給付と家計の負担能力をしん酌した自己負担相当額を定める。",
         "evidence": [
           {
             "article": "第二十一条の五の三",
@@ -419,7 +452,10 @@
         "checked_on": "2026-11-13",
         "id": "N03",
         "effect": "現物給付",
-        "summary": "障害児通所支援・障害児入所支援等"
+        "summary": "障害児通所支援・障害児入所支援等",
+        "exclusion_category_id": null,
+        "discussion_point": "児童福祉法のうち、どの給付・利用者負担制度を比較対象とするか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000164",
       "current_status": {
@@ -461,7 +497,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000224",
       "current_status": {
@@ -494,11 +532,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "vaccination_disability_compensation",
-        "reason": "第15条・第16条は予防接種との因果関係を認定された健康被害に給付を行い、第16条1項2号は18歳未満の障害児を養育する者への障害児養育年金を明記する。障害児世帯への現金給付に直接該当するため、障害原因限定の補償を対象外とするか再検討が必要。",
+        "reason": "第15条・第16条の医療費・障害児養育年金等は、予防接種による健康被害との因果関係の認定を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十六条",
@@ -513,7 +551,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000068",
       "current_status": {
@@ -599,7 +639,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000109",
       "current_status": {
@@ -657,7 +699,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000129",
       "current_status": {
@@ -715,7 +759,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000135",
       "current_status": {
@@ -769,7 +815,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000138",
       "current_status": {
@@ -811,7 +859,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/323AC0000000200",
       "current_status": {
@@ -875,7 +925,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/324AC0000000001",
       "current_status": {
@@ -958,7 +1010,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/324AC0000000147",
       "current_status": {
@@ -1037,7 +1091,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/324AC0000000148",
       "current_status": {
@@ -1093,7 +1149,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "adult_definition_child_boundary",
-        "reason": "第4条は本法の身体障害者を18歳以上とするが、第15条の手帳交付は15歳未満についても保護者の代理申請を規定し、第38条には措置費の能力に応じた徴収がある。障害児を18歳未満とするのか特別児童扶養手当同様20歳未満とするのかにより18・19歳への直接負担規定の採否が変わる。手帳交付だけを直接家計作用とは扱わず、年齢範囲を明示して判断すべき。",
+        "reason": "第4条の身体障害者は18歳以上とされ、第38条は本人・扶養義務者の負担能力に応じた措置費徴収を定める。第15条の手帳交付は児童にも及ぶ。",
         "evidence": [
           {
             "article": "第四条",
@@ -1114,7 +1170,10 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "18・19歳の障害者に対する措置費徴収を障害児世帯の分析対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/324AC1000000283",
       "current_status": {
@@ -1161,9 +1220,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "disability_inheritance_gift_tax",
-        "reason": "第19条の4は障害者の相続税控除、第21条の4は特定障害者扶養信託に係る贈与税非課税を定め、障害を要件として家計の税負担に直接作用する。恒常所得の試算に含めるかは法抽出とは別に判断する。",
+        "reason": "第19条の4は障害者の相続税控除、第21条の4は特定障害者扶養信託に係る贈与税非課税を定める。",
         "evidence": [
           {
             "article": "第十九条の四",
@@ -1181,7 +1240,10 @@
         "checked_on": "2026-11-13",
         "id": "N08",
         "effect": "税制",
-        "summary": "相続税の障害者控除、特定障害者扶養信託の贈与税非課税"
+        "summary": "相続税の障害者控除、特定障害者扶養信託の贈与税非課税",
+        "exclusion_category_id": null,
+        "discussion_point": "相続・贈与を特定事情として除外するか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000073",
       "current_status": {
@@ -1210,11 +1272,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "delegated_broadcast_fee_exemption",
-        "reason": "第64条4項は総務大臣の認可を受けた受信料免除基準を根拠付ける。ただし本則の同項自体には障害要件が記載されない。障害者世帯の受信料減免を抽出する場合は、認可免除基準と法律の委任関係を接続して扱う必要があり、法律本則だけを採否単位とする限界を明示すべき。",
+        "reason": "第64条4項は受信料免除の認可基準を根拠付けるが、障害を要件とする免除対象・条件は認可免除基準との接続が必要なため除外する。",
         "evidence": [
           {
             "article": "第六十四条",
@@ -1223,7 +1285,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C4",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000132",
       "current_status": {
@@ -1268,11 +1332,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "delegated_disability_public_assistance_addition",
-        "reason": "第8条は厚生労働大臣の基準に基づく需要額と不足額の補足を規定する。障害者加算の具体的要件・額は告示等に委ねられるため、普遍的な生活保護法として単純除外するだけでは障害固有の加算を拾えない。委任先の加算基準を含めるか別途確認する必要がある。",
+        "reason": "第8条は保護基準による需要・不足額に応じた保護を定めるが、障害者加算の具体的な要件・額は委任先の保護基準等に置かれるため除外する。",
         "evidence": [
           {
             "article": "第八条",
@@ -1281,7 +1345,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C4",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000144",
       "current_status": {
@@ -1341,7 +1407,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000211",
       "current_status": {
@@ -1399,9 +1467,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "disability_resident_tax",
-        "reason": "第295条1項2号が一定所得以下の障害者等の住民税非課税、第314条の2第1項6号・第3項が障害者控除・同居特別障害者控除を定め、障害を要件として本人又は扶養者の税負担を調整する。",
+        "reason": "第295条は障害者等の住民税非課税、第314条の2は障害者控除・同居特別障害者控除を定める。",
         "evidence": [
           {
             "article": "第二百九十五条",
@@ -1419,7 +1487,10 @@
         "checked_on": "2026-11-13",
         "id": "N06",
         "effect": "税制",
-        "summary": "住民税の障害者控除、非課税限度額判定"
+        "summary": "住民税の障害者控除、非課税限度額判定",
+        "exclusion_category_id": null,
+        "discussion_point": "障害者控除・本人非課税特例に加え、地方税法内の他の障害関連税目も比較対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000226",
       "current_status": {
@@ -1468,7 +1539,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "psychiatric_involuntary_hospitalization_cost",
-        "reason": "第30条は措置入院等の費用を都道府県負担、第31条は本人・扶養義務者の負担能力に応じた全部又は一部徴収とする。年齢を限定しない精神障害者の医療費負担規定であるため、入所と入院の調査範囲を区別したうえで採否を再検討する必要がある。",
+        "reason": "第30条は措置入院等の費用の公費負担、第31条は本人・扶養義務者の負担能力に応じた費用徴収を定める。",
         "evidence": [
           {
             "article": "第三十条",
@@ -1483,7 +1554,10 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "措置入院による費用負担を、特定事情として除外するか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0100000123",
       "current_status": {
@@ -1524,11 +1598,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "public_employee_disabled_dependent_allowance",
-        "reason": "第11条は扶養手当の対象に重度心身障害者を掲げる。他方、子は障害によらず22歳年度末まで扶養親族に含まれるため、障害児本人の年齢範囲では障害要件が給付を追加するのかを区別する必要がある。公務員世帯限定手当を含めるか、障害要件の独立した家計効果がある年齢範囲かを確認して採否を決める。",
+        "reason": "第11条は重度心身障害者等に係る扶養手当を定めるが、一般職国家公務員という特定の職域を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十一条",
@@ -1537,7 +1611,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC1000000095",
       "current_status": {
@@ -1585,7 +1661,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC1000000100",
       "current_status": {
@@ -1660,7 +1738,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/326AC0000000045",
       "current_status": {
@@ -1705,11 +1785,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "national_public_employee_compensation",
-        "reason": "第16条1項4号は通常の年齢要件を満たさない子等でも一定の障害状態を遺族補償年金の要件とする。職員本人の障害補償に加え障害児の受給延長に直接作用しうるため、公務災害・職域限定給付を調査範囲に含めるか明示が必要。",
+        "reason": "第16条は障害状態にある子等の遺族補償年金受給要件を定めるが、国家公務員の公務災害等を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十六条",
@@ -1718,7 +1798,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/326AC0000000191",
       "current_status": {
@@ -1755,11 +1837,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "public_housing_disability_rent",
-        "reason": "第16条は入居者の収入等に応じた家賃と特別の事情による減免等を規定し、障害者について収入申告困難時の取扱いも規定する。障害に伴う収入認定上の控除等は政令・条例と照合しなければ判定できないため、障害児世帯の家賃軽減の委任根拠として再検討する。",
+        "reason": "第16条は収入等に応じた家賃と減免等を定めるが、障害者の収入認定上の控除・優遇条件を把握するには政令・条例との接続が必要なため除外する。",
         "evidence": [
           {
             "article": "第十六条",
@@ -1768,7 +1850,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C4",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/326AC1000000193",
       "current_status": {
@@ -1801,7 +1885,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "vocational_education_promotion",
-        "reason": "第2条の特別支援学校への言及は産業教育の実施校の範囲である。産業教育の施設・設備や運営振興を対象とし、障害要件に基づく保護者への金銭給付・利用者負担を同条は定めない。",
+        "reason": "第2条の特別支援学校への言及は産業教育を実施する学校の範囲であり、障害を要件とする児童世帯への独自給付を設けるものではない。一般の産業教育振興を対象とするため、除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -1810,7 +1894,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/326AC1000000228",
       "current_status": {
@@ -1888,7 +1974,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/327AC0000000219",
       "current_status": {
@@ -1925,7 +2013,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "national_share_teacher_salary",
-        "reason": "第2条は特別支援学校小学部・中学部等を含む義務教育教職員給与費に対する国庫負担を定める。教員人件費の政府間分担であり家計への直接給付ではない。",
+        "reason": "第2条は小中学校等と特別支援学校小学部・中学部に共通する教職員給与の国庫負担を定める。障害児世帯個人を対象とした給付・負担調整ではなく、一般の義務教育費の政府間分担であるため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -1934,7 +2022,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/327AC1000000303",
       "current_status": {
@@ -1975,11 +2065,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "drug_dependence_hospital_cost",
-        "reason": "第58条の17は措置入院した麻薬中毒者の入院費を都道府県が負担し、精神保健福祉法の費用調整規定等を準用する。麻薬中毒が今回の障害要件に含まれるか、未成年入院を対象とするかの範囲判断が要るため、単なる薬物規制法として除外しない。",
+        "reason": "第58条の17等は麻薬中毒者の措置入院費の公費負担等を定めるが、麻薬中毒及び措置入院という特定の事情を前提とするため除外する。",
         "evidence": [
           {
             "article": "第五十八条の十七",
@@ -1988,7 +2078,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/328AC0000000014",
       "current_status": {
@@ -2062,7 +2154,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/328AC1000000072",
       "current_status": {
@@ -2095,7 +2189,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "school_library_operation",
-        "reason": "第2条の特別支援学校は学校図書館を設置する学校の範囲に含まれる。図書館施設・運営等の規定であり障害児世帯への金銭給付・負担減免ではない。",
+        "reason": "第2条は特別支援学校を含む学校図書館の設置対象校を定める。障害を要件とした個人・世帯向けの経済措置ではなく一般の学校図書館制度であるため、除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -2104,7 +2198,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/328AC1000000185",
       "current_status": {
@@ -2137,7 +2233,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "science_education_facilities",
-        "reason": "第2条の特別支援学校は理科教育振興の対象となる学校の範囲である。理科教育の施設設備等を支援する法律であり、障害を要件とする児童世帯の受給額や自己負担を定めない。",
+        "reason": "第2条の特別支援学校は理科教育振興の対象校に含まれるが、障害の有無による児童世帯の給付・負担調整を定めるものではない。一般の理科教育・設備振興として除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -2146,7 +2242,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/328AC1000000186",
       "current_status": {
@@ -2189,9 +2287,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "special_needs_school_expenses",
-        "reason": "第2条は特別支援学校への就学に必要な教科書、給食、通学、寄宿舎等の経費について保護者の負担能力に応じた支弁を規定し、障害児世帯の教育費負担に直接作用する。",
+        "reason": "第2条は、特別支援学校就学に必要な経費について保護者の負担能力に応じた支弁を定める。",
         "evidence": [
           {
             "article": "第二条",
@@ -2203,7 +2301,10 @@
         "checked_on": "2026-11-13",
         "id": "N04",
         "effect": "実費補填",
-        "summary": "特別支援教育就学奨励費"
+        "summary": "特別支援教育就学奨励費",
+        "exclusion_category_id": null,
+        "discussion_point": "特別支援学校への就学という条件を、特定事情の除外条件に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/329AC0000000144",
       "current_status": {
@@ -2249,7 +2350,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/329AC0000000157",
       "current_status": {
@@ -2282,7 +2385,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_school_meal_rule",
-        "reason": "第11条は義務教育諸学校共通の学校給食費の保護者負担、第12条は要保護者への補助に係る国庫補助を定める。障害の有無による独自要件ではなく、障害要件による就学奨励費とは別の普遍的・低所得対策であるため本基準では除外する。",
+        "reason": "第11条の給食費負担と第12条の要保護者等への補助は、障害の有無によらない義務教育・低所得支援の共通制度である。障害を要件とする独自の家計措置ではないため、除外する。",
         "evidence": [
           {
             "article": "第十一条",
@@ -2297,7 +2400,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/329AC0000000160",
       "current_status": {
@@ -2356,7 +2461,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/329AC1000000189",
       "current_status": {
@@ -2398,7 +2505,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/330AC0100000125",
       "current_status": {
@@ -2440,7 +2549,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/331AC0000000162",
       "current_status": {
@@ -2501,9 +2612,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "disability_special_tax_measures",
-        "reason": "第4条は障害者等の少額公債利子非課税、第41条の3の11第1項は特別障害者本人・同一生計配偶者・扶養親族等を要件とする所得金額調整控除を規定する。後者は給与所得算定にも直接作用するため、利子課税特例のみとして記載しない。",
+        "reason": "第4条は障害者等の少額公債利子非課税、第41条の3の11は特別障害者本人・同一生計配偶者・扶養親族等を要件とする所得金額調整控除を定める。",
         "evidence": [
           {
             "article": "第四条",
@@ -2521,7 +2632,10 @@
         "checked_on": "2026-11-13",
         "id": "N07",
         "effect": "税制",
-        "summary": "障害者等の少額貯蓄利子非課税（マル優）等"
+        "summary": "障害者等の少額貯蓄利子非課税（マル優）等",
+        "exclusion_category_id": null,
+        "discussion_point": "所得金額調整控除・利子非課税等のうち、どの税制特例を比較対象とするか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/332AC0000000026",
       "current_status": {
@@ -2562,11 +2676,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "special_school_meal_parent_cost",
-        "reason": "第5条は特別支援学校幼稚部・高等部の給食について、設置者負担以外の経費を保護者の負担とする。障害児の特別支援学校就学に伴う直接支出の根拠法として抽出基準に該当しうる。就学奨励費による給食費支弁との関係を整理して採否を再検討すべき。",
+        "reason": "第5条は特別支援学校幼稚部・高等部の給食経費について設置者と保護者の負担を分担する規定である。障害の程度等を要件として個人・世帯の給付又は負担軽減を設けるものではなく、学校給食経費の一般的な分担として除外する。",
         "evidence": [
           {
             "article": "第五条",
@@ -2575,7 +2689,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/332AC0100000118",
       "current_status": {
@@ -2616,7 +2732,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "school_health_general_low_income",
-        "reason": "第24条は学校保健上の疾病の治療について要保護・準要保護者への費用援助に係る国庫補助を規定する。対象に特別支援学校の児童生徒を含むが、障害を受給要件とする制度ではない。",
+        "reason": "第24条の医療費援助に係る補助は要保護・準要保護者等を対象とする学校保健上の疾病対策であり、特別支援学校の児童生徒を含むが障害を受給要件としない。除外する。",
         "evidence": [
           {
             "article": "第二十四条",
@@ -2625,7 +2741,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/333AC0000000056",
       "current_status": {
@@ -2681,7 +2799,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "school_building_subsidy",
-        "reason": "第3条は公立学校施設の新増築等に要する経費の国庫負担、第8条等は施設面積等の特例を規定する。特別支援学校の施設整備費であって保護者への給付・利用者負担ではない。",
+        "reason": "第3条等は特別支援学校を含む公立義務教育諸学校の建設等への国庫負担を定める。障害を要件とする児童世帯個人への措置ではなく一般の学校施設経費であるため、除外する。",
         "evidence": [
           {
             "article": "第三条",
@@ -2696,7 +2814,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/333AC0000000081",
       "current_status": {
@@ -2767,7 +2887,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/333AC0000000116",
       "current_status": {
@@ -2816,7 +2938,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "general_health_insurance_collection",
-        "reason": "第76条の3の障害年金への言及は保険料の特別徴収方法、第116条の2は施設入所等に伴う被保険者の住所地特例である。確認した障害関連規定は保険料額や医療自己負担を障害児であることを理由に軽減するものではない。",
+        "reason": "第76条の3の障害年金への言及は保険料の特別徴収方法、第116条の2は施設入所等に伴う住所地特例に関するもの。国民健康保険の一般的な給付・保険料制度を障害を要件とする児童世帯支援としては扱わず、除外する。",
         "evidence": [
           {
             "article": "第七十六条の三",
@@ -2831,7 +2953,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/333AC0000000192",
       "current_status": {
@@ -2868,11 +2992,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "pension_disabled_child_age_extension",
-        "reason": "第33条の2は障害基礎年金の子加算、第37条の2は遺族基礎年金について、通常は18歳年度末までの子を一定の障害がある場合20歳未満まで含める。障害児世帯を20歳未満で捉える場合には家計への直接効果があるため、『障害年金は成人のみ』として法全体を除外できない。",
+        "reason": "第33条の2・第37条の2は障害のある子の加算・遺族年金対象年齢を延長するが、障害年金受給又は親の死亡と遺族年金資格を前提とするため除外する。",
         "evidence": [
           {
             "article": "第三十三条の二",
@@ -2887,7 +3011,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/334AC0000000141",
       "current_status": {
@@ -2943,7 +3069,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "intellectual_disability_measures_cost",
-        "reason": "第15条の4は障害福祉サービスの措置、第27条は本人又は扶養義務者の負担能力に応じた徴収を規定する。一方、第9条等の市町村業務は18歳以上の知的障害者を対象としており、障害児の年齢範囲を18歳未満か20歳未満か明示して採否を決める必要がある。",
+        "reason": "第15条の4は障害福祉サービスの措置、第27条は本人・扶養義務者の負担能力に応じた費用徴収を定める。第9条等は18歳以上の対象を示す。",
         "evidence": [
           {
             "article": "第十五条の四",
@@ -2964,7 +3090,10 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "18・19歳の障害者に対する措置費徴収を障害児世帯の分析対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/335AC0000000037",
       "current_status": {
@@ -3028,7 +3157,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/335AC0000000105",
       "current_status": {
@@ -3080,11 +3211,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disabled_worker_training_allowance",
-        "reason": "第15条は障害者の適応訓練を無料とし、訓練を受ける障害者への手当支給を可能とする。第26条も障害者職業センターの職業リハビリテーション無料実施を定める。障害のある就労・求職年齢の児童を対象に含めるかを確認し、事業主への助成のみの法律として除外しない。",
+        "reason": "第15条・第26条は適応訓練等の無料実施や訓練手当を定めるが、就労・求職・職業訓練を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十五条",
@@ -3099,7 +3230,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/335AC0000000123",
       "current_status": {
@@ -3186,7 +3319,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/336AC0000000155",
       "current_status": {
@@ -3261,7 +3396,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/336AC0000000188",
       "current_status": {
@@ -3303,7 +3440,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/336AC0000000195",
       "current_status": {
@@ -3332,11 +3471,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disaster_response_disability_compensation",
-        "reason": "第84条は応急措置業務への従事により障害状態となった者又は遺族・被扶養者への損害補償を義務付ける。障害発生原因・従事属性を限定する給付であるが家計に直接作用しうるため、障害児世帯の抽出範囲にこうした補償を含めるか明示して再判断する。",
+        "reason": "第84条は応急措置業務への従事により障害状態となった者等への補償を定めるため、災害対応業務への従事及びその業務に起因する障害を前提とする制度として除外する。",
         "evidence": [
           {
             "article": "第八十四条",
@@ -3345,7 +3484,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/336AC0000000223",
       "current_status": {
@@ -3387,7 +3528,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/336AC0100000103",
       "current_status": {
@@ -3439,7 +3582,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/337AC0000000069",
       "current_status": {
@@ -3503,7 +3648,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/337AC0000000150",
       "current_status": {
@@ -3536,16 +3683,24 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_free_textbooks",
-        "reason": "第2条は教科用図書無償措置の義務教育諸学校に特別支援学校小学部・中学部を含める。無償対象は障害の有無によらない義務教育共通の枠であり、障害固有の給付・負担軽減としては抽出しない。",
+        "reason": "第3条は国が教科用図書を購入して義務教育諸学校の設置者へ無償給付する措置を定める。世帯への金銭給付・利用者負担調整を定めないため除外する。",
         "evidence": [
           {
             "article": "第二条",
             "text": "（定義）第二条この法律において「義務教育諸学校」とは、学校教育法（昭和二十二年法律第二十六号）に規定する小学校、中学校、義務教育学校、中等教育学校の前期課程並びに特別支援学校の小学部及び中学部をいう。２この法律において「教科用図書」とは、学校教育法第三十四条第一項（同法第四十九条、第四十九条の八、第七十条第一項及び第八十二条において準用する場合を含む。）及び附則第九条第一項に規定する教科用図書をいう。３この法律において「発行」とは、教科用図書を製造供給することをいう。",
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/338AC0000000182_20260617_508AC0000000037?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true",
             "text_is_excerpt": false
+          },
+          {
+            "article": "第三条",
+            "text": "（教科用図書の無償給付）第三条 国は、毎年度、義務教育諸学校の児童及び生徒が各学年の課程において使用する教科用図書で第十三条、第十四条及び第十六条の規定により採択されたものを購入し、義務教育諸学校の設置者に無償で給付するものとする。",
+            "source_url": "https://laws.e-gov.go.jp/api/2/law_data/338AC0000000182_20260617_508AC0000000037?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true",
+            "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/338AC0000000182",
       "current_status": {
@@ -3582,7 +3737,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "historical_war_injury_beneficiary",
-        "reason": "第20条・第21条は戦傷病者への更生医療・補装具等を定め、家計への経済的効果自体はある。ただし対象は本法上の戦傷病者であり、現時点の障害児本人又は障害児の養育を要件とする世帯への給付ではないため除外する。",
+        "reason": "第20条・第21条は戦傷病者への更生医療・補装具等を定めるが、戦争に起因する負傷・疾病と戦傷病者資格を前提とするため除外する。",
         "evidence": [
           {
             "article": "第二十条",
@@ -3597,7 +3752,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/338AC1000000168",
       "current_status": {
@@ -3667,9 +3824,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "special_child_disability_cash_benefits",
-        "reason": "第3条は障害児を監護・養育する父母等への特別児童扶養手当、第17条は重度障害児本人への障害児福祉手当を規定し、障害児世帯への現金給付に直接作用する。",
+        "reason": "第3条は障害児を監護・養育する父母等への特別児童扶養手当、第17条は重度障害児本人への障害児福祉手当を定める。",
         "evidence": [
           {
             "article": "第三条",
@@ -3687,7 +3844,10 @@
         "checked_on": "2026-11-13",
         "id": "N01",
         "effect": "現金給付",
-        "summary": "特別児童扶養手当・障害児福祉手当の支給"
+        "summary": "特別児童扶養手当・障害児福祉手当の支給",
+        "exclusion_category_id": null,
+        "discussion_point": "成人向け手当を分離し、障害児対象の二つの手当だけを比較対象にするか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/339AC0000000134",
       "current_status": {
@@ -3741,9 +3901,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "disability_income_tax_deduction",
-        "reason": "第79条は本人・同一生計配偶者・扶養親族の障害に応じた所得控除及び同居特別障害者の控除を定める。障害児の扶養者の所得税額に直接作用する。",
+        "reason": "第79条は障害者本人及び障害のある同一生計配偶者・扶養親族に応じた所得控除を定める。",
         "evidence": [
           {
             "article": "第七十九条",
@@ -3755,7 +3915,10 @@
         "checked_on": "2026-11-13",
         "id": "N05",
         "effect": "税制",
-        "summary": "障害者控除・特別障害者控除・同居特別障害者加算"
+        "summary": "障害者控除・特別障害者控除・同居特別障害者加算",
+        "exclusion_category_id": null,
+        "discussion_point": "障害者控除に加え、障害者等の利子非課税も比較対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/340AC0000000033",
       "current_status": {
@@ -3814,7 +3977,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/340AC1000000064",
       "current_status": {
@@ -3843,11 +4008,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "vocational_change_allowance_delegation",
-        "reason": "第18条は求職・訓練・移転等に係る職業転換給付金を規定する。条文本体は障害に限定しないが、障害者雇用促進法15条・職業能力開発促進法23条が障害者訓練手当の根拠として本法を参照するため、委任先の給付規則と接続して採否を再検討する必要がある。",
+        "reason": "第18条は職業転換給付金を定めるが、求職・訓練・移転等の就労上の事情を前提とするため除外する。",
         "evidence": [
           {
             "article": "第十八条",
@@ -3856,7 +4021,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/341AC0000000132",
       "current_status": {
@@ -3901,11 +4068,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "local_public_employee_compensation",
-        "reason": "第32条1項4号は一定の障害がある子等について通常の年齢要件外でも遺族補償年金の受給を可能とする。障害児世帯への直接効果がありうるため、地方公務災害に限定された給付を除外するか調査範囲の明示が必要。",
+        "reason": "第32条は障害のある子等の遺族補償年金受給要件を定めるが、地方公務員の公務災害等を前提とするため除外する。",
         "evidence": [
           {
             "article": "第三十二条",
@@ -3914,7 +4081,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/342AC0000000121",
       "current_status": {
@@ -3964,7 +4133,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/343AC1000000089",
       "current_status": {
@@ -4009,11 +4180,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_vocational_training_free",
-        "reason": "第23条1項2号は国設置の障害者職業能力開発校で行う職業訓練を無料とし、同条2項は訓練を受ける求職者への手当支給を可能とする。障害のある未成年の就労移行を対象に含めるなら直接の費用軽減に当たりうるため、年齢・就労状態の範囲を明示して再判断する。",
+        "reason": "第23条は障害者職業能力開発校等の職業訓練の無料実施と訓練手当を定めるが、求職・職業訓練を前提とするため除外する。",
         "evidence": [
           {
             "article": "第二十三条",
@@ -4022,7 +4193,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/344AC0000000064",
       "current_status": {
@@ -4081,7 +4254,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/344AC0000000079",
       "current_status": {
@@ -4145,7 +4320,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/345AC0000000048",
       "current_status": {
@@ -4209,7 +4386,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/345AC1000000084",
       "current_status": {
@@ -4281,7 +4460,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_child_allowance",
-        "reason": "第4条の児童手当支給要件は障害を条件としない普遍的な児童養育支援である。障害児入所施設等への言及は支給先・養育状況の整理であり、子の障害による独自給付としては抽出しない。",
+        "reason": "第4条の児童手当は、子の障害の有無を要件としない普遍的な児童養育支援である。障害児入所施設等への言及は支給先等の調整であり、除外する。",
         "evidence": [
           {
             "article": "第四条",
@@ -4290,7 +4469,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/346AC0000000073",
       "current_status": {
@@ -4332,7 +4513,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/346AC0000000077",
       "current_status": {
@@ -4365,7 +4548,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "okinawa_reversion_transition",
-        "reason": "第56条・第104条等の障害に関する規定は復帰前の公務員・保険制度等の引継ぎや給付関係を調整する経過措置である。現在の障害児本人・養育を要件とする一般の家計支援制度としては抽出しない。",
+        "reason": "第56条は琉球政府職員の公務災害補償、第104条は復帰前の年金加入期間・給付権の引継ぎを定める。職域・年金受給資格を前提とするため除外する。第103条は行政主体の取扱いを定め、家計への給付・負担を定めない。",
         "evidence": [
           {
             "article": "第百四条",
@@ -4380,7 +4563,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/346AC0000000129",
       "current_status": {
@@ -4413,7 +4598,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "disaster_group_relocation",
-        "reason": "第3条は防災集団移転計画の住宅団地・公共施設等を定め、障害者支援施設等の配慮は移転計画に関するもの。障害を要件とする家計給付・減免の独立規定ではない。",
+        "reason": "第3条等は防災集団移転の住宅団地・公共施設等を定める。住民の被災・移転に係る制度であって、障害を要件とする個人・世帯への独自措置ではないため、除外する。",
         "evidence": [
           {
             "article": "第三条",
@@ -4422,7 +4607,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/347AC1000000132",
       "current_status": {
@@ -4464,7 +4651,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/348AC0000000122",
       "current_status": {
@@ -4497,11 +4686,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disaster_disability_cash_payment",
-        "reason": "第8条は災害により一定の障害を受けた住民への災害障害見舞金を規定し、年齢による除外は同条にない。障害発生原因を災害に限定するが、障害児本人への直接給付に該当しうるため、非恒常的給付を法抽出段階で除くのか試算段階で除くのかを区別して再判断する。",
+        "reason": "第8条は災害障害見舞金を定めるが、災害に起因する負傷・疾病後に一定の障害が残ることを要件とするため除外する。",
         "evidence": [
           {
             "article": "第八条",
@@ -4516,7 +4705,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/348AC0100000082",
       "current_status": {
@@ -4558,7 +4749,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/349AC0000000002",
       "current_status": {
@@ -4595,11 +4788,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disabled_jobseeker_employment_payment",
-        "reason": "第56条の3第1項2号は身体障害者その他就職困難者に係る就業促進手当を規定する。障害のある未成年の雇用保険受給者にも及ぶかを年齢・被保険者要件と照合する必要があり、障害関連の直接給付がないとして一律除外できない。",
+        "reason": "第56条の3は障害者等に係る就業促進手当を定めるが、雇用保険上の受給資格及び就職を前提とするため除外する。",
         "evidence": [
           {
             "article": "第五十六条の三",
@@ -4608,7 +4801,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/349AC0000000116",
       "current_status": {
@@ -4641,7 +4836,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "private_school_operating_subsidy",
-        "reason": "第9条は特別支援学校等を設置する学校法人への都道府県補助に対する国庫補助を規定する。対象は学校の経常経費であり、障害を要件とする保護者への給付・個人負担減免を直接定めない。",
+        "reason": "第9条は特別支援学校等を設置する学校法人への都道府県補助に対する国庫補助を定める。障害を要件とする児童世帯個人への給付ではなく一般の私学経常経費助成であるため、除外する。",
         "evidence": [
           {
             "article": "第九条",
@@ -4650,7 +4845,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/350AC1000000061",
       "current_status": {
@@ -4708,7 +4905,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/357AC0000000080",
       "current_status": {
@@ -4763,7 +4962,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/360AC1000000063",
       "current_status": {
@@ -4815,7 +5016,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/361AC0000000093",
       "current_status": {
@@ -4865,7 +5068,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/362AC0000000030",
       "current_status": {
@@ -4907,7 +5112,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/363AC0000000047",
       "current_status": {
@@ -4971,7 +5178,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/405AC0000000038",
       "current_status": {
@@ -5035,7 +5244,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/405AC0000000054",
       "current_status": {
@@ -5077,7 +5288,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/406AC1000000107",
       "current_status": {
@@ -5131,7 +5344,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/407AC0000000016",
       "current_status": {
@@ -5195,7 +5410,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/407AC1000000111",
       "current_status": {
@@ -5282,7 +5499,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/409AC0000000123",
       "current_status": {
@@ -5340,7 +5559,9 @@
             "text_is_excerpt": true
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/409AC0000000124",
       "current_status": {
@@ -5404,7 +5625,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/409AC0000000131",
       "current_status": {
@@ -5461,7 +5684,9 @@
             "text_is_excerpt": false
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/409AC1000000090",
       "current_status": {
@@ -5511,7 +5736,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/410AC0000000053_20150401_426AC0000000067?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/410AC0000000053",
       "current_status": {
@@ -5565,7 +5792,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000089_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000089",
       "current_status": {
@@ -5614,7 +5843,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000096_20240401_505AC1000000060?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000096",
       "current_status": {
@@ -5671,7 +5902,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000097_20260401_507AC0100000064?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000097",
       "current_status": {
@@ -5716,7 +5949,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000100_20250626_430AC0000000061?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000100",
       "current_status": {
@@ -5761,7 +5996,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000106_20251001_507AC0000000069?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000106",
       "current_status": {
@@ -5810,7 +6047,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000162_20261001_507AC0000000043?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000162",
       "current_status": {
@@ -5851,7 +6090,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/411AC0000000166_20260401_507AC0000000080?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/411AC0000000166",
       "current_status": {
@@ -5891,7 +6132,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則の表は特別児童扶養手当・障害児福祉手当等の額の改定を対象に含むため、直接財政効果がないとはいえない。ただし対象は平成12年度の月分であり、2026年時点の制度抽出に過去の改定特例を含めるかの時間範囲の明示が必要。",
+        "reason": "本則・表は平成12年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
         "evidence": [
           {
             "article": "本則・表",
@@ -5904,7 +6145,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/412AC0000000034_20000401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "平成12年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/412AC0000000034",
       "current_status": {
@@ -5945,7 +6189,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/412AC0000000057_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/412AC0000000057",
       "current_status": {
@@ -5953,70 +6199,6 @@
         "revision_current_status": "CurrentEnforced",
         "repeal_status": "None",
         "repeal_date": null
-      }
-    },
-    {
-      "law_id": "412AC1000000015",
-      "law_num": "平成十二年法律第十五号",
-      "law_title": "過疎地域自立促進特別措置法",
-      "promulgation_date": "2000-03-31",
-      "law_revision_id": "412AC1000000015_20210401_000000000000000",
-      "revision_updated_at": "2024-01-19T10:58:33+09:00",
-      "matched_keywords": [
-        "障害者",
-        "障害児",
-        "特別支援学校"
-      ],
-      "hit_evidence": {
-        "障害者": [
-          {
-            "position": "mainprovision",
-            "text": "障害者又は障害児の福祉の増進を図るための施設"
-          },
-          {
-            "position": "amendsupplprovision",
-            "text": "第五条第一項（居宅介護、行動援護、児童デイサービス、短期入所及び共同生活援助に係る部分を除く。）、第三項、第五項、第六項、第九項から第十五項まで、第十七項及び第十九項から第二十二項まで、第二章第一節（サービス利用計画作成費、特定障害者特別給付費、特例特定障害者特別給付費、療養介護医療費、基準該当療養介護医療費及び補装具費の支給に係る部分に限る。）、第二十八条第一項（第二号、第四号、第五号及び第八号から第十号までに係る部分に限る。）及び第二項（第一号から第三号までに係る部分に限る。）、第三十二条、第三十四条、第三十五条、第三十六条第四項（第三十"
-          }
-        ],
-        "障害児": [
-          {
-            "position": "mainprovision",
-            "text": "障害者又は障害児の福祉の増進を図るための施設"
-          }
-        ],
-        "特別支援学校": [
-          {
-            "position": "mainprovision",
-            "text": "公立の小学校、中学校及び義務教育学校並びに市町村立の幼稚園、高等学校、中等教育学校及び特別支援学校"
-          }
-        ]
-      },
-      "screening": {
-        "status": "excluded",
-        "review_status": "verified",
-        "scope_review_required": false,
-        "reason_code": "expired_law_and_infrastructure_finance",
-        "reason": "過疎地域自立促進特別措置法はe-Govの改正情報で失効扱いであり、現行法律の選定対象から除外した。",
-        "evidence": [
-          {
-            "article": "公式API改正情報（revision_info）",
-            "text": "{\"law_revision_id\":\"412AC1000000015_20210401_000000000000000\",\"current_revision_status\":\"Repeal\",\"repeal_status\":\"Expire\",\"repeal_date\":\"2021-04-01\"}",
-            "source_url": "https://laws.e-gov.go.jp/api/2/law_data/412AC1000000015_20210401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
-          },
-          {
-            "article": "第十二条",
-            "text": "［抄］一 交通の確保又は産業の振興を図るために必要な政令で定める市町村道（融雪施設その他の道路の附属物を含む。）、農道、林道及び漁港関連道 二 漁港及び港湾 三 地場産業の振興に資する施設で政令で定めるもの 四 中小企業の育成又は企業の導入若しくは起業の促進のために市町村が個人又は法人その他の団体に使用させるための工場及び事務所 五 観光又はレクリエーションに関する施設 六 住民の交通手段の確保又は地域間交流の促進のための鉄道施設及び鉄道車両並びに軌道施設及び軌道車両のうち総務省令で定める事業者の事業の用に供するもの 七 電気通信に関する施設 八 下水処理のための施設 九 一般廃棄物処理のための施設 十 火葬場 十一 公民館その他の集会施設 十二 消防施設 十三 高齢者の保健又は福祉の向上又は増進を図るための施設 十四 保育所及び児童館 十五 認定こども園（就学前の子どもに関する教育、保育等の総合的な提供の推進に関する法律（平成十八年法律第七十七号）第三条第一項又は第三項の規定による認定を受けた施設及び幼保連携型認定こども園（同法第二条第七項に規定する幼保連携型認定こども園をいう。別表児童福祉施設の項において同じ。）をいう。） 十六 障害者又は障害児の福祉の増進を図るための施設 十七 診療施設（巡回診療車及び巡回診療船並びに患者輸送車及び患者輸送艇を含む。） 十八 公立の小学校、中学校及び義務教育学校並びに市町村立の幼稚園、高等学校、中等教育学校及び特別支援学校 十九 市町村立の専修学校及び各種学校 二十 図書館 二十一 地域文化の振興等を図るための施設 二十二 集落の整備のための政令で定める用地及び住宅 二十三 太陽光、バイオマスを熱源とする熱その他の自然エネルギーを利用するための施設で政令で定めるもの 二十四 前各号に掲げるもののほか、政令で定める施設 ２ 前項に規定するもののほか、地域医療の確保、住民の日常的な移動のための交通手段の確保、集落の維持及び活性化その他の住民が将来にわたり安全に安心して暮らすことのできる地域社会の実現を図るため特別に地方債を財源として行うことが必要と認められる事業として過疎地域の市町村が市町村計画に定めるもの（当該事業の実施のために地方自治法（昭和二十二年法律第六十七号）第二百四十一条の規定により設けられる基金の積立てを含む。次項において「過疎地域自立促進特別事業」という。）の実施につき当該市町村が必要とする経費（出資及び施設の整備につき必要とする経費を除く。）については、地方財政法第五条各号に規定する経費に該当しないものについても、人口、面積、財政状況その他の条件を考慮して総務省令で定めるところにより算定した額の範囲内に限り、地方債をもってその財源とすることができる。",
-            "source_url": "https://laws.e-gov.go.jp/api/2/law_data/412AC1000000015_20210401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
-          }
-        ],
-        "checked_on": "2026-11-13"
-      },
-      "source_url": "https://laws.e-gov.go.jp/law/412AC1000000015",
-      "current_status": {
-        "is_current": false,
-        "revision_current_status": "Repeal",
-        "repeal_status": "Expire",
-        "repeal_date": "2021-04-01"
       }
     },
     {
@@ -6049,7 +6231,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "平成13年度の年金・手当額の改定特例の表に特別児童扶養手当・障害児福祉手当が含まれる。過去には障害児世帯の手当額に直接作用した規定であり、『直接効果なし』とは整理できない。現時点の制度母集団からの時間的除外基準を要確認。",
+        "reason": "本則・表は平成13年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
         "evidence": [
           {
             "article": "本則・表",
@@ -6062,7 +6244,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/413AC0000000013_20020401_413AC0000000101?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "平成13年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/413AC0000000013",
       "current_status": {
@@ -6107,7 +6292,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/413AC1000000148_20190607_501AC0000000026?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/413AC1000000148",
       "current_status": {
@@ -6147,7 +6334,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "平成14年度の年金・手当額の改定特例の表に特別児童扶養手当・障害児福祉手当が含まれる。直接効果を否定して一括除外すべきではなく、2026年時点で過去の月分のみを対象とする特例をどう扱うかの確認が必要。",
+        "reason": "本則・表は平成14年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
         "evidence": [
           {
             "article": "本則・表",
@@ -6160,7 +6347,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000021_20020401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "平成14年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000021",
       "current_status": {
@@ -6209,7 +6399,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000078_20260401_507AC0000000047?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000078",
       "current_status": {
@@ -6242,11 +6434,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "school_accident_disability_payment",
-        "reason": "第15条第1項第7号は学校管理下の災害に係る障害見舞金を児童生徒等の保護者等に支給すると明記する。事故由来の障害であることを理由に自動除外できず、障害発生後の給付を論文の対象に含めるかを要確認。",
+        "reason": "第15条第1項第7号は、学校管理下の災害について医療費・障害見舞金等を保護者等に支給する。学校管理下の事故・災害を前提とする給付であるため除外する。",
         "evidence": [
           {
             "article": "第十五条",
@@ -6259,7 +6451,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000162_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000162",
       "current_status": {
@@ -6321,7 +6515,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000165_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000165",
       "current_status": {
@@ -6383,7 +6579,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000166_20260401_507AC0000000074?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000166",
       "current_status": {
@@ -6445,7 +6643,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000167_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000167",
       "current_status": {
@@ -6495,7 +6695,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000189_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000189",
       "current_status": {
@@ -6536,11 +6738,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "drug_injury_disabled_child_pension",
-        "reason": "第16条第1項第3号及び第20条第1項第3号は、副作用又は生物由来製品感染により一定の障害の状態にある18歳未満の者を養育する者に障害児養育年金を給付する。障害児世帯への直接給付であり、原因限定の救済給付を除外するなら別途明示的根拠が必要。",
+        "reason": "第16条・第20条は、医薬品等の副作用又は生物由来製品等を介した感染等による障害の状態にある18歳未満の者を養育する者への障害児養育年金を定める。特定の医薬品・製品に起因する健康被害の救済であるため除外する。",
         "evidence": [
           {
             "article": "第十六条",
@@ -6553,7 +6755,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC0000000192_20260501_507AC0000000037?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000192",
       "current_status": {
@@ -6615,7 +6819,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC1000000049_20210901_503AC0000000036?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC1000000049",
       "current_status": {
@@ -6656,7 +6862,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/414AC1000000092_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC1000000092",
       "current_status": {
@@ -6696,7 +6904,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則第1項・表は平成15年度の特別児童扶養手当・障害児福祉手当等の額を物価指数に基づき改定する。障害児世帯の受給額への直接作用は認められるが、過去の月分限定規定を2026年の抽出に含めるかの時間的基準が未確定。",
+        "reason": "本則第1項・表は平成15年度の月分について、特別児童扶養手当・障害児福祉手当等の額を物価指数に基づいて改定する。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -6709,7 +6917,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000019_20030401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "平成15年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000019",
       "current_status": {
@@ -6754,7 +6965,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000077_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000077",
       "current_status": {
@@ -6787,7 +7000,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "disability_related_rent_reduction",
-        "reason": "第25条第4項は居住者が身体障害者等で家賃支払が困難な場合に家賃を減免できると定める。障害児が居住する世帯への適用可能性及び下位規定の要件確認が必要であり、組織法という理由だけで除外できない。",
+        "reason": "第25条第4項は、居住者が身体障害者等で通常の家賃支払が困難な場合に、家賃を減免できると定める。",
         "evidence": [
           {
             "article": "第二十五条",
@@ -6795,7 +7008,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000100_20260401_507AC0000000047?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "居住者の年齢・世帯関係を踏まえ、この減免を障害児世帯への家賃軽減として選定対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000100",
       "current_status": {
@@ -6840,11 +7056,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "forensic_mental_health_medical_and_emergency_resources",
-        "reason": "第2条で心神喪失等の状態で対象行為をした者を対象とし、第81条は必要な医療を実施、第112条は生活維持に著しい支障がある者への金品給与・貸与と負担不能時の徴収例外を定める。年少対象者を含むか等の範囲確認が必要で、単なる手続法として一括除外できない。",
+        "reason": "第2条は心神喪失等の状態で重大な対象行為をした者を対象とし、第81条は医療、第112条は生活維持困難時の金品給与・貸与等を定める。重大な他害行為と司法上の処遇を前提とする支援であるため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -6862,7 +7078,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000110_20261001_507AC0000000087?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000110",
       "current_status": {
@@ -6903,7 +7121,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000112_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000112",
       "current_status": {
@@ -6944,7 +7164,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0000000118_20260924_506AC0000000065?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000118",
       "current_status": {
@@ -7006,7 +7228,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/415AC0100000111_20220401_430AC0000000059?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0100000111",
       "current_status": {
@@ -7046,7 +7270,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則第1項・表は平成16年度の特別児童扶養手当・障害児福祉手当等の額の改定を定める。障害児世帯への直接的金銭効果はあるが、適用月分が過去に限られる特例法を現時点の母集団でどう扱うかを要確認。",
+        "reason": "本則第1項・表は平成16年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -7059,7 +7283,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC0000000023_20041001_416AC0000000132?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "平成16年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC0000000023",
       "current_status": {
@@ -7104,7 +7331,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "cognitive_impairment_legal_aid_costs",
-        "reason": "第30条は認知機能不十分な特定援助対象者について公的給付に係る行政不服申立ての費用立替え等を含め、第34条は特定援助対象者への相談費用負担等を業務方法書の対象とする。知的障害等の子ども・保護者の利用範囲と経済効果の要件を確認すべきで、単なる一般相談としての除外は未確定。",
+        "reason": "第30条は、認知機能が十分でない特定援助対象者への法律援助として、公的給付に係る行政不服申立て等の費用立替え・相談援助を定め、第34条は費用負担等を規程の対象とする。",
         "evidence": [
           {
             "article": "第三十条",
@@ -7117,7 +7344,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC0000000074_20260521_504AC0000000048?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "障害児への適用範囲と紛争等の前提条件を踏まえ、この法律援助を選定対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC0000000074",
       "current_status": {
@@ -7158,7 +7388,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC0000000112_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC0000000112",
       "current_status": {
@@ -7199,7 +7431,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC1000000027_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC1000000027",
       "current_status": {
@@ -7248,7 +7482,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "historical_adult_beneficiary_not_child_disability",
-        "reason": "第2条の対象傷病の初診日は遅くとも平成3年3月31日までであり、2026年時点で当該本人は障害児に該当しない。第3条の給付はこの特定障害者本人の無年金救済で、養育する子どもの障害を支給条件とするものではない。",
+        "reason": "第2条・第3条は、過去に国民年金の任意加入対象でありながら被保険者でなかったこと等を要件に特別障害給付金を支給する。特定の年金加入歴を前提とする無年金救済給付であるため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -7261,7 +7495,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC1000000166_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC1000000166",
       "current_status": {
@@ -7353,7 +7589,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/416AC1000000167_20160801_428AC1000000064?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC1000000167",
       "current_status": {
@@ -7401,7 +7639,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則・表は特別児童扶養手当・障害児福祉手当等の特例額を定め、直接の受給額に作用する。ただし平成25年10月から平成27年3月まで等の過去の月分に係る規定であり、研究の時間範囲による採否を再確認する必要がある。",
+        "reason": "本則・表は、平成25年10月から平成27年3月まで等の月分について、特別児童扶養手当・障害児福祉手当等の特例額を定める。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -7414,7 +7652,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/417AC0000000009_20131001_424AC0000000099?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "過去の月分に係る手当額の特例を、選定の対象時点との関係でどのように扱うか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC0000000009",
       "current_status": {
@@ -7471,7 +7712,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/417AC0000000079_20251001_504AC0000000104?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC0000000079",
       "current_status": {
@@ -7541,9 +7784,9 @@
       "screening": {
         "status": "candidate",
         "review_status": "verified",
-        "scope_review_required": false,
+        "scope_review_required": true,
         "reason_code": "direct_disability_service_medical_and_assistive_benefits",
-        "reason": "第29条の障害福祉サービス費、第58条の自立支援医療費、第76条の障害児保護者を含む補装具費支給は、障害を要件としてサービス・医療・補装具の家計負担に直接作用する。採用基準に該当する。",
+        "reason": "第29条は障害福祉サービス費、第58条は自立支援医療費、第76条は障害児の保護者を含む者への補装具の購入・借受け・修理費の支給を定める。",
         "evidence": [
           {
             "article": "第二十九条",
@@ -7564,7 +7807,10 @@
         "checked_on": "2026-11-13",
         "id": "N02",
         "effect": "現物給付",
-        "summary": "自立支援医療・補装具費・障害福祉サービス等"
+        "summary": "自立支援医療・補装具費・障害福祉サービス等",
+        "exclusion_category_id": null,
+        "discussion_point": "障害児世帯に作用するどの給付・負担調整規定を、本法の代表として法律一覧に示すか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC0000000123",
       "current_status": {
@@ -7614,7 +7860,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/417AC1000000124_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC1000000124",
       "current_status": {
@@ -7655,7 +7903,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/418AC0000000077_20260401_507AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/418AC0000000077",
       "current_status": {
@@ -7717,7 +7967,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/418AC0000000091_20250401_505AC0000000024?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/418AC0000000091",
       "current_status": {
@@ -7758,7 +8010,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/418AC0100000085_20260401_507AC0100000064?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/418AC0100000085",
       "current_status": {
@@ -7799,7 +8053,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/418AC1000000117_20070101_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/418AC1000000117",
       "current_status": {
@@ -7840,7 +8096,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/419AC0000000059_20261016_508AC0000000035?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/419AC0000000059",
       "current_status": {
@@ -7881,7 +8139,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/419AC1000000051_20261031_508AC1000000073?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/419AC1000000051",
       "current_status": {
@@ -7948,7 +8208,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/419AC1000000112_20251001_506AC0000000043?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/419AC1000000112",
       "current_status": {
@@ -7981,11 +8243,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disabled_pupil_free_adapted_textbooks",
-        "reason": "第10条・第12条は小中学校の障害のある児童生徒が使用する教科用特定図書等の国による無償給付及び児童生徒への給与を明記する。障害を要件とする現物給付であり、金銭給付のみか代替財の無償提供も含むかの採用範囲を要確認。",
+        "reason": "第10条・第12条は、障害のある児童生徒が使用する教科用特定図書等の無償給付・給与を定める。世帯への金銭給付又は支払額調整ではなく、物品そのものの給付であるため除外する。",
         "evidence": [
           {
             "article": "第十条",
@@ -7998,7 +8260,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/420AC0100000081_20260617_508AC0000000037?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/420AC0100000081",
       "current_status": {
@@ -8027,11 +8291,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "vaccination_injury_disabled_child_pension",
-        "reason": "第4条第1項第2号は新型インフルエンザ予防接種により一定の障害の状態にある18歳未満の者を養育する者に障害児養育年金を給付する。原因・接種時期が限定された給付であるが、障害児世帯への直接効果はあり、対象時点・原因範囲による採否の確認が必要。",
+        "reason": "第4条第1項第2号は、新型インフルエンザ予防接種による障害の状態にある18歳未満の者を養育する者への障害児養育年金を定める。特定の予防接種による健康被害の救済給付であるため除外する。",
         "evidence": [
           {
             "article": "第四条",
@@ -8039,7 +8303,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/421AC0000000098_20221209_504AC0000000096?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/421AC0000000098",
       "current_status": {
@@ -8076,7 +8342,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_school_enrolment_benefit",
-        "reason": "第2条は特別支援学校高等部を対象校に含めるが、第3条の支給条件は高等学校等への在学等であり障害の存在ではない。第5条の授業料補助は対象校の生徒に共通する制度であるため、普遍的制度として除外する。",
+        "reason": "第2条は特別支援学校高等部を対象校に含めるが、第3条・第5条の就学支援金は高等学校等への在学・授業料等を要件とする一般制度であり、障害の存在を支給要件としていない。家計負担軽減作用がないのではなく、障害を要件としない制度であるため除外する。",
         "evidence": [
           {
             "article": "第三条",
@@ -8089,7 +8355,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/422AC0000000018_20260401_508AC0000000008?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/422AC0000000018",
       "current_status": {
@@ -8157,11 +8425,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disaster_disabled_child_facility_food_housing_benefit",
-        "reason": "第86条は被災した施設給付決定保護者に対して障害児施設の食費・居住費を支給すると定める。障害児世帯への直接給付である一方、特例対象期間があるため、現在の制度のみを扱うか等の時間的採用基準を要確認。施設復旧への補助だけではない。",
+        "reason": "第86条は、東日本大震災で被災した施設給付決定保護者に障害児施設の食費・居住費を支給する。特定災害による被災と特例対象期間を前提とする給付であるため除外する。",
         "evidence": [
           {
             "article": "第八十六条",
@@ -8174,7 +8442,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0000000040_20251001_504AC0000000104?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0000000040",
       "current_status": {
@@ -8236,7 +8506,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0000000052_20260624_508AC0000000045?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0000000052",
       "current_status": {
@@ -8292,7 +8564,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "historical_universal_child_allowance",
-        "reason": "平成23年度の子ども手当を定める時限的制度で、第3条の障害児施設等への言及は施設入所等子どもの分類である。第4条・第5条の手当は年齢・監護等に基づく一般給付であり、子どもの障害を独立の支給・加算要件としない。",
+        "reason": "第3条の障害児施設等への言及は施設入所等子どもの分類であり、第4条・第5条の子ども手当は年齢・監護等に基づく一般給付で、子どもの障害を独立の支給・加算要件としていない。過去年分であることではなく、障害を要件としない給付であることにより除外する。",
         "evidence": [
           {
             "article": "第一条",
@@ -8310,7 +8582,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0000000107_20250601_504AC0000000068?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0000000107",
       "current_status": {
@@ -8355,7 +8629,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0000000122_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0000000122",
       "current_status": {
@@ -8396,7 +8672,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0000000123_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0000000123",
       "current_status": {
@@ -8441,7 +8719,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC0100000095_20110810_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC0100000095",
       "current_status": {
@@ -8482,7 +8762,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC1000000076_20120210_423AC0000000125?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC1000000076",
       "current_status": {
@@ -8532,7 +8814,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC1000000077_20220331_504AC1000000003?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC1000000077",
       "current_status": {
@@ -8605,7 +8889,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC1000000078_20250901_507AC1000000071?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC1000000078",
       "current_status": {
@@ -8654,7 +8940,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "guardianship_cost_relief_scope",
-        "reason": "虐待防止・保護・相談が中心だが、第44条は障害者の成年後見制度利用に係る経済的負担の軽減措置を明示する。障害児を18歳未満に限定するか18・19歳も含むか、及び施策義務を直接的費用軽減規定に含めるかの確認が必要。",
+        "reason": "第44条は、障害者の成年後見制度利用に係る経済的負担の軽減措置を国・地方公共団体に求める。",
         "evidence": [
           {
             "article": "第四十四条",
@@ -8662,7 +8948,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/423AC1000000079_20251001_504AC0000000104?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "対象年齢と施策の具体性を踏まえ、この負担軽減措置を障害児世帯に直接作用する規定に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC1000000079",
       "current_status": {
@@ -8695,7 +8984,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "reconstruction_policy_not_disability_eligibility",
-        "reason": "第2条の障害者等への言及は復興再生における多様な住民の意見尊重である。住宅・産業等の支援は原子力災害・地域等を条件とし、障害児世帯の障害を支給条件とする給付・負担減免を本則に置かない。",
+        "reason": "第2条の障害者等への言及は復興再生における多様な住民の意見尊重に関するものである。本則の復興支援は原子力災害や対象地域等を基礎とし、障害の存在を世帯給付・負担軽減の要件として定めるものではないため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -8703,7 +8992,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/424AC0000000025_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/424AC0000000025",
       "current_status": {
@@ -8763,7 +9054,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_childcare_benefit",
-        "reason": "特別支援学校幼稚部等も対象施設に含むが、第30条の4の施設等利用給付要件は年齢、保育必要性、住民税非課税等である。第30条の11の利用費支給も一般の教育・保育費給付であり、子どもの障害を独立の給付・加算要件にしていない。",
+        "reason": "特別支援学校幼稚部等も対象施設に含むが、第30条の4・第30条の11の施設等利用給付は年齢・保育必要性等に基づく教育・保育の一般制度であり、子どもの障害を独立の給付・加算要件にしない。家計給付の有無ではなく、障害を要件としないことにより除外する。",
         "evidence": [
           {
             "article": "第三十条の四",
@@ -8776,7 +9067,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/424AC0000000065_20261001_507AC0000000087?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/424AC0000000065",
       "current_status": {
@@ -8817,7 +9110,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/424AC0100000061_20160401_426AC0000000071?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/424AC0100000061",
       "current_status": {
@@ -8879,7 +9174,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/424AC1000000050_20251001_504AC0000000104?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/424AC1000000050",
       "current_status": {
@@ -8941,7 +9238,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/425AC0000000065_20261102_508AC0000000062?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/425AC0000000065",
       "current_status": {
@@ -8986,7 +9285,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/425AC0000000092_20201209_502AC1000000073?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/425AC0000000092",
       "current_status": {
@@ -9032,7 +9333,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/425AC1000000071_20250401_506AC0000000025?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/425AC1000000071",
       "current_status": {
@@ -9073,7 +9376,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/425AC1000000095_20230616_505AC1000000059?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/425AC1000000095",
       "current_status": {
@@ -9113,7 +9418,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "worker_compensation_not_child_disability_condition",
-        "reason": "本則は介護・障害福祉従事者の賃金水準等の処遇改善措置を政府に求める。受益対象はサービス従事者であり、障害児世帯であることを条件とする手当・利用者負担軽減ではない。",
+        "reason": "本則は介護・障害福祉従事者の賃金水準等を踏まえた処遇改善措置を政府に求める。対象はサービス従事者であり、その者又は家族の障害を受給要件とする制度ではないため、障害を要件とする個人・世帯への措置に該当せず除外する。",
         "evidence": [
           {
             "article": "本則",
@@ -9121,7 +9426,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/426AC1000000097_20140627_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/426AC1000000097",
       "current_status": {
@@ -9162,7 +9469,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/426AC1000000098_20151225_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/426AC1000000098",
       "current_status": {
@@ -9203,7 +9512,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/427AC0100000014_20150422_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/427AC0100000014",
       "current_status": {
@@ -9240,7 +9551,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "adult_guardian_remuneration_subsidy_scope",
-        "reason": "第11条第8号は成年後見人等の報酬支払への助成を含む支援充実を定める。対象は成年後見制度利用者であり、子どもの範囲（18・19歳を含むか）や一般的施策規定を採用するかの確認が必要。助成に関する明文があるため『直接経済効果なし』と断定しない。",
+        "reason": "第11条第8号は、成年後見人等への報酬支払の助成を含む支援の充実に必要な措置を定める。",
         "evidence": [
           {
             "article": "第二条",
@@ -9253,7 +9564,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/428AC1000000029_20260624_508AC0000000046?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "個別の助成対象・要件を本則から特定できないこの規定を、障害児世帯への負担調整の根拠として選定対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/428AC1000000029",
       "current_status": {
@@ -9294,7 +9608,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/428AC1000000104_20240401_504AC0100000052?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/428AC1000000104",
       "current_status": {
@@ -9340,7 +9656,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/428AC1000000105_20230401_504AC0000000076?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/428AC1000000105",
       "current_status": {
@@ -9409,7 +9727,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/430AC0100000047_20180613_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/430AC0100000047",
       "current_status": {
@@ -9450,7 +9770,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/430AC1000000074_20250925_507AC1000000076?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/430AC1000000074",
       "current_status": {
@@ -9512,7 +9834,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/430AC1000000100_20181214_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/430AC1000000100",
       "current_status": {
@@ -9549,7 +9873,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "disability_tax_exemption_personal_scope",
-        "reason": "第4条第1項第2号は前年合計所得135万円以下の障害者等への森林環境税非課税を定める。ただし本人課税の制度で、未成年者も同じ非課税類型に入り、障害児扶養世帯の親への控除ではない。子どもの年齢範囲・本人所得を含む家計モデルとの関係を要確認。",
+        "reason": "第4条第1項第2号は、前年合計所得135万円以下の障害者等を森林環境税の非課税対象とする。未成年者も同じ非課税類型に含む。",
         "evidence": [
           {
             "article": "第四条",
@@ -9557,7 +9881,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/431AC0000000003_20260401_508AC0000000002?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "未成年者への非課税と重なる点、対象年齢及び本人課税と世帯家計の関係を踏まえ、障害児の障害に固有の作用をどう判断するか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/431AC0000000003",
       "current_status": {
@@ -9565,60 +9892,6 @@
         "revision_current_status": "CurrentEnforced",
         "repeal_status": "None",
         "repeal_date": null
-      }
-    },
-    {
-      "law_id": "431AC1000000014",
-      "law_num": "平成三十一年法律第十四号",
-      "law_title": "旧優生保護法に基づく優生手術等を受けた者に対する一時金の支給等に関する法律",
-      "promulgation_date": "2019-04-24",
-      "law_revision_id": "431AC1000000014_20250117_506AC1000000070",
-      "revision_updated_at": "2025-01-17T00:44:05+09:00",
-      "matched_keywords": [
-        "障害者"
-      ],
-      "hit_evidence": {
-        "障害者": [
-          {
-            "position": "mainprovision",
-            "text": "都道府県知事は、前条第一項の規定による請求書の提出を受けた場合であって、当該請求書にその都道府県の区域内においてその請求に係る生殖を不能にする手術又は放射線の照射を受けた旨の記載があるときは、内閣府令で定めるところにより、当該都道府県の区域内の市町村（特別区を含む。第二十五条において同じ。）、医療機関、障害者支援施設（障害者の日常生活及び社会生活を総合的に支援するための法律（平成十七年法律第百二十三号）第五条第十一項に規定する障害者支援施設をいう。第十二条第三項において同じ。）、児童福祉施設（児童福祉法（昭和二十二年"
-          },
-          {
-            "position": "mainprovision",
-            "text": "前二項の措置を講ずるに当たっては、旧優生保護法に基づく優生手術等を受けた者の多くが障害者であることを踏まえ、障害者支援施設、障害者の支援に関する活動を行う団体その他の関係者の協力を得るとともに、障害の特性に十分に配慮するものとする。"
-          },
-          {
-            "position": "mainprovision",
-            "text": "委員は、医療、法律、障害者福祉等に関して優れた識見を有する者のうちから、内閣総理大臣が任命する。"
-          }
-        ]
-      },
-      "screening": {
-        "status": "excluded",
-        "review_status": "verified",
-        "scope_review_required": false,
-        "reason_code": "repealed_law",
-        "reason": "旧優生保護法に基づく優生手術等を受けた者に対する一時金の支給等に関する法律はe-Govの改正情報で廃止扱いであり、現行法律の選定対象から除外した。",
-        "evidence": [
-          {
-            "article": "公式API改正情報（revision_info）",
-            "text": "{\"law_revision_id\":\"431AC1000000014_20250117_506AC1000000070\",\"current_revision_status\":\"Repeal\",\"repeal_status\":\"Repeal\",\"repeal_date\":\"2025-01-17\"}",
-            "source_url": "https://laws.e-gov.go.jp/api/2/law_data/431AC1000000014_20250117_506AC1000000070?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
-          },
-          {
-            "article": "第三条",
-            "text": "（一時金の支給） 第三条  国は、この法律の定めるところにより、旧優生保護法に基づく優生手術等を受けた者に対し、一時金を支給する。",
-            "source_url": "https://laws.e-gov.go.jp/api/2/law_data/431AC1000000014_20250117_506AC1000000070?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
-          }
-        ],
-        "checked_on": "2026-11-13"
-      },
-      "source_url": "https://laws.e-gov.go.jp/law/431AC1000000014",
-      "current_status": {
-        "is_current": false,
-        "revision_current_status": "Repeal",
-        "repeal_status": "Repeal",
-        "repeal_date": "2025-01-17"
       }
     },
     {
@@ -9673,7 +9946,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/501AC0100000049_20190628_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/501AC0100000049",
       "current_status": {
@@ -9719,7 +9994,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/501AC1000000047_20210901_503AC0000000035?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/501AC1000000047",
       "current_status": {
@@ -9768,7 +10045,7 @@
         "review_status": "verified",
         "scope_review_required": true,
         "reason_code": "disability_specific_service_fee_regulation",
-        "reason": "第2条は聴覚障害者等向け電話リレーサービスを定義し、第7条・第10条はその利用料金を基本方針・認可規程の対象とする。障害を前提とするサービス料金に作用する法的枠組みであり、組織運営規定だけとして除外せず家計負担への直接性を要確認。",
+        "reason": "第2条は聴覚障害者等向けの電話リレーサービスを定義し、第7条・第10条は利用料金を基本方針・認可規程の対象とする。",
         "evidence": [
           {
             "article": "第二条",
@@ -9781,7 +10058,10 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/502AC0000000053_20260527_507AC0000000046?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": null,
+        "discussion_point": "利用料金に係る認可制度を、障害を要件とする世帯負担の規定として選定対象に含めるか。",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/502AC0000000053",
       "current_status": {
@@ -9831,7 +10111,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/503AC0000000081_20251001_507AC0000000029?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/503AC0000000081",
       "current_status": {
@@ -9878,7 +10160,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "rural_infrastructure_and_universal_local_support",
-        "reason": "第14条の障害児福祉施設等への言及は市町村施設整備の地方債特例である。第33条の保育サービス等の住民負担軽減も過疎地域であること等に係る一般措置であり、子どもの障害を給付・減免要件にしない。",
+        "reason": "第14条の障害児福祉施設等への言及は市町村施設整備の地方債特例である。第33条には保育・介護・保健医療サービス等の住民負担軽減への配慮があるが、過疎地域の住民であることを基礎とする一般措置で、障害の存在を個人・世帯への給付・減免要件にしないため除外する。",
         "evidence": [
           {
             "article": "第十四条",
@@ -9891,7 +10173,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/503AC1000000019_20230401_504AC0000000076?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C5",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/503AC1000000019",
       "current_status": {
@@ -9937,7 +10221,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/503AC1000000057_20230713_505AC0000000067?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/503AC1000000057",
       "current_status": {
@@ -9982,7 +10268,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/504AC0000000075_20260401_507AC0100000064?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/504AC0000000075",
       "current_status": {
@@ -10046,7 +10334,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/504AC0100000050_20220525_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/504AC0100000050",
       "current_status": {
@@ -10092,7 +10382,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/505AC1000000065_20240101_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/505AC1000000065",
       "current_status": {
@@ -10133,7 +10425,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/505AC1000000068_20230623_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/505AC1000000068",
       "current_status": {
@@ -10162,11 +10456,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_household_disaster_benefit_asset_protection",
-        "reason": "第2条第1号は障害者がいる世帯等への住宅再建支援等給付金を対象に含め、第3条はその権利と支給金の差押えを禁止する。給付自体の創設法ではないが家計資源の保全に直接作用するため、災害限定・資産保護を対象外とするかの明示的判断が必要。",
+        "reason": "第2条・第3条は、障害者がいる世帯等への能登半島地震に係る住宅再建支援等給付金について、受給権・支給金の差押えを禁止する。特定災害による被災を前提とする給付の保護であるため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -10179,7 +10473,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/506AC1000000013_20240405_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/506AC1000000013",
       "current_status": {
@@ -10216,11 +10512,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "eugenic_surgery_compensation_disability_and_survivor_scope",
-        "reason": "第1条・第2条は特定疾病等を理由とする旧優生保護法下の手術等を対象とし、第3条・第13条等は本人・特定配偶者又は遺族等への補償金・一時金を定める。直接給付は明白だが、過去被害者及び遺族への給付が障害児世帯抽出の範囲に入るかを要確認。",
+        "reason": "第1条から第3条等は、旧優生保護法下の優生手術等を受けた者や特定配偶者・遺族等への補償金・一時金を定める。旧法下の特定の被害・手術等を前提とする補償・慰謝の給付であるため除外する。",
         "evidence": [
           {
             "article": "第一条",
@@ -10238,7 +10534,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/506AC1000000070_20250117_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C2",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/506AC1000000070",
       "current_status": {
@@ -10288,7 +10586,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/507AC0100000078_20250625_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/507AC0100000078",
       "current_status": {
@@ -10364,7 +10664,9 @@
             "source_url": "https://laws.e-gov.go.jp/api/2/law_data/507AC1000000096_20260401_000000000000000?elm=MainProvision&response_format=json&law_full_text_format=json&json_format=light&omit_amendment_suppl_provision=true"
           }
         ],
-        "checked_on": "2026-11-13"
+        "checked_on": "2026-11-13",
+        "exclusion_category_id": "C1",
+        "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/507AC1000000096",
       "current_status": {

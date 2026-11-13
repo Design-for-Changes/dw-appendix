@@ -42,7 +42,7 @@ npm run fetch:egov-screening
 表A1は「所得判定・変動方法」タブに7列・10行の詳細と原典リンクを掲載する。データは
 `public/data/research/income-assessment-rules.json`。
 
-表A2は原検索186件を保持し、現行扱い184件・選定候補49件・除外137件を区別する。候補への収録は試算への採用確定を意味しない。適用年齢、障害原因、職域、適用時期等の限定がある候補も条件付きで残す。
+表A2は現行184法律を対象に、除外した法律を理由別の表に整理し、残る法律を個別検討の候補として示す。候補への収録は試算への採用確定を意味しない。
 法令ごとの理由・根拠条文・原文リンクは `public/data/research/egov-law-screening.json` に収録する。
 自治体の参照資料は `public/data/research/municipal-source-list.json`。26市の基本資料に加え、実際に参照したPDF・個別制度案内・要綱を掲載し、市別の類型該当や○×表は公開しない。
 

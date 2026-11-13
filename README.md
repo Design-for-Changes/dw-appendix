@@ -36,7 +36,11 @@ npm run fetch:egov-screening
 `public/data/research/egov-law-screening.json` である。
 
 ## Web Appendixの使用データ
+- 表A1　主な制度の所得判定・変動方法（`#income-assessment`）
 - 表1　e-Gov法令検索による抽出母集団と採否（186件）
+
+表A1は「所得判定・変動方法」タブに7列・10行の詳細と原典リンクを掲載する。データは
+`public/data/research/income-assessment-rules.json`。法令抽出母集団の「使用データ」タブは現在非表示である。
 
 採用した8法律と自治体制度19類型は本文の表1・表2に掲載する。
 対応データは `public/data/research/egov-law-screening.json` と

@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0.0",
+  "table_label": "表A1",
+  "title": "主な制度の所得判定・変動方法（自治体制度は船橋市を例示）",
+  "checked_on": "2026-11-13",
+  "scope": {
+    "municipal_example": "船橋市",
+    "description": "全国制度と自治体制度の所得判定を、判定単位・対象、所得指標及び変動方法に分けて整理する。"
+  },
+  "columns": [
+    {
+      "key": "id",
+      "label": "ID"
+    },
+    {
+      "key": "program",
+      "label": "制度・手当名"
+    },
+    {
+      "key": "assessment_unit",
+      "label": "判定単位"
+    },
+    {
+      "key": "primary_target",
+      "label": "主たる判定対象"
+    },
+    {
+      "key": "other_targets",
+      "label": "その他の判定対象"
+    },
+    {
+      "key": "income_measure",
+      "label": "所得指標"
+    },
+    {
+      "key": "change_rule",
+      "label": "変動方法"
+    }
+  ],
+  "notes": [
+    "IDのNは本文表1の法律、Mは本文表2の制度類型に対応する。同じ法律に基づく複数の制度には、同じ法律IDを付す場合がある。",
+    "障害福祉サービス、障害児通所支援及び日常生活用具については、障害児の場合の判定を示す。",
+    "自治体制度は船橋市の例であり、他の自治体にも同じ基準が適用されることを意味しない。詳細な適用条件や例外は各制度の原典を参照されたい。",
+    "本表に整理した制度と、シミュレーションに組み込む制度の範囲は同一ではない。計算対象・採用値・除外条件は各モデル条件に従う。"
+  ],
+  "rows": [
+    {
+      "id": "N01-1",
+      "program": "特別児童扶養手当",
+      "assessment_unit": "個人所得",
+      "primary_target": "受給資格者（父母・養育者）",
+      "other_targets": "配偶者・扶養義務者",
+      "income_measure": "課税所得に近似した独自の所得計算",
+      "change_rule": "受給資格者等の判定所得が限度額以上の場合、全部不支給",
+      "sources": [
+        {
+          "title": "特別児童扶養手当",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/03/p042515.html"
+        },
+        {
+          "title": "特別児童扶養手当等の支給に関する法律",
+          "url": "https://www.mhlw.go.jp/web/t_doc?dataId=82090000"
+        }
+      ]
+    },
+    {
+      "id": "N01-2",
+      "program": "障害児福祉手当",
+      "assessment_unit": "個人所得",
+      "primary_target": "障害児本人",
+      "other_targets": "配偶者・扶養義務者",
+      "income_measure": "課税所得に近似した独自の所得計算",
+      "change_rule": "本人は限度額超、配偶者・扶養義務者は限度額以上の場合、全部不支給",
+      "sources": [
+        {
+          "title": "障害児福祉手当",
+          "url": "https://laws.e-gov.go.jp/law/339AC0000000134"
+        }
+      ]
+    },
+    {
+      "id": "N02",
+      "program": "障害福祉サービス利用者負担（障害児）",
+      "assessment_unit": "世帯所得",
+      "primary_target": "世帯全員（保護者の属する世帯）",
+      "other_targets": "―",
+      "income_measure": "市町村民税の課税状況・所得割額",
+      "change_rule": "所得区分に応じて負担上限月額が変動",
+      "sources": [
+        {
+          "title": "障害福祉サービス利用者負担（障害児）",
+          "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/hukushi_kaigo/shougaishahukushi/service/hutan1.html"
+        }
+      ]
+    },
+    {
+      "id": "N02",
+      "program": "自立支援医療（育成医療）",
+      "assessment_unit": "世帯所得",
+      "primary_target": "世帯全員（医療保険単位）",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割額等",
+      "change_rule": "所得区分に応じて負担上限月額が変動。一定所得以上は原則対象外",
+      "sources": [
+        {
+          "title": "自立支援医療（育成医療）",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p002399.html"
+        }
+      ]
+    },
+    {
+      "id": "N03",
+      "program": "障害児通所支援の利用者負担",
+      "assessment_unit": "世帯所得",
+      "primary_target": "世帯全員（保護者の属する世帯）",
+      "other_targets": "―",
+      "income_measure": "市町村民税の課税状況・所得割額",
+      "change_rule": "所得区分に応じて負担上限月額が変動",
+      "sources": [
+        {
+          "title": "障害児通所支援の利用者負担",
+          "url": "https://www.cao.go.jp/bunken-suishin/teianbosyu/doc/r07/tb_r7fu_12mhlw_164_c.pdf"
+        }
+      ]
+    },
+    {
+      "id": "N04",
+      "program": "特別支援教育就学奨励費",
+      "assessment_unit": "世帯所得",
+      "primary_target": "保護者等の属する世帯全員",
+      "other_targets": "―",
+      "income_measure": "生活保護基準による需要額に対する世帯収入額（制度所定の計算）の比率",
+      "change_rule": "支弁区分に応じて補助割合が変動",
+      "sources": [
+        {
+          "title": "特別支援教育就学奨励費",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf"
+        }
+      ]
+    },
+    {
+      "id": "N06-2",
+      "program": "住民税の非課税限度額の特例（障害者）",
+      "assessment_unit": "個人所得",
+      "primary_target": "障害者本人",
+      "other_targets": "―",
+      "income_measure": "前年の合計所得金額",
+      "change_rule": "合計所得金額が基準以下の場合、住民税が非課税",
+      "sources": [
+        {
+          "title": "住民税の非課税限度額の特例（障害者）",
+          "url": "https://laws.e-gov.go.jp/law/325AC0000000226"
+        }
+      ]
+    },
+    {
+      "id": "M01",
+      "program": "重度心身障害者（児）医療費助成",
+      "assessment_unit": "世帯所得",
+      "primary_target": "世帯全員（医療保険単位）",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割額",
+      "change_rule": "所得割額が基準額以上の場合は原則対象外。対象内でも課税・非課税により自己負担額が異なる",
+      "sources": [
+        {
+          "title": "重度心身障害者（児）医療費助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html"
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "program": "住宅改修費助成",
+      "assessment_unit": "個人所得",
+      "primary_target": "世帯の最多納税者",
+      "other_targets": "―",
+      "income_measure": "住民税課税額（同一家屋での世帯分離は同居とみなす）",
+      "change_rule": "所得限度額を超える場合は対象外。課税・非課税に応じて補助割合が変動",
+      "sources": [
+        {
+          "title": "住宅改修費助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/01/p000767.html"
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "program": "日常生活用具・福祉機器購入費助成（障害児）",
+      "assessment_unit": "世帯所得",
+      "primary_target": "世帯全員",
+      "other_targets": "―",
+      "income_measure": "市町村民税の課税区分",
+      "change_rule": "課税区分に応じて負担上限月額が変動",
+      "sources": [
+        {
+          "title": "日常生活用具・福祉機器購入費助成（障害児）",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/002/p124977.html"
+        }
+      ]
+    }
+  ]
+}

@@ -72,6 +72,15 @@
 .municipal-source-table th small { display: block; margin-top: 4px; font-weight: 400; }
 .municipal-source-table .municipal-source-item + .municipal-source-item { margin-top: 10px; }
 .municipal-source-table a { overflow-wrap: anywhere; }
+.income-assessment-table { min-width: 1180px; line-height: 1.65; }
+.income-assessment-table caption { text-align: left; font-weight: 700; padding: 10px 0; }
+.income-assessment-table th:first-child { white-space: nowrap; }
+.income-assessment-table td { white-space: normal; overflow-wrap: anywhere; }
+.income-assessment-table td:nth-child(2) { min-width: 140px; }
+.income-assessment-table td:nth-child(6), .income-assessment-table td:nth-child(7) { min-width: 180px; }
+.income-assessment-sources { margin-top: 8px; font-size: 12px; }
+.income-assessment-sources a { display: block; }
+.income-assessment-notes { line-height: 1.8; }
 
 .appendix-mode-tabs button {
   border: 0;
@@ -1116,7 +1125,7 @@
 
   .appendix-mode-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     box-sizing: border-box;
   }
@@ -1224,6 +1233,19 @@
   .formula-table tbody tr,
   .appendix-table tbody tr {
     display: block;
+  }
+
+  .income-assessment-table tbody th {
+    display: block;
+    padding: 9px 8px;
+    background: #f1f5f6;
+    white-space: normal;
+  }
+
+  .income-assessment-table td:nth-child(2),
+  .income-assessment-table td:nth-child(6),
+  .income-assessment-table td:nth-child(7) {
+    min-width: 0;
   }
 
   .case-cond-table tbody tr + tr,

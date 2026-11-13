@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { useAppendixData } from "../hooks/useAppendixData";
 import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
+import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
 
 const X_MIN = 200;
 const X_MAX = 1500;
@@ -1259,13 +1260,23 @@ function BreakdownPanel({ point }) {
 }
 
 export default function AppendixCliffMap() {
-  const [viewMode, setViewMode] = useState(() => window.location.hash === "#municipal-sources" ? "sources" : "current");
+  const [viewMode, setViewMode] = useState(() => {
+    if (window.location.hash === "#municipal-sources") return "sources";
+    if (window.location.hash === "#income-assessment") return "rules";
+    if (window.location.hash === "#optimal") return "optimal";
+    return "current";
+  });
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
   const { data, ready, selectedPoint } = appendixData;
 
   const selected = data.find((d) => d.id === selectedId) || data[0];
+  const selectViewMode = (mode) => {
+    setViewMode(mode);
+    const hash = { sources: "#municipal-sources", rules: "#income-assessment", optimal: "#optimal", current: "" }[mode];
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
+  };
   const caseAccent = selected?.color || "#9aa7ad";
   const caseSectionStyle = {
     "--case-accent": caseAccent,
@@ -1281,12 +1292,12 @@ export default function AppendixCliffMap() {
         <p className="appendix-hero-subtitle">Web Appendix</p>
       </section>
 
-      <nav className="appendix-mode-tabs" aria-label="分析モード">
+      <nav className="appendix-mode-tabs" aria-label="表示内容">
         <button
           type="button"
           className={viewMode === "current" ? "active" : ""}
           aria-pressed={viewMode === "current"}
-          onClick={() => setViewMode("current")}
+          onClick={() => selectViewMode("current")}
         >
           現行制度
         </button>
@@ -1294,7 +1305,7 @@ export default function AppendixCliffMap() {
           type="button"
           className={viewMode === "optimal" ? "active" : ""}
           aria-pressed={viewMode === "optimal"}
-          onClick={() => setViewMode("optimal")}
+          onClick={() => selectViewMode("optimal")}
         >
           全体最適モデル
         </button>
@@ -1302,13 +1313,21 @@ export default function AppendixCliffMap() {
           type="button"
           className={viewMode === "sources" ? "active" : ""}
           aria-pressed={viewMode === "sources"}
-          onClick={() => setViewMode("sources")}
+          onClick={() => selectViewMode("sources")}
         >
           調査対象・参照資料
         </button>
+        <button
+          type="button"
+          className={viewMode === "rules" ? "active" : ""}
+          aria-pressed={viewMode === "rules"}
+          onClick={() => selectViewMode("rules")}
+        >
+          所得判定・変動方法
+        </button>
       </nav>
 
-      {viewMode !== "sources" && <section className="appendix-controls" aria-label="表示ケース">
+      {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {
           const caseColor = c.color || "#9aa7ad";
           return (
@@ -1326,7 +1345,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

@@ -57,6 +57,7 @@
 
 .appendix-mode-tabs {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 18px;
   padding: 4px;
@@ -64,6 +65,13 @@
   border-radius: 10px;
   background: #eef3f5;
 }
+
+.municipal-method { line-height: 1.8; max-width: 1000px; }
+.municipal-method ul { padding-left: 1.5em; }
+.municipal-source-table caption { text-align: left; font-weight: 700; padding: 10px 0; }
+.municipal-source-table th small { display: block; margin-top: 4px; font-weight: 400; }
+.municipal-source-table .municipal-source-item + .municipal-source-item { margin-top: 10px; }
+.municipal-source-table a { overflow-wrap: anywhere; }
 
 .appendix-mode-tabs button {
   border: 0;

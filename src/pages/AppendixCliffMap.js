@@ -2,6 +2,7 @@ import "../App.css";
 import { useEffect, useRef, useState } from "react";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { useAppendixData } from "../hooks/useAppendixData";
+import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
 
 const X_MIN = 200;
 const X_MAX = 1500;
@@ -1258,7 +1259,7 @@ function BreakdownPanel({ point }) {
 }
 
 export default function AppendixCliffMap() {
-  const [viewMode, setViewMode] = useState("current");
+  const [viewMode, setViewMode] = useState(() => window.location.hash === "#municipal-sources" ? "sources" : "current");
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
@@ -1297,9 +1298,17 @@ export default function AppendixCliffMap() {
         >
           全体最適モデル
         </button>
+        <button
+          type="button"
+          className={viewMode === "sources" ? "active" : ""}
+          aria-pressed={viewMode === "sources"}
+          onClick={() => setViewMode("sources")}
+        >
+          調査対象・参照資料
+        </button>
       </nav>
 
-      <section className="appendix-controls" aria-label="表示ケース">
+      {viewMode !== "sources" && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {
           const caseColor = c.color || "#9aa7ad";
           return (
@@ -1315,9 +1324,9 @@ export default function AppendixCliffMap() {
             </button>
           );
         })}
-      </section>
+      </section>}
 
-      {!ready ? (
+      {viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

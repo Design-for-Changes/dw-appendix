@@ -7,12 +7,12 @@ import { fileURLToPath } from "node:url";
 
 const API_BASE = "https://laws.e-gov.go.jp/api/2";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const DEFAULT_AS_OF = "2026-06-30";
-const DEFAULT_OUTPUT = path.join(ROOT, "public", "data", "research", "egov-law-screening.json");
+const DEFAULT_AS_OF = "2026-11-13";
+const DEFAULT_OUTPUT = path.join(ROOT, "private", "research", "egov-law-search.json");
 const KEYWORDS = ["障害者", "障害児", "特別支援学校"];
 const CONCURRENCY = 6;
 
-const INCLUDED_LAWS = new Map([
+const TABLE1_REFERENCES = new Map([
   [
     "特別児童扶養手当等の支給に関する法律",
     {
@@ -199,20 +199,12 @@ function uniqueHits(hits) {
 }
 
 function buildScreening(lawTitle) {
-  const included = INCLUDED_LAWS.get(lawTitle);
-  if (included) {
-    return {
-      status: "included",
-      reason_code: "direct_household_disposable_income_effect",
-      reason: "障害を要件として、障害児世帯の給付・負担・控除等に直接作用する規定を含む。",
-      ...included,
-    };
-  }
+  const tableReference = TABLE1_REFERENCES.get(lawTitle);
   return {
-    status: "excluded",
-    reason_code: "no_direct_household_disposable_income_effect_identified",
-    reason:
-      "本則に検索語を含むが、障害を要件として障害児世帯の可処分所得に直接作用する給付・負担・控除等には該当しない。",
+    status: "pending",
+    review_status: "pending",
+    reason: "採否は法令原文の個別審査によって判定する。検索だけでは確定しない。",
+    ...(tableReference || {}),
   };
 }
 
@@ -267,7 +259,6 @@ async function main() {
     })
     .sort((a, b) => a.law_id.localeCompare(b.law_id, "ja"));
 
-  const includedCount = laws.filter((law) => law.screening.status === "included").length;
   const payload = {
     schema_version: "1.0.0",
     title: "e-Gov法令検索による抽出母集団と採否",
@@ -287,13 +278,12 @@ async function main() {
         "障害を要件として、障害児世帯の手当・給付、利用者負担、控除・減免等、可処分所得に直接作用しうる規定を含む法律。",
       exclusion_criterion:
         "検索語を含んでも、障害児世帯の可処分所得に直接作用しない規定、または障害の有無を要件としない普遍的制度。",
-      reconstruction_note:
-        "検索母集団はe-Gov法令APIから再取得した。記載された3語を本則に対して適用した結果は186件である。8件の採用結果と概要は論文正本からサルベージし、その他は同一の除外基準で記録した。",
+      screening_note:
+        "この出力は検索結果であり、採否は未判定。asof指定だけでは非現行法を除外できないため、改正情報と個別の根拠条文を別途照合する。公開済み採否データを自動で上書きしない。",
     },
     counts: {
       total_laws: laws.length,
-      included_laws: includedCount,
-      excluded_laws: laws.length - includedCount,
+      unreviewed_laws: laws.length,
     },
     query_statistics: queryResults.map((result) => ({
       keyword: result.keyword,
@@ -305,17 +295,9 @@ async function main() {
   await fs.mkdir(path.dirname(output), { recursive: true });
   await fs.writeFile(output, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   console.log(`  MainProvision law union: ${laws.length}`);
-  console.log(`  included: ${includedCount}`);
+  console.log(`  unreviewed: ${laws.length}`);
   console.log(`  wrote: ${output}`);
 
-  if (laws.length !== 186) {
-    console.warn(`WARNING: expected 186 laws, got ${laws.length}.`);
-    process.exitCode = 2;
-  }
-  if (includedCount !== INCLUDED_LAWS.size) {
-    console.warn(`WARNING: included count is ${includedCount}, expected ${INCLUDED_LAWS.size}.`);
-    process.exitCode = 2;
-  }
 }
 
 main().catch((error) => {

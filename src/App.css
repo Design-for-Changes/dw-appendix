@@ -72,6 +72,8 @@
 .municipal-source-table th small { display: block; margin-top: 4px; font-weight: 400; }
 .municipal-source-table .municipal-source-item + .municipal-source-item { margin-top: 10px; }
 .municipal-source-table a { overflow-wrap: anywhere; }
+.municipal-source-meta { display: block; margin-top: 4px; font-size: 12px; line-height: 1.6; color: #52656d; white-space: normal; }
+.municipal-additional-sources summary { cursor: pointer; color: #315f89; }
 .income-assessment-table { min-width: 1180px; line-height: 1.65; }
 .income-assessment-table caption { text-align: left; font-weight: 700; padding: 10px 0; }
 .income-assessment-table th:first-child { white-space: nowrap; }
@@ -81,6 +83,19 @@
 .income-assessment-sources { margin-top: 8px; font-size: 12px; }
 .income-assessment-sources a { display: block; }
 .income-assessment-notes { line-height: 1.8; }
+.law-screening-counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+.law-screening-counts > div { background: #f3f7f7; padding: 12px; border-radius: 6px; }
+.law-screening-counts dt { font-size: 12px; color: #52656d; }
+.law-screening-counts dd { margin: 4px 0 0; font-size: 20px; font-weight: 700; }
+.research-status.candidate { background: #e4f2ec; color: #196349; }
+.research-status.pending { background: #fff2d9; color: #79531b; }
+.research-review-note, .research-law-number { display: block; margin-top: 6px; font-size: 12px; }
+.research-law-table { min-width: 1180px; }
+.research-law-table td { white-space: normal; overflow-wrap: anywhere; line-height: 1.7; }
+.research-law-table td:nth-child(2) { min-width: 170px; }
+.research-law-table td:nth-child(5), .research-law-table td:nth-child(6) { min-width: 260px; }
+.research-law-table details summary { cursor: pointer; color: #315f89; }
+.research-evidence { font-size: 12px; margin: 8px 0; }
 
 .appendix-mode-tabs button {
   border: 0;
@@ -1241,6 +1256,10 @@
     background: #f1f5f6;
     white-space: normal;
   }
+
+  .research-law-table { min-width: 0; }
+  .research-law-table tbody th { display: block; padding: 9px 8px; background: #f1f5f6; overflow-wrap: anywhere; }
+  .research-law-table td:nth-child(2), .research-law-table td:nth-child(5), .research-law-table td:nth-child(6) { min-width: 0; }
 
   .income-assessment-table td:nth-child(2),
   .income-assessment-table td:nth-child(6),

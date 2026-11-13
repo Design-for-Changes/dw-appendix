@@ -25,7 +25,78 @@
           "title": "障がいのある方のための福祉ガイド2026",
           "url": "https://www.city.sapporo.jp/shogaifukushi/guide/fukushiguide.html",
           "edition": "2026・令和8年4月1日現在編集",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "日常生活用具 要件・基準額一覧（別表1、別表1の2）",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/guide/documents/20250401_beppyou.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "補装具・日常生活用具等の提供",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/guide/zaitaku_03.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障がい者交通費助成",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/kotsuhi/index.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "札幌市障がい者等に対する交通費助成規則",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/kotsuhi/documents/zyoseikisoku070401.pdf",
+          "edition": "令和7年4月1日改正",
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "医療的ケア児レスパイト事業について",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/respite.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障がいのある方のための福祉ガイド2026（PDF）",
+          "url": "https://www.city.sapporo.jp/shogaifukushi/guide/documents/2026web.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "保育料について",
+          "url": "https://kosodate.city.sapporo.jp/mokuteki/azukeru/hoiku/ninka/941/941.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度心身障がい者医療費助成",
+          "url": "https://www.city.sapporo.jp/hoken-iryo/iryojosei/judo.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "国・北海道による医療助成（特定疾患、肝炎等）",
+          "url": "https://www.city.sapporo.jp/eisei/nanbyo/kuni_dou.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "特定疾患治療研究事業について（申請者向け）",
+          "url": "https://www.pref.hokkaido.lg.jp/hf/kth/kak/tokusitu/tokushitsu.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -40,7 +111,64 @@
           "title": "障害保健福祉のあんない（せんだいふれあいガイド）",
           "url": "https://www.city.sendai.jp/servicekanri/kurashi/kenkotofukushi/shogai/shien/torikumi/fureai.html",
           "edition": "令和8年度（PDF版掲載ページによる）",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度 杜の都ふれあいガイド：住宅・外出の支援（PDF：1,001KB）",
+          "url": "https://www.city.sendai.jp/joseikyuhu/kurashi/kenkotofukushi/shogai/fureaiguide/documents/05_jyuutaku_gaisyutsu.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 杜の都ふれあいガイド：障害福祉サービス（PDF：6,509KB）",
+          "url": "https://www.city.sendai.jp/joseikyuhu/kurashi/kenkotofukushi/shogai/fureaiguide/documents/04_syougaifukushiservice.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 杜の都ふれあいガイド：税金・公共料金の減免など（PDF：1,550KB）",
+          "url": "https://www.city.sendai.jp/joseikyuhu/kurashi/kenkotofukushi/shogai/fureaiguide/documents/11_zeikin.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 杜の都ふれあいガイド：医療（PDF：2,047KB）",
+          "url": "https://www.city.sendai.jp/joseikyuhu/kurashi/kenkotofukushi/shogai/fureaiguide/documents/09_iryo.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 杜の都ふれあいガイド：年金・手当など（PDF：1,872KB）",
+          "url": "https://www.city.sendai.jp/joseikyuhu/kurashi/kenkotofukushi/shogai/fureaiguide/documents/10_nenkin_teate.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "保育施設等を利用する場合の利用者負担額について",
+          "url": "https://www.city.sendai.jp/nintechosa/kurashi/kenkotofukushi/kosodate/hoikuryo.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "心身障害者医療費助成",
+          "url": "https://www.city.sendai.jp/servicekanri/kurashi/kenkotofukushi/shogai/iryoshien/kyufu/jose.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "医療の給付など",
+          "url": "https://www.city.sendai.jp/servicekanri/kurashi/kenkotofukushi/shogai/iryoshien/kyufu/iryo.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -55,7 +183,43 @@
           "title": "障害者の福祉ガイド",
           "url": "https://www.city.saitama.lg.jp/002/003/004/003/001/p005696.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度 障害者の福祉ガイド（本体）",
+          "url": "https://www.city.saitama.lg.jp/002/003/004/003/001/p005696_d/fil/all_R8syougaihukusigaido.pdf",
+          "edition": "令和8年度",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "在宅重症心身障害児者の家族に対するレスパイトケア事業",
+          "url": "https://www.city.saitama.lg.jp/002/003/004/003/006/p082485.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "□心身障害者医療費支給",
+          "url": "https://www.city.saitama.lg.jp/kosodate/shiritai/category10/p105025.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "心身障害者医療費支給制度について",
+          "url": "https://www.city.saitama.lg.jp/002/003/004/003/004/p005398.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定疾患等医療給付制度",
+          "url": "https://www.pref.saitama.lg.jp/a0705/tokuteisikkan/tokuteisikkanseid.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -70,7 +234,43 @@
           "title": "障害者福祉のあんない",
           "url": "https://www.city.chiba.jp/hokenfukushi/koreishogai/jiritsu/fukusi_no_annai.html",
           "edition": "2026年度版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "2026年度版 障害者福祉のあんない",
+          "url": "https://www.city.chiba.jp/hokenfukushi/koreishogai/jiritsu/documents/r8annai.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "保育園等の利用料",
+          "url": "https://www.city.chiba.jp/kodomomirai/yojikyoiku/unei/hoikuryou29.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "心身障害者（児）医療費助成制度のご案内",
+          "url": "https://www.city.chiba.jp/hokenfukushi/koreishogai/jiritsu/sinsinsyougaisyairyouhizyoseikaisei271001.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "ぜんそく等小児指定疾病医療費助成事業",
+          "url": "https://www.city.chiba.jp/hokenfukushi/kenkofukushi/shien/zensoku.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障害者用に自動車を改造したいのですが、どのような助成がありますか。",
+          "url": "https://www.city.chiba.jp/faq/hokenfukushi/koreishogai/jiritsu/3120.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -85,7 +285,106 @@
           "title": "障害福祉のあんない2026",
           "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/kankobutsu/pdf/annai10.html",
           "edition": "2026版（令和8年7月時点正誤表あり）",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "住環境整備費の助成",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/annai/jutaku/jutaku-josei/josei.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "利用者向けページ（日常生活用具）",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/annai/yogu/nichijo-yogu/20220627094244845.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "福祉タクシー利用券の交付",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/annai/gaishutsu/kotsu/riyoken.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障害者自動車燃料券の交付",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/annai/gaishutsu/car/jidousyanenryouken.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "横浜市医療的ケア児・者レスパイト事業",
+          "url": "https://www.city.yokohama.lg.jp/kosodate-kyoiku/oyakokenko/shogaihoken/iryorenkei/ikearespite.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉のあんない2026（PDF）",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/kankobutsu/pdf/annai10.files/0342_20260528.pdf",
+          "edition": "2026版（令和8年7月時点正誤表あり）",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "医療的ケア児への福祉車両による通学支援事業について",
+          "url": "https://www.city.yokohama.lg.jp/kosodate-kyoiku/kyoiku/sesaku/tokubetusien/yokohamatokubetusien/fukushisharyou2024.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "利用料（保育料）および副食費の免除対象の決定方法",
+          "url": "https://www.city.yokohama.lg.jp/kosodate-kyoiku/hoiku-yoji/shisetsu/riyou/riyouryo/riyouryosantei/default20190319.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度の障害者ですが、医療費の助成はありますか。",
+          "url": "https://www.city.yokohama.lg.jp/faq/kukyoku/kenko/kenko-iryou/20211015161210897.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病） よくあるご質問",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/kenko-iryo/iryo/nanbyo/joseiseido/yokuarugoshitumon.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "災害等による停電時の備えとして、非常用電源装置の給付を行います",
+          "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/kenkofukushi-joho/youdengen-kyufu.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "令和8年度通級通学費支給のお知らせ",
+          "url": "https://www.city.yokohama.lg.jp/kosodate-kyoiku/kyoiku/soudan/shugakuenjo/shugakuenjo.files/0132_20260427.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "特別支援教育就学奨励費補助金交付要綱（別記）",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度文部科学省歳出概算要求額明細表",
+          "url": "https://www.mext.go.jp/content/20250909-mxt_kaikesou01-000044539_3.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
         }
       ]
     },
@@ -100,7 +399,99 @@
           "title": "ふれあい―障害福祉の案内―",
           "url": "https://www.city.kawasaki.jp/350/page/0000143907.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：07_住まいに関する支援(PDF, 770.91KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/7_sumai.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：05_在宅生活の支援(PDF, 950.78KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/5_zaitaku.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：08_移動・外出に関する支援(PDF, 1.08MB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/8_idou.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：14_税金・公共料金(PDF, 1.21MB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/14_zeikin.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：13_年金・手当・貸付制度(PDF, 1014.16KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/13_nenkin.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：11_緊急時・災害時対策(PDF, 859.86KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/11_kinkyusaigai.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：06_障害のある子どもへの支援(PDF, 780.09KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/6_kodomo.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 障害者福祉の案内：12_医療制度(PDF, 897.88KB)別ウィンドウで開く",
+          "url": "https://www.city.kawasaki.jp/350/cmsfiles/contents/0000143/143907/12_iryou.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "認可保育所等の利用者負担額（保育料）",
+          "url": "https://www.city.kawasaki.jp/kodomo/category/267-2-7-0-0-0-0-0-0-0.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障害者医療費助成事業の概要",
+          "url": "https://www.city.kawasaki.jp/350/page/0000144897.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "小児医療費助成事業",
+          "url": "https://www.city.kawasaki.jp/450/page/0000128564.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病で療養中のみなさまへ―サービスや相談窓口のご案内―",
+          "url": "https://www.city.kawasaki.jp/350/page/0000143119.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "小児ぜん息患者医療費支給制度の廃止に関するよくあるお問い合わせ、その他の制度のご案内等について",
+          "url": "https://www.city.kawasaki.jp/450/page/0000154093.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -115,7 +506,92 @@
           "title": "障がいのある方のための福祉のしおり",
           "url": "https://www.city.sagamihara.kanagawa.jp/kosodate/fukushi/1026641/shogai/1006424.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第9章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/09.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第4章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/04.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第8章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/08.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第6章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/06.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第7章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/07.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第5章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/05.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第13章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/13.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第10章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/10.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度福祉のしおり 第3章 医療・療育",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/03.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度 福祉のしおり 第14章",
+          "url": "https://www.city.sagamihara.kanagawa.jp/_res/projects/default_project/_page_/001/006/424/R8/14.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度障害者医療費助成",
+          "url": "https://www.city.sagamihara.kanagawa.jp/kosodate/kenko/1026630/1007567/1007577.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病）医療費助成制度",
+          "url": "https://www.city.sagamihara.kanagawa.jp/kosodate/kenko/1026625/nanbyo/1007307.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -130,7 +606,64 @@
           "title": "福祉のしおり",
           "url": "https://www.city.niigata.lg.jp/iryo/shofuku/yoshikisyu/sasshi/fukushi.html",
           "edition": "令和8年度版。正誤表・変更表も参照",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度版 福祉のしおり",
+          "url": "https://www.city.niigata.lg.jp/iryo/shofuku/yoshikisyu/sasshi/fukushi.files/2026fukushinosiori_all.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "障がい者向け市営住宅への入居",
+          "url": "https://www.city.niigata.lg.jp/iryo/shofuku/seikatsu/siei_jyuutaku.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "保育料等の算定について",
+          "url": "https://www.city.niigata.lg.jp/kosodate/ninshin/life_stage/azuketai/hoiku_sanntei.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障がい者医療費助成（マル障）",
+          "url": "https://www.city.niigata.lg.jp/iryo/shofuku/iryou/mrs1.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病の患者に対する医療費助成制度",
+          "url": "https://www.city.niigata.lg.jp/iryo/kenko/nanbyo/iryouhijosei.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "新潟市立小中学校特別支援学級に係る助成事業実施要綱",
+          "url": "https://www.city.niigata.jp/kensaku/youkou/files/public/09240.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "特別支援教育就学奨励費補助金交付要綱（別記）",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "令和8年度文部科学省歳出概算要求額明細表",
+          "url": "https://www.mext.go.jp/content/20250909-mxt_kaikesou01-000044539_3.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
         }
       ]
     },
@@ -145,7 +678,50 @@
           "title": "障がい者（児）福祉のしおり",
           "url": "https://www.city.shizuoka.lg.jp/s3278/s002877.html",
           "edition": "令和8年度・5月改訂版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度 障がい者（児）福祉のしおり（5月改訂版）",
+          "url": "https://www.city.shizuoka.lg.jp/documents/2857/202605fukusisiori.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "障害のある方がいる世帯等を対象にした市営住宅等の抽選の優遇について",
+          "url": "https://call.city.shizuoka.jp/20557",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "利用者負担額（保育料）",
+          "url": "https://www.city.shizuoka.lg.jp/s5783/s002038.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度心身障害者医療費助成制度",
+          "url": "https://www.city.shizuoka.lg.jp/s5498/s001928.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病のある方への支援・サービス",
+          "url": "https://www.city.shizuoka.lg.jp/s9437/s003308.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "（3）特定疾患医療費助成の申請方法について",
+          "url": "https://www.pref.shizuoka.jp/kenkofukushi/shippeikansensho/nanbyo/1003066/1024324.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -160,7 +736,36 @@
           "title": "障害福祉のしおり",
           "url": "https://www.city.hamamatsu.shizuoka.jp/syoghuku/welfare/obstacle/syogai_siori/index.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障害福祉のしおり（令和8年度版）",
+          "url": "https://www.city.hamamatsu.shizuoka.jp/documents/26020/shougaihukushinosiori.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度心身障害者医療費助成",
+          "url": "https://www.city.hamamatsu.shizuoka.jp/syoghuku/welfare/obstacle/contents/02iryouhi.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "医療費の助成",
+          "url": "https://www.city.hamamatsu.shizuoka.jp/kenko/iryo/iryo/jose/index.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "（3）特定疾患医療費助成の申請方法について",
+          "url": "https://www.pref.shizuoka.jp/kenkofukushi/shippeikansensho/nanbyo/1003066/1024324.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -175,7 +780,57 @@
           "title": "障害者福祉のしおり",
           "url": "https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度障害者福祉のしおり",
+          "url": "https://www.kaigo-wel.city.nagoya.jp/_files/00159463/8.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重症心身障害児等の家族に対するレスパイト支援",
+          "url": "https://www.kaigo-wel.city.nagoya.jp/view/wel/service/respite.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害者医療費助成制度",
+          "url": "https://www.city.nagoya.jp/kenkofukushi/shougaisha/1016553/1016554.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "名古屋市特定疾患医療給付事業",
+          "url": "https://www.city.nagoya.jp/kenkofukushi/iryou/1034391/1009684/1009698.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "難病に関する医療給付",
+          "url": "https://www.city.nagoya.jp/kenkofukushi/iryou/1034391/1009684/index.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "愛知県特定疾患医療給付事業について",
+          "url": "https://www.pref.aichi.jp/soshiki/kenkotaisaku/tokuteisikkan.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "（2）名古屋市障害児福祉手当",
+          "url": "https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/teate/ziteate.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -190,7 +845,71 @@
           "title": "障害保健福祉のしおり",
           "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181035.html",
           "edition": "令和8年3月発行",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障害福祉施策情報―住宅",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181045.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉施策情報―在宅福祉サービス1",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181041.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉施策情報―税金・公共料金の減免等",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181043.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉施策情報―社会参加の援助",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181044.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉施策情報―在宅福祉サービス2",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181042.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "医療的ケア児の支援について",
+          "url": "https://www.city.kyoto.lg.jp/hagukumi/page/0000289963.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "【福祉医療】重度心身障害者医療費支給制度",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000160242.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉施策情報―手当、年金等",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181040.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病）における経過措置について",
+          "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000331443.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -205,7 +924,50 @@
           "title": "―障がいのある方へ―福祉のあらまし",
           "url": "https://www.city.osaka.lg.jp/fukushi/page/0000147230.html",
           "edition": "令和7年度版・2025年9月現在・2026年4月第2回修正",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "福祉のあらまし（令和7年度版、第2回修正）",
+          "url": "https://www.city.osaka.lg.jp/fukushi/cmsfiles/contents/0000147/147230/aramashizenntai.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "在宅等で利用する人工呼吸器の発電機等の購入を支援します！",
+          "url": "https://www.city.osaka.lg.jp/fukushi/page/0000672065.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "医療的ケア児の家族に対するレスパイト支援を実施します！",
+          "url": "https://www.city.osaka.lg.jp/fukushi/page/0000672053.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障がい者医療費助成制度",
+          "url": "https://www.city.osaka.lg.jp/fukushi/page/0000369437.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "大阪市の難病対策",
+          "url": "https://www.city.osaka.lg.jp/kenko/page/0000074083.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障がいのあるこどもの保育所入所について",
+          "url": "https://www.city.osaka.lg.jp/kodomo/page/0000528836.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -220,7 +982,85 @@
           "title": "障害福祉のしおり（冊子データ版）",
           "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/74534720220908154641221.html",
           "edition": "令和7年度版。掲載内容は令和7年4月1日時点",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "その他 補装具・日常生活用具",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/sonota-nichijyouseikatuyougu.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "日常生活用具",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/nichigu.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "堺市重度障害者福祉タクシー利用料金助成について",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/syakai_sanka/seikatsu/71806820230314113715928.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "住宅",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/jyutaku.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "割引（堺市内施設）",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/waribiki2.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "税の軽減等",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/zei-keigen.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "行動範囲の拡大",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/koudouhanikakudai.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "手当・年金等",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/teate-nenkin.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障害者医療費助成制度",
+          "url": "https://www.city.sakai.lg.jp/kenko/iryokusuri/iryo/iryojigyou/josei/shogaisha.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "補装具の支給",
+          "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/shiori/hosougu.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "小児慢性特定疾病医療費助成制度（新規・継続申請方法等）・相談窓口について",
+          "url": "https://www.city.sakai.lg.jp/kenko/kenko/nanbyonado/syouni/syounimannseitokuteisippei.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -235,7 +1075,85 @@
           "title": "障害者福祉のあらまし",
           "url": "https://www.city.kobe.lg.jp/a97737/kenko/handicap/aramashi.html",
           "edition": "2026年度版。2026年4月1日現在",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障害者福祉のあらまし2026年度版",
+          "url": "https://www.city.kobe.lg.jp/documents/3778/all2026_cleaned.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "障害者週間 市内施設の無料開放＆プレゼント配布",
+          "url": "https://www.city.kobe.lg.jp/a97737/shisetumuryoukaihou.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "医療的ケア児者の家族のための訪問看護を活用したレスパイト支援実施",
+          "url": "https://www.city.kobe.lg.jp/a95295/921412540990.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障害者医療費助成制度",
+          "url": "https://www.city.kobe.lg.jp/a52670/kenko/health/medical/judoshogaisha.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "小児慢性特定疾病医療費助成のご案内",
+          "url": "https://www.city.kobe.lg.jp/a86732/kenko/health/promotion/intractable/child/annai.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "小児慢性特定疾病医療費助成のご案内（現行リンク先）",
+          "url": "https://www.city.kobe.lg.jp/documents/1353/20260721135701.pdf",
+          "edition": "2026年7月更新リンク先",
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "県単独特定疾患治療研究事業",
+          "url": "https://web.pref.hyogo.lg.jp/kf16/hw12_000000091.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "2026年度 特別支援教育就学援助",
+          "url": "https://www.city.kobe.lg.jp/a98017/kosodate/sodan/special/scholorship.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "神戸市特別支援教育就学援助に関する要綱",
+          "url": "https://www.city.kobe.lg.jp/documents/9602/tokushi-tsuugakuenjo.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "特別支援教育就学奨励費補助金交付要綱",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_001.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "特別支援教育就学奨励費補助金交付要綱（別記）",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
         }
       ]
     },
@@ -250,7 +1168,36 @@
           "title": "障害者のしおり",
           "url": "https://www.city.okayama.jp/kurashi/0000007751.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "令和8年度障害者のしおり",
+          "url": "https://www.city.okayama.jp/kurashi/cmsfiles/contents/0000007/7751/2026shiori.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "心身障害者医療費助成制度",
+          "url": "https://www.city.okayama.jp/kurashi/0000004276.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病）について",
+          "url": "https://www.city.okayama.jp/kurashi/0000013510.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "岡山市在宅人工呼吸器等使用者非常用電源装置購入費助成事業",
+          "url": "https://www.city.okayama.jp/kurashi/0000082984.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -265,7 +1212,43 @@
           "title": "心身障害者福祉のしおり",
           "url": "https://www.city.hiroshima.lg.jp/living/fukushi-kaigo/1014921/1025790/1022170.html",
           "edition": "令和7年度版・2025年4月1日現在",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "心身障害者福祉のしおり（令和7年度版）",
+          "url": "https://www.city.hiroshima.lg.jp/_res/projects/default_project/_page_/001/022/170/fukushinoshiori_r7.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "広島市医療的ケア児在宅レスパイト事業について（利用者の方向け）",
+          "url": "https://www.city.hiroshima.lg.jp/living/fukushi-kaigo/1014921/1006099/1025780/1022227.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度心身障害者医療費補助",
+          "url": "https://www.city.hiroshima.lg.jp/living/fukushi-kaigo/1014921/1025788/1022608.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病）助成制度",
+          "url": "https://www.city.hiroshima.lg.jp/living/medical/1006039/1012778.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "広島市人工呼吸器非常用電源設備購入費補助事業",
+          "url": "https://www.city.hiroshima.lg.jp/living/medical/1021207/1022695.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -280,7 +1263,36 @@
           "title": "障害福祉ガイド",
           "url": "https://www.city.kitakyushu.lg.jp/contents/17600232.html",
           "edition": "令和8年度版。原則2026年4月1日時点",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障害福祉ガイド（令和8年度版）",
+          "url": "https://www.city.kitakyushu.lg.jp/files/001234196.pdf",
+          "edition": "令和8年度・原則2026-04-01現在",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度障害のある方へ医療費を助成します",
+          "url": "https://www.city.kitakyushu.lg.jp/contents/924_10698.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "北九州市難病サービスガイド【テキスト版】",
+          "url": "https://www.city.kitakyushu.lg.jp/contents/17200259.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "北九州市在宅人工呼吸器使用患者非常用電源購入費助成事業",
+          "url": "https://www.city.kitakyushu.lg.jp/contents/334_00029.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -295,7 +1307,29 @@
           "title": "福岡市の障がい福祉ガイド",
           "url": "https://www.city.fukuoka.lg.jp/fukushi/shogaishasodan/health/sevice/fukuokashinoshougaifukushigaido02_8.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "福岡市の障がい福祉ガイド（令和8年度）",
+          "url": "https://www.city.fukuoka.lg.jp/fukushi/shogaishasodan/health/sevice/documents/23zentai.pdf",
+          "edition": "令和8年度",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度障がい者医療費助成制度",
+          "url": "https://www.city.fukuoka.lg.jp/hofuku/hokennenkin/life/02.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病医療費助成制度について",
+          "url": "https://www.city.fukuoka.lg.jp/hofuku/hokensho/nanbyo/joseiseido/nannbyou30.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -310,7 +1344,36 @@
           "title": "障がい者のためのふくしのしおり",
           "url": "https://www.city.kumamoto.jp/kiji003681/index.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障がい者のためのふくしのしおり（令和8年度版）",
+          "url": "https://www.city.kumamoto.jp/kiji003681/3_681_up_6vxrvhc5.pdf",
+          "edition": "令和8年度版",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度心身障がい者（児）医療費助成",
+          "url": "https://www.city.kumamoto.jp/kiji00359024/index.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "指定難病の医療費助成制度について（患者の方向け）",
+          "url": "https://www.city.kumamoto.jp/kiji00318952/index.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "重度身体障害者用自動車改造費助成事業",
+          "url": "https://www.city.kumamoto.jp/kiji003871/index.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -325,7 +1388,29 @@
           "title": "障がい者サービスのしおり",
           "url": "https://www.city.utsunomiya.lg.jp/kenko/shogai/1048541/1004231.html",
           "edition": "2026版。原則2026年4月1日時点",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障がい者サービスのしおり2026",
+          "url": "https://www.city.utsunomiya.lg.jp/_res/projects/default_project/_page_/001/004/231/shiori-2026-3.pdf",
+          "edition": "2026・原則2026-04-01現在",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "医療費の助成",
+          "url": "https://www.city.utsunomiya.lg.jp/kenko/shogai/teate/1004206.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病患者福祉手当について知りたい",
+          "url": "https://www.city.utsunomiya.lg.jp/faq/fukushi/shogaisha/teate/1001857.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -340,7 +1425,50 @@
           "title": "障害福祉ガイドブック",
           "url": "https://www.city.kawaguchi.lg.jp/soshiki/01070/060/5621.html",
           "edition": "令和8年10月発行",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "川口市 障害福祉ガイドブック",
+          "url": "https://www.city.kawaguchi.lg.jp/material/files/group/43/00zenpeiji2026.pdf",
+          "edition": "令和8年10月発行",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "重度心身障害者医療費助成制度",
+          "url": "https://www.city.kawaguchi.lg.jp/kosodate_gakkou/kosodatehenoteate_kyufu/3/17254.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "川口市障害福祉ガイドブック 第3章 医療費制度",
+          "url": "https://www.city.kawaguchi.lg.jp/material/files/group/43/3sansyou2026.pdf",
+          "edition": "令和8年9月版（PDFメタデータ表題）",
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "特定疾患等医療給付制度",
+          "url": "https://www.pref.saitama.lg.jp/a0705/tokuteisikkan/tokuteisikkanseid.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "自動車改造費助成",
+          "url": "https://www.city.kawaguchi.lg.jp/soshiki/01070/060/1_1/4312.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "令和8年度障害福祉ガイドブック・参考資料",
+          "url": "https://www.city.kawaguchi.lg.jp/material/files/group/43/15sannkou2026.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
         }
       ]
     },
@@ -355,7 +1483,85 @@
           "title": "障害福祉のしおり（令和8年度版）",
           "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845.html",
           "edition": "令和8年10月1日現在編集",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "重度障害者等住宅改造費の助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/01/p000767.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障害児・者への日常生活用具費の支給",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/002/p124977.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "福祉タクシー利用料金の助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/02/p009707.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "福祉サービス（発達につまずきのある子の支援）",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/hattatsu/002/p116616.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "船橋市医療的ケア児在宅レスパイト（家族の休息）事業：利用を希望される方へ",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/support/002/p144719.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "障害福祉のしおり 令和8年度（PDF）",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "船橋市保育料表（保育所等）",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/hoiku/002/hoikuryouhyou_d/fil/hyoujunhoikuryou.pdf",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "身体障害者に対する自動車改造費の助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/02/p042505.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重い障害のある方の医療費助成制度",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "【申請受付を終了しました】船橋市小児指定疾病医療費助成事業（市の事業）の概要について",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p033677.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "廃止・縮小事業等一覧",
+          "url": "https://www.city.funabashi.lg.jp/shisei/zaisei/001/p144524_d/fil/haisi.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
         }
       ]
     },
@@ -370,7 +1576,50 @@
           "title": "福祉のしおり2026",
           "url": "https://www.city.hachioji.tokyo.jp/kurashi/welfare/005/014/009/p004407.html",
           "edition": "令和8年4月発行",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "福祉のしおり2026",
+          "url": "https://www.city.hachioji.tokyo.jp/kurashi/welfare/005/014/009/p004407_d/fil/fukushinosiori2026.pdf",
+          "edition": "2026版（読み上げ案内更新2026-04-01）",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "心身障害者医療費助成制度",
+          "url": "https://www.city.hachioji.tokyo.jp/kurashi/welfare/005/004/p004178.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病医療費等助成制度のご案内",
+          "url": "https://www.city.hachioji.tokyo.jp/kurashi/hoken/007/011/001/p002769.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "対象疾病のご案内",
+          "url": "https://www.hokeniryo.metro.tokyo.lg.jp/kenkou/nanbyo/portal/shikkan/taishou",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "八王子市身体障害者用自動車改造費助成",
+          "url": "https://www.city.hachioji.tokyo.jp/kurashi/welfare/005/007/001/p004212.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "令和8年度八王子市在宅人工呼吸器使用者災害支援事業のご案内",
+          "url": "https://www.city.hachioji.tokyo.jp/kurashi/hoken/007/013/p029029.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -385,7 +1634,50 @@
           "title": "障害福祉のしおり",
           "url": "https://www.city.himeji.lg.jp/kurashi/0000020138.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13"
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "障害福祉のしおり（令和8年度版）",
+          "url": "https://www.city.himeji.lg.jp/kurashi/cmsfiles/contents/0000020/20138/shiori0331.pdf",
+          "edition": "令和8年度版",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "優遇措置",
+          "url": "https://www.city.himeji.lg.jp/kurashi/0000003132.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "重度障害者・高齢重度障害者医療費の助成",
+          "url": "https://www.city.himeji.lg.jp/kurashi/0000007924.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "特定医療費（指定難病）の医療費助成制度",
+          "url": "https://www.city.himeji.lg.jp/kurashi/0000003627.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "県単独特定疾患治療研究事業",
+          "url": "https://web.pref.hyogo.lg.jp/kf16/hw12_000000091.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "自動車改造費の助成",
+          "url": "https://www.city.himeji.lg.jp/kurashi/0000001046.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     },
@@ -399,8 +1691,44 @@
         {
           "title": "ゆうあいガイドブック",
           "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/kenko/fukushi/shogai/yuuaigaido.html",
-          "edition": "令和7年3月発行",
-          "checked_on": "2026-11-13"
+          "edition": "掲載案内は令和7年3月発行改訂版。公開PDFファイル名202604-cleaned、R8以降の変更注記あり。",
+          "checked_on": "2026-11-13",
+          "kind": "guide"
+        },
+        {
+          "title": "ゆうあいガイドブック",
+          "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/kenko/fukushi/shogai/documents/yuuaiguide_202604-cleaned.pdf",
+          "edition": "掲載案内は令和7年3月発行改訂版。公開PDFファイル名202604-cleaned、R8以降の変更注記あり。",
+          "checked_on": "2026-11-13",
+          "kind": "pdf"
+        },
+        {
+          "title": "医療の助成",
+          "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/kenko/fukushi/shogai/iryo/index.html",
+          "edition": null,
+          "checked_on": "2026-11-13",
+          "kind": "supplement"
+        },
+        {
+          "title": "難病の対策",
+          "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/hokenjo/hoshien/kenko/kenko/nanbyo/taisaku.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
+        },
+        {
+          "title": "重度心身障害者等医療費助成金受給のしおり",
+          "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/kenko/fukushi/shogai/iryo/documents/jukyunoshiori810~.pdf",
+          "edition": null,
+          "checked_on": null,
+          "kind": "pdf"
+        },
+        {
+          "title": "令和6年7月から重度心身障害者等医療費助成制度が一部変わります",
+          "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/jyuusinsinseido.html",
+          "edition": null,
+          "checked_on": null,
+          "kind": "supplement"
         }
       ]
     }

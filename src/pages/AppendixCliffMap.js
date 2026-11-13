@@ -4,6 +4,7 @@ import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { useAppendixData } from "../hooks/useAppendixData";
 import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
 import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
+import ResearchDataAppendix from "./ResearchDataAppendix";
 
 const X_MIN = 200;
 const X_MAX = 1500;
@@ -1263,6 +1264,7 @@ export default function AppendixCliffMap() {
   const [viewMode, setViewMode] = useState(() => {
     if (window.location.hash === "#municipal-sources") return "sources";
     if (window.location.hash === "#income-assessment") return "rules";
+    if (window.location.hash === "#law-screening") return "laws";
     if (window.location.hash === "#optimal") return "optimal";
     return "current";
   });
@@ -1274,7 +1276,7 @@ export default function AppendixCliffMap() {
   const selected = data.find((d) => d.id === selectedId) || data[0];
   const selectViewMode = (mode) => {
     setViewMode(mode);
-    const hash = { sources: "#municipal-sources", rules: "#income-assessment", optimal: "#optimal", current: "" }[mode];
+    const hash = { sources: "#municipal-sources", rules: "#income-assessment", laws: "#law-screening", optimal: "#optimal", current: "" }[mode];
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
   };
   const caseAccent = selected?.color || "#9aa7ad";
@@ -1325,6 +1327,14 @@ export default function AppendixCliffMap() {
         >
           所得判定・変動方法
         </button>
+        <button
+          type="button"
+          className={viewMode === "laws" ? "active" : ""}
+          aria-pressed={viewMode === "laws"}
+          onClick={() => selectViewMode("laws")}
+        >
+          法令検索・採否候補
+        </button>
       </nav>
 
       {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
@@ -1345,7 +1355,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

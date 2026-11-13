@@ -1,197 +1,206 @@
 import { useEffect, useMemo, useState } from "react";
 
-function useResearchData() {
-  const [state, setState] = useState({ laws: null, municipal: null, error: null });
+const TABLE_TITLE = "表A2　e-Gov法令検索による抽出結果と採否";
 
-  useEffect(() => {
-    let ignore = false;
-    const base = process.env.PUBLIC_URL || ".";
-    Promise.all([
-      fetch(`${base}/data/research/egov-law-screening.json`).then((response) => {
-        if (!response.ok) throw new Error(`law screening: ${response.status}`);
-        return response.json();
-      }),
-      fetch(`${base}/data/research/municipal-program-types.json`).then((response) => {
-        if (!response.ok) throw new Error(`municipal program types: ${response.status}`);
-        return response.json();
-      }),
-    ])
-      .then(([laws, municipal]) => {
-        if (!ignore) setState({ laws, municipal, error: null });
-      })
-      .catch((error) => {
-        if (!ignore) setState({ laws: null, municipal: null, error });
-      });
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  return state;
+function reviewCategory(law) {
+  if (law.screening?.review_status !== "verified") return "pending";
+  if (["candidate", "included"].includes(law.screening.status)) return "candidate";
+  if (law.screening.status === "excluded") return "excluded";
+  return "pending";
 }
 
-function ScreeningStatus({ screening }) {
-  const included = screening?.status === "included";
+function ScreeningStatus({ law }) {
+  const category = reviewCategory(law);
+
   return (
-    <span className={`research-status ${included ? "included" : "excluded"}`}>
-      {included ? "採用" : "除外"}
-    </span>
+    <>
+      <span className={`research-status ${category}`}>
+        {category === "candidate" ? "採用候補" : category === "excluded" ? "除外" : "原典確認中"}
+      </span>
+      {category !== "pending" && <small className="research-review-note">原典確認済み</small>}
+      {category === "candidate" && law.screening?.scope_review_required &&
+        <small className="research-review-note">適用条件の確認が必要</small>}
+    </>
   );
 }
 
-function DataDownload({ href, children }) {
+function ScreeningReason({ law }) {
+  const reason = law.screening?.reason;
   return (
-    <a className="research-download" href={href} download>
-      {children}
-    </a>
+    <>
+      <p>{reason || "法令ごとの理由は未記載です。"}</p>
+      {reviewCategory(law) === "pending" && <small className="research-review-note">原典との照合が完了していません。</small>}
+    </>
   );
 }
 
-function LawScreeningTable({ data }) {
+function ScreeningEvidence({ law }) {
+  const evidence = law.screening?.evidence || [];
+  return (
+    <>
+      {reviewCategory(law) === "pending" && <p>確認根拠を原典と照合中です。</p>}
+      {evidence.length > 0 && <details className="research-evidence-details">
+        <summary>根拠条文・原文（{evidence.length}件）</summary>
+        {evidence.map((item, index) => (
+          <div className="research-evidence" key={`${item.article || "evidence"}-${index}`}>
+            {item.article && <p>{item.article}</p>}
+            {item.text && <p>{item.text}</p>}
+            {item.source_url && <a href={item.source_url} target="_blank" rel="noreferrer">{item.article ? `${item.article}の原文` : "確認根拠の原文"}</a>}
+          </div>
+        ))}
+      </details>}
+      {evidence.length === 0 && reviewCategory(law) !== "pending" && <p>条文・確認根拠の記載はありません。</p>}
+      {law.source_url && <p><a href={law.source_url} target="_blank" rel="noreferrer">法令原文（e-Gov）</a></p>}
+    </>
+  );
+}
+
+function LawScreeningTable({ data, dataUrl }) {
   const [query, setQuery] = useState("");
-  const [includedOnly, setIncludedOnly] = useState(false);
+  const [filter, setFilter] = useState("all");
   const normalizedQuery = query.trim().toLocaleLowerCase("ja-JP");
-  const rows = useMemo(
-    () =>
-      (data?.laws || []).filter((law) => {
-        if (includedOnly && law.screening?.status !== "included") return false;
-        if (!normalizedQuery) return true;
-        const haystack = [
-          law.law_id,
-          law.law_num,
-          law.law_title,
-          ...(law.matched_keywords || []),
-          law.screening?.id,
-          law.screening?.effect,
-          law.screening?.summary,
-        ]
-          .filter(Boolean)
-          .join("\n")
-          .toLocaleLowerCase("ja-JP");
-        return haystack.includes(normalizedQuery);
-      }),
-    [data, includedOnly, normalizedQuery]
-  );
+  const laws = useMemo(() => data.laws || [], [data.laws]);
 
-  const base = process.env.PUBLIC_URL || ".";
+  const statistics = useMemo(() => laws.reduce((counts, law) => {
+    const category = reviewCategory(law);
+    counts[category] += 1;
+    if (category === "candidate" && law.screening?.scope_review_required) counts.scopeReview += 1;
+    if (law.current_status?.is_current === true) counts.current += 1;
+    if (law.current_status?.is_current === false) counts.noncurrent += 1;
+    return counts;
+  }, { candidate: 0, excluded: 0, pending: 0, scopeReview: 0, current: 0, noncurrent: 0 }), [laws]);
+  const hasCompleteCurrentStatus = statistics.current + statistics.noncurrent === laws.length;
+  const currentCount = hasCompleteCurrentStatus ? statistics.current : data.counts?.current_laws;
+  const noncurrentCount = hasCompleteCurrentStatus ? statistics.noncurrent : data.counts?.noncurrent_laws;
+
+  const rows = useMemo(() => laws.filter((law) => {
+    if (filter === "scope-review") {
+      if (reviewCategory(law) !== "candidate" || !law.screening?.scope_review_required) return false;
+    } else if (filter !== "all" && reviewCategory(law) !== filter) return false;
+    const haystack = [
+      law.law_id,
+      law.law_num,
+      law.law_title,
+      ...(law.matched_keywords || []),
+      law.screening?.id,
+      law.screening?.effect,
+      law.screening?.summary,
+      law.screening?.reason,
+      ...(law.screening?.evidence || []).flatMap((item) => [item.article, item.text]),
+    ].filter(Boolean).join("\n").toLocaleLowerCase("ja-JP");
+    return haystack.includes(normalizedQuery);
+  }), [laws, filter, normalizedQuery]);
+
   return (
-    <section className="appendix-panel research-section" aria-labelledby="research-table-1-title">
+    <section id="law-screening" className="appendix-panel research-section" aria-labelledby="law-screening-title">
       <div className="appendix-section-head">
         <div>
-          <p className="appendix-kicker">使用データ：法令抽出</p>
-          <h2 id="research-table-1-title">表1　e-Gov法令検索による抽出母集団と採否（186件）</h2>
-          <p>
-            「障害者」「障害児」「特別支援学校」を含む現行法律を本則に限定して抽出し、法令ID単位で重複を除いた。
-          </p>
+          <p className="appendix-kicker">法令抽出の記録</p>
+          <h2 id="law-screening-title">e-Gov法令検索による抽出結果と採否</h2>
+          <p>抽出した法律を法令ID単位で示し、検索語、法令ごとの採否理由及び確認根拠を追跡できるようにする。</p>
         </div>
-        <DataDownload href={`${base}/data/research/egov-law-screening.json`}>
-          JSONをダウンロード
-        </DataDownload>
+        <a className="research-download" href={dataUrl} download>法令抽出・採否JSONをダウンロード</a>
       </div>
+      <div className="municipal-method">
+        <p>基準日：{data.research_as_of || "未記載"}。取得元：{data.source?.name || "e-Gov法令検索"}。</p>
+        {data.method?.keywords && <p>検索語：{data.method.keywords.join("、")}。</p>}
+        {data.method?.combination && <p>集計方法：{data.method.combination}。</p>}
+        {data.method?.inclusion_criterion && <p>候補抽出基準：{data.method.inclusion_criterion}</p>}
+        {data.method?.exclusion_criterion && <p>除外基準：{data.method.exclusion_criterion}</p>}
+        {data.method?.review_status_note && <p>{data.method.review_status_note}</p>}
+      </div>
+      <dl className="law-screening-counts">
+        <div><dt>抽出法令数</dt><dd aria-label="抽出法令数">{data.counts?.total_laws ?? laws.length}件</dd></div>
+        <div><dt>現行法令数</dt><dd aria-label="現行法令数">{currentCount == null ? "未確認" : `${currentCount}件`}</dd></div>
+        <div><dt>採用候補</dt><dd aria-label="採用候補">{statistics.candidate}件</dd></div>
+        <div><dt>除外</dt><dd aria-label="除外">{statistics.excluded}件</dd></div>
+        <div><dt>候補のうち適用条件要確認</dt><dd aria-label="候補のうち適用条件要確認">{statistics.scopeReview}件</dd></div>
+        <div><dt>非現行法令数</dt><dd aria-label="非現行法令数">{noncurrentCount == null ? "未確認" : `${noncurrentCount}件`}</dd></div>
+        <div><dt>原典確認中</dt><dd aria-label="原典確認中">{statistics.pending}件</dd></div>
+      </dl>
+      <p className="research-note">
+        採用候補は、障害児世帯の給付・負担に作用する可能性のある法律を含み、モデル世帯への試算採用を意味しない。
+        「適用条件の確認が必要」は、原典を確認したうえで対象年齢や研究範囲等の判断が必要な候補を示し、「原典確認中」とは区別する。
+        除外件数には非現行の法律を含む。
+      </p>
       <div className="research-controls">
         <label>
-          <span>表内検索</span>
-          <input
-            type="search"
-            value={query}
-            placeholder="法令名・法令番号・検索語"
-            onChange={(event) => setQuery(event.currentTarget.value)}
-          />
+          <span>法令・採否根拠を検索</span>
+          <input type="search" value={query} placeholder="法令ID・法令名・法令番号・検索語・採否理由・条文" onChange={(event) => setQuery(event.currentTarget.value)} />
         </label>
-        <label className="research-check">
-          <input
-            type="checkbox"
-            checked={includedOnly}
-            onChange={(event) => setIncludedOnly(event.currentTarget.checked)}
-          />
-          採用8件のみ表示
+        <label>
+          <span>採否の表示</span>
+          <select value={filter} onChange={(event) => setFilter(event.currentTarget.value)}>
+            <option value="all">全件</option>
+            <option value="candidate">採用候補</option>
+            <option value="excluded">除外のみ</option>
+            <option value="pending">原典確認中</option>
+            <option value="scope-review">適用条件要確認</option>
+          </select>
         </label>
-        <output>{rows.length}件表示</output>
+        <output aria-live="polite">{rows.length}件表示（全{laws.length}件）</output>
       </div>
       <div className="appendix-table-wrap research-law-table-wrap">
         <table className="appendix-table research-law-table">
+          <caption>{TABLE_TITLE}</caption>
           <thead>
             <tr>
-              <th>No.</th>
-              <th>法令ID</th>
-              <th>法令名</th>
-              <th>法令番号</th>
-              <th>一致語</th>
-              <th>採否</th>
-              <th>採否理由</th>
-              <th>原文</th>
+              <th scope="col">法令ID</th>
+              <th scope="col">法令名</th>
+              <th scope="col">検索語</th>
+              <th scope="col">採否・確認状況</th>
+              <th scope="col">法令ごとの採否理由</th>
+              <th scope="col">確認根拠（条文・原文リンク）</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((law) => (
               <tr key={law.law_id}>
-                <td className="appendix-mono" data-label="No.">{data.laws.indexOf(law) + 1}</td>
-                <td className="appendix-mono" data-label="法令ID">{law.law_id}</td>
-                <td data-label="法令名">{law.law_title}</td>
-                <td data-label="法令番号">{law.law_num}</td>
-                <td data-label="一致語">{(law.matched_keywords || []).join("、")}</td>
-                <td data-label="採否"><ScreeningStatus screening={law.screening} /></td>
-                <td data-label="採否理由">{law.screening?.reason}</td>
-                <td data-label="原文">
-                  <a href={law.source_url} target="_blank" rel="noreferrer">e-Gov</a>
+                <th scope="row" className="appendix-mono">{law.law_id}</th>
+                <td data-label="法令名">
+                  {law.law_title}
+                  {law.law_num && <small className="research-law-number">{law.law_num}</small>}
+                  {law.current_status?.is_current === false && <small className="research-review-note">非現行{law.current_status.repeal_date ? `（e-Gov API記録日：${law.current_status.repeal_date}）` : ""}</small>}
                 </td>
+                <td data-label="検索語">{(law.matched_keywords || []).join("、")}</td>
+                <td data-label="採否・確認状況"><ScreeningStatus law={law} /></td>
+                <td data-label="法令ごとの採否理由"><ScreeningReason law={law} /></td>
+                <td data-label="確認根拠（条文・原文リンク）"><ScreeningEvidence law={law} /></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="research-note">
-        基準日：{data.research_as_of}。取得元はe-Gov法令API Version 2。検索結果の全文一致から
-        MainProvision（本則）の一致だけを再判定している。
-      </p>
+      {rows.length === 0 && <p role="status">該当する法令はありません。</p>}
     </section>
   );
 }
 
 export default function ResearchDataAppendix() {
-  const { laws, municipal, error } = useResearchData();
-  if (error) {
-    return (
-      <section className="appendix-panel">
-        <div className="appendix-empty">使用データを読み込めませんでした。</div>
-      </section>
-    );
-  }
-  if (!laws || !municipal) {
-    return (
-      <section className="appendix-panel">
-        <div className="appendix-empty">使用データを読み込んでいます。</div>
-      </section>
-    );
-  }
-
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
   const base = process.env.PUBLIC_URL || ".";
-  return (
-    <>
-      <section className="appendix-panel research-overview">
-        <div>
-          <p className="appendix-kicker">再現可能性のための使用データ</p>
-          <h2>法令・自治体制度の抽出データ</h2>
-          <p>
-            抽出母集団186件の全件と採否を表1に示す。採用8法と自治体制度19類型は
-            本文の表1・表2に掲載し、公開用JSONも併せて提供する。
-          </p>
-          <div className="research-resource-links">
-            <DataDownload href={`${base}/data/research/egov-law-screening.json`}>
-              本文表1対応JSON
-            </DataDownload>
-            <DataDownload href={`${base}/data/research/municipal-program-types.json`}>
-              本文表2対応JSON
-            </DataDownload>
-          </div>
-        </div>
-        <dl>
-          <div><dt>法令母集団</dt><dd>{laws.counts.total_laws}件</dd></div>
-          <div><dt>採用法律</dt><dd>{laws.counts.included_laws}件</dd></div>
-          <div><dt>自治体制度</dt><dd>{municipal.counts.program_types}類型</dd></div>
-        </dl>
-      </section>
-      <LawScreeningTable data={laws} />
-    </>
-  );
+  const dataUrl = `${base}/data/research/egov-law-screening.json`;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(dataUrl, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`law screening: ${response.status}`);
+        return response.json();
+      })
+      .then(setData)
+      .catch((cause) => {
+        if (cause.name !== "AbortError") setError(true);
+      });
+    return () => controller.abort();
+  }, [dataUrl]);
+
+  if (error) {
+    return <section id="law-screening" className="appendix-panel" role="alert"><div className="appendix-empty">法令抽出資料を読み込めませんでした。ページを再読み込みしてください。</div></section>;
+  }
+  if (!data) {
+    return <section id="law-screening" className="appendix-panel" role="status"><div className="appendix-empty">法令抽出資料を読み込んでいます。</div></section>;
+  }
+  return <LawScreeningTable data={data} dataUrl={dataUrl} />;
 }

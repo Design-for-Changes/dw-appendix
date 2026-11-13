@@ -6,8 +6,19 @@ jest.mock("../hooks/useAppendixData", () => ({
 }));
 jest.mock("./IncomeAssessmentAppendix", () => () => <section aria-label="所得判定詳細">表A1</section>);
 jest.mock("./MunicipalSourcesAppendix", () => () => <section aria-label="参照資料">参照資料</section>);
+jest.mock("./ResearchDataAppendix", () => () => <section aria-label="法令検索">表A2</section>);
 
 afterEach(() => { window.history.replaceState(null, "", "/"); });
+
+test("法令検索の直接リンクとタブ切替は計算データに依存しない", () => {
+  window.history.replaceState(null, "", "/#law-screening");
+  render(<AppendixCliffMap />);
+  expect(screen.getByRole("button", { name: "法令検索・採否候補" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("region", { name: "法令検索" })).toHaveTextContent("表A2");
+  fireEvent.click(screen.getByRole("button", { name: "調査対象・参照資料" }));
+  expect(window.location.hash).toBe("#municipal-sources");
+  expect(screen.queryByRole("region", { name: "法令検索" })).not.toBeInTheDocument();
+});
 
 test("表A1の直接リンクはシミュレーションの読み込みに依存しない", () => {
   window.history.replaceState(null, "", "/#income-assessment");

@@ -32,19 +32,19 @@ e-Gov法令API Version 2から法令抽出母集団を再取得する場合は�
 npm run fetch:egov-screening
 ```
 
-基準日は既定で2026年6月30日、出力先は
-`public/data/research/egov-law-screening.json` である。
+基準日は既定で2026年11月13日、検索結果の出力先は
+`private/research/egov-law-search.json` である。検索だけでは採否を決めず、公開済みの個別審査結果を上書きしない。
 
 ## Web Appendixの使用データ
 - 表A1　主な制度の所得判定・変動方法（`#income-assessment`）
-- 表1　e-Gov法令検索による抽出母集団と採否（186件）
+- 表A2　e-Gov法令検索の結果と選定候補（`#law-screening`）
 
 表A1は「所得判定・変動方法」タブに7列・10行の詳細と原典リンクを掲載する。データは
-`public/data/research/income-assessment-rules.json`。法令抽出母集団の「使用データ」タブは現在非表示である。
+`public/data/research/income-assessment-rules.json`。
 
-採用した8法律と自治体制度19類型は本文の表1・表2に掲載する。
-対応データは `public/data/research/egov-law-screening.json` と
-`public/data/research/municipal-program-types.json` に保存する。
+表A2は原検索186件を保持し、現行扱い184件・選定候補49件・除外137件を区別する。候補への収録は試算への採用確定を意味しない。適用年齢、障害原因、職域、適用時期等の限定がある候補も条件付きで残す。
+法令ごとの理由・根拠条文・原文リンクは `public/data/research/egov-law-screening.json` に収録する。
+自治体の参照資料は `public/data/research/municipal-source-list.json`。26市の基本資料に加え、実際に参照したPDF・個別制度案内・要綱を掲載し、市別の類型該当や○×表は公開しない。
 
 ## ドキュメント
 - `docs/model-household.md`：提示ケースとモデル条件。

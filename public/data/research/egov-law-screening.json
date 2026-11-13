@@ -20,7 +20,6 @@
     "inclusion_criterion": "障害を要件として、障害児世帯の手当・給付、利用者負担、控除・減免等を通じて可処分所得に直接作用する規定を含む法律。",
     "exclusion_criterion": "障害児世帯の可処分所得に直接作用する規定を含まないもの。障害を要件としないもの。就労・職域・災害・特定の障害原因等を前提とするもの。障害固有の給付・負担要件が本則に定められていないもの。",
     "candidate_note": "候補への収録は試算への採用を意味しない。",
-    "review_status_note": "原典確認済みは、記載した根拠条文との照合を終えたことを示す。研究範囲への最終的な採用や、モデル世帯の試算への採用を確定するものではない。",
     "exclusion_categories": [
       {
         "id": "C1",
@@ -91,7 +90,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "penal_protection",
-        "reason": "障害に関する規定は不同意わいせつ・保護責任等の刑事規制であり、障害児世帯への手当・給付又は自己負担・税額の調整を定めるものではない。",
+        "reason": "障害に関する規定は刑事上の保護・処罰を定めるもので、障害児世帯への金銭給付・負担軽減を定めていないため（第176条、第217条）。",
         "evidence": [
           {
             "article": "第二百十七条",
@@ -357,7 +356,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "local_administration_allocation",
-        "reason": "障害児・障害者に関する記載は、第252条の19による指定都市等への事務配分である。同条自体は個人への給付額又は負担額を定めないため、権限配分法として除外する。",
+        "reason": "障害福祉の事務をどの自治体が担うかという分担の規定であり、世帯への給付額・負担額を定めていないため（第252条の19）。",
         "evidence": [
           {
             "article": "第二百五十二条の十九",
@@ -488,7 +487,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "family_register_procedure",
-        "reason": "障害の語は第20条の4の性別取扱い変更審判に伴う新戸籍編製に現れる。戸籍記載・編製手続であり、障害児世帯の給付又は負担軽減を定めない。",
+        "reason": "障害に関する記載は戸籍の編製手続に関するもので、世帯への給付・負担軽減を定めていないため（第20条の4）。",
         "evidence": [
           {
             "article": "第二十条の四",
@@ -624,7 +623,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "intergovernmental_cost_sharing",
-        "reason": "第10条・第10条の3等は障害福祉等の事務に係る国と地方の経費負担・補助区分を規定する。対象が行政主体間の財源であり、家計の受給要件・利用者負担を直接定める法律ではない。",
+        "reason": "障害福祉等の費用を国と地方がどう分担するかという規定であり、世帯の受給要件・利用者負担を定めていないため（第10条、第10条の3）。",
         "evidence": [
           {
             "article": "第十条",
@@ -690,7 +689,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "claims_administration",
-        "reason": "第18条は診療報酬の審査・支払等の機構業務を列挙し、障害者総合支援法等に基づく費用の取扱いを含む。給付や本人負担の根拠は引用先の個別法であり、本法は審査支払機関の業務法として除外する。",
+        "reason": "障害関連の規定は診療報酬の審査・支払機関の業務を定めるもので、給付や本人負担は引用先の個別法によって定まるため（第18条）。",
         "evidence": [
           {
             "article": "第十八条",
@@ -850,7 +849,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "provider_business_authorization",
-        "reason": "第10条の障害福祉等への言及は生活協同組合が実施できる事業の範囲を定めるものである。個別の給付対象・負担額はこの条文から発生しない。",
+        "reason": "障害福祉に関する記載は生協が行える事業の範囲を定めるもので、世帯の受給要件・負担額を定めていないため（第10条）。",
         "evidence": [
           {
             "article": "第十条",
@@ -995,7 +994,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "professional_license",
-        "reason": "第2条・第4条の2等は学校教員・特別支援学校教諭免許状の区分や資格を定める。障害児世帯の家計ではなく教育職の資格制度である。",
+        "reason": "障害に関する記載は特別支援学校の教員免許の種類・資格を定めるもので、世帯への給付・負担軽減を定めていないため（第2条、第4条の2等）。",
         "evidence": [
           {
             "article": "第二条",
@@ -1276,7 +1275,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "delegated_broadcast_fee_exemption",
-        "reason": "第64条4項は受信料免除の認可基準を根拠付けるが、障害を要件とする免除対象・条件は認可免除基準との接続が必要なため除外する。",
+        "reason": "障害者世帯の受信料免除の具体的な対象・条件は法律本則に示されず、認可された免除基準を参照する必要があるため（第64条4項）。",
         "evidence": [
           {
             "article": "第六十四条",
@@ -1336,7 +1335,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "delegated_disability_public_assistance_addition",
-        "reason": "第8条は保護基準による需要・不足額に応じた保護を定めるが、障害者加算の具体的な要件・額は委任先の保護基準等に置かれるため除外する。",
+        "reason": "障害者加算の具体的な要件・額は法律本則ではなく、別に定める保護基準等に置かれているため（第8条）。",
         "evidence": [
           {
             "article": "第八条",
@@ -1392,7 +1391,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "local_allocation_tax_formula",
-        "reason": "第12条・第13条の障害福祉等の記載は地方交付税の基準財政需要額・測定単位の算定に用いるものである。家計への直接給付又は自己負担上限を定めない。",
+        "reason": "障害福祉等の記載は自治体への財源配分の計算に用いるもので、世帯への給付額・負担額を定めていないため（第12条、第13条）。",
         "evidence": [
           {
             "article": "第十二条",
@@ -1646,7 +1645,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "voting_access_procedure",
-        "reason": "第49条等の障害に関する規定は郵便等投票・不在者投票の方法を定める。投票機会の保障であり、障害児世帯への給付・利用者負担調整ではない。",
+        "reason": "障害に関する規定は投票の方法を定めるもので、世帯への給付・利用者負担の軽減を定めていないため（第49条等）。",
         "evidence": [
           {
             "article": "第四十九条",
@@ -1723,7 +1722,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "social_welfare_framework",
-        "reason": "第2条は社会福祉事業の種類、第106条の11等は地域支援の事業費等を定める。障害福祉に関係するが、本法は個々の世帯に対する給付額や利用者負担を直接定めるものではない。",
+        "reason": "障害関連の規定は社会福祉事業の種類・事業費を定めるもので、世帯への給付額・利用者負担を直接定めていないため（第2条、第106条の11等）。",
         "evidence": [
           {
             "article": "第二条",
@@ -1841,7 +1840,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "public_housing_disability_rent",
-        "reason": "第16条は収入等に応じた家賃と減免等を定めるが、障害者の収入認定上の控除・優遇条件を把握するには政令・条例との接続が必要なため除外する。",
+        "reason": "障害者の収入認定上の控除・優遇条件は法律本則だけでは定まらず、政令・条例を参照する必要があるため（第16条）。",
         "evidence": [
           {
             "article": "第十六条",
@@ -1959,7 +1958,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "public_property_transfer",
-        "reason": "第2条・第3条は社会福祉施設等に用いる国有財産の公共団体・法人等への譲渡・貸付けの特例である。障害児世帯個人の費用又は受給額ではなく、公共財産処分・施設整備の規定として除外する。",
+        "reason": "障害福祉施設等に使う国有財産を公共団体・法人等へ譲渡・貸付けする取扱いであり、障害児世帯への給付・負担軽減ではないため（第2条、第3条）。",
         "evidence": [
           {
             "article": "第二条",
@@ -2139,7 +2138,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "island_service_infrastructure",
-        "reason": "第10条の2は障害福祉サービス等の提供、人材・事業所確保への配慮を規定する。離島の供給体制整備であり、障害児世帯への給付額又は負担軽減の具体的権利を直接定めるものではない。",
+        "reason": "障害関連の規定はサービスを提供する事業所・人材等の確保を求めるもので、世帯への給付額・自己負担を定めていないため（第10条の2）。",
         "evidence": [
           {
             "article": "第七条",
@@ -2341,7 +2340,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "education_political_neutrality",
-        "reason": "第2条の特別支援学校への言及は対象学校・教職員の定義である。教育の政治的中立の確保・違反行為の規制であり、障害児世帯への経済的支援を定めない。",
+        "reason": "障害に関する記載は規制対象となる学校・教職員の定義であり、世帯への給付・負担軽減を定めていないため（第2条）。",
         "evidence": [
           {
             "article": "第二条",
@@ -2446,7 +2445,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "amami_service_capacity",
-        "reason": "第27条は障害福祉等のサービス提供体制・従事者確保への配慮、第28条等は施設整備に関する特例である。障害児世帯個人への給付又は費用上限の直接規定としては扱わない。",
+        "reason": "障害関連の規定はサービス提供体制・施設の整備に関するもので、世帯への給付額・費用上限を直接定めていないため（第27条、第28条等）。",
         "evidence": [
           {
             "article": "第二十七条",
@@ -2680,7 +2679,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "special_school_meal_parent_cost",
-        "reason": "第5条は特別支援学校幼稚部・高等部の給食経費について設置者と保護者の負担を分担する規定である。障害の程度等を要件として個人・世帯の給付又は負担軽減を設けるものではなく、学校給食経費の一般的な分担として除外する。",
+        "reason": "学校給食費を設置者と保護者でどう分担するかという規定であり、障害を要件とする給付・負担軽減を設けていないため（第5条）。",
         "evidence": [
           {
             "article": "第五条",
@@ -2732,7 +2731,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "school_health_general_low_income",
-        "reason": "第24条の医療費援助に係る補助は要保護・準要保護者等を対象とする学校保健上の疾病対策であり、特別支援学校の児童生徒を含むが障害を受給要件としない。除外する。",
+        "reason": "障害を受給要件とせず、要保護・準要保護者等の疾病対策として医療費援助に係る補助を行う制度であるため（第24条）。",
         "evidence": [
           {
             "article": "第二十四条",
@@ -2872,7 +2871,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "class_size_teacher_allocation",
-        "reason": "第11条等の障害種別に応じた取扱いは学級編制・教職員定数の算定である。人的配置基準であり、障害児世帯の現金給付・費用負担を定めるものではない。",
+        "reason": "障害に関する規定は学級編制・教員配置の算定基準であり、世帯への金銭給付・費用負担を定めていないため（第11条等）。",
         "evidence": [
           {
             "article": "第十八条",
@@ -2938,7 +2937,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "general_health_insurance_collection",
-        "reason": "第76条の3の障害年金への言及は保険料の特別徴収方法、第116条の2は施設入所等に伴う住所地特例に関するもの。国民健康保険の一般的な給付・保険料制度を障害を要件とする児童世帯支援としては扱わず、除外する。",
+        "reason": "確認した障害関連規定は保険料の徴収方法や住所地の取扱いであり、障害を要件とする児童世帯の給付・負担軽減を定めていないため（第76条の3、第116条の2）。",
         "evidence": [
           {
             "article": "第七十六条の三",
@@ -3142,7 +3141,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "traffic_safety_license",
-        "reason": "第71条等は障害のある歩行者等の安全確保、第2条等は車両・道路交通上の定義である。運転資格や安全上の義務であり、障害児世帯の金銭給付・減免を定めない。",
+        "reason": "障害関連の規定は歩行者の安全確保・運転資格等に関するもので、世帯への金銭給付・減免を定めていないため（第2条、第71条等）。",
         "evidence": [
           {
             "article": "第二条",
@@ -3431,7 +3430,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "rail_crossing_accessibility",
-        "reason": "第3条の障害に関する配慮は高齢者・障害者等の移動円滑化を図る踏切改良の指定基準等である。公共交通施設整備であり、個人への助成又は利用料金減免を同条は定めない。",
+        "reason": "障害に関する規定は踏切の改良・移動円滑化に関する整備基準であり、個人への助成・利用料金減免を定めていないため（第3条）。",
         "evidence": [
           {
             "article": "第三条",
@@ -3475,7 +3474,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "disaster_response_disability_compensation",
-        "reason": "第84条は応急措置業務への従事により障害状態となった者等への補償を定めるため、災害対応業務への従事及びその業務に起因する障害を前提とする制度として除外する。",
+        "reason": "障害に対する補償は災害対応業務への従事に起因する場合を対象としており、特定の従事・発生原因を前提とするため（第84条）。",
         "evidence": [
           {
             "article": "第八十四条",
@@ -3519,7 +3518,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "public_order_notification",
-        "reason": "第7条は酒に酔った行為を繰り返す者についての保健所長への通報等で、精神障害者を別扱いとする規定である。家計への給付や医療自己負担の調整を定めるものではない。",
+        "reason": "精神障害に関する記載は保健所への通報対象の範囲を定めるもので、世帯への給付・医療自己負担の軽減を定めていないため（第7条）。",
         "evidence": [
           {
             "article": "第七条",
@@ -3567,7 +3566,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "condominium_decision_rules",
-        "reason": "第17条等の障害への言及は移動円滑化等の共用部分変更に必要な集会決議要件に関する規定である。工事費助成や障害児世帯の負担軽減額を直接定めない。",
+        "reason": "障害に配慮した共用部分の変更に必要な集会決議の取扱いであり、工事費の助成・世帯の負担軽減を定めていないため（第17条等）。",
         "evidence": [
           {
             "article": "第十七条",
@@ -4124,7 +4123,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "professional_representative_scope",
-        "reason": "第2条の障害者雇用等への言及は社会保険労務士の紛争解決代理等の業務範囲である。資格・専門職業務の規定であり、障害児世帯の給付額・利用者負担を規定しない。",
+        "reason": "障害に関する記載は社会保険労務士が行える業務の範囲を定めるもので、世帯の給付・利用者負担を定めていないため（第2条）。",
         "evidence": [
           {
             "article": "第二条",
@@ -4305,7 +4304,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "accessible_copyright_exception",
-        "reason": "第37条・第37条の2は視覚・聴覚等の障害に対応する複製、送信、字幕等について著作権の制限を定める。アクセシビリティ確保の権利調整であり、家計への公的給付・利用者負担の算定規定としては抽出しない。",
+        "reason": "障害に対応した作品の複製・送信等の著作権上の取扱いであり、世帯への給付・自己負担の算定を定めていないため（第37条、第37条の2）。",
         "evidence": [
           {
             "article": "第三十七条",
@@ -4371,7 +4370,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "basic_policy_not_individual_entitlement",
-        "reason": "第15条は年金・手当の必要施策、第24条は税制措置・公共施設利用料減免等の施策を国・自治体に求める。ただし本法単独で個人の受給資格・額・減免を確定するものではないため、基本方針法として除外し、具体的制度の法令を別途抽出する。",
+        "reason": "年金・手当や減免制度の整備を国・自治体に求める基本方針であり、この規定だけでは個人の受給資格・給付額・減免条件が定まらないため（第15条、第24条）。",
         "evidence": [
           {
             "article": "第十五条",
@@ -4548,7 +4547,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "okinawa_reversion_transition",
-        "reason": "第56条は琉球政府職員の公務災害補償、第104条は復帰前の年金加入期間・給付権の引継ぎを定める。職域・年金受給資格を前提とするため除外する。第103条は行政主体の取扱いを定め、家計への給付・負担を定めない。",
+        "reason": "公務災害補償・年金給付に関する障害規定は、琉球政府職員の公務又は復帰前の年金加入・受給資格を前提とするため（第56条、第104条）。",
         "evidence": [
           {
             "article": "第百四条",
@@ -5001,7 +5000,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "spent_amendment_provisions",
-        "reason": "第43条・第146条はそれぞれ障害者基本施策法・障害者雇用法の改正規定で、現行本文では『略』とされる。旧国鉄改革に伴う関係法整備であり、独立した現行の家計給付・負担制度として重複抽出しない。",
+        "reason": "障害に関する記載は関係法の改正規定であり、家計への給付・負担制度を独立して定める規定ではないため（第43条、第146条）。",
         "evidence": [
           {
             "article": "第四十三条",
@@ -5059,7 +5058,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "welfare_professional_qualification",
-        "reason": "第2条は社会福祉士・介護福祉士の業務、第7条等は受験資格を定める。障害福祉の専門職資格であり、障害児世帯の給付・税額・利用者負担を規定する法律ではない。",
+        "reason": "障害関連の規定は福祉専門職の資格・業務を定めるもので、世帯の給付・税額・利用者負担を定めていないため（第2条等）。",
         "evidence": [
           {
             "article": "第二条",
@@ -5103,7 +5102,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "housing_development_accessibility",
-        "reason": "第4条の障害への言及は認定宅地開発事業における公共施設の円滑利用確保という計画認定基準である。児童世帯への住宅費助成又は個人負担の減免を定めるものではない。",
+        "reason": "障害に関する規定は宅地開発計画の認定基準であり、世帯への住宅費助成・負担減免を定めていないため（第4条）。",
         "evidence": [
           {
             "article": "第四条",
@@ -5163,7 +5162,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "assistive_technology_research_supply",
-        "reason": "第1条等は福祉用具の研究開発・普及、第5条は製造販売事業者や施設の責務を定める。用具購入費を障害児世帯に給付する規定ではなく、用具費の直接支給は別制度として抽出すべき。",
+        "reason": "障害関連の規定は福祉用具の研究開発・普及や事業者・施設の責務を定めるもので、世帯への用具購入費の給付を定めていないため（第1条、第5条等）。",
         "evidence": [
           {
             "article": "第一条",
@@ -5229,7 +5228,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "accessible_communications_provider_grants",
-        "reason": "第4条の助成金は第2条で定義する通信・放送利用円滑化事業の実施資金であり、事業者による役務開発・設備設置・字幕等制作を支援する。障害児世帯本人の利用料金減免又は現金給付ではない。",
+        "reason": "助成金は通信・放送を利用しやすくする事業の実施資金であり、障害児世帯への給付・利用料減免ではないため（第2条、第4条）。",
         "evidence": [
           {
             "article": "第四条",
@@ -5279,7 +5278,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "music_learning_environment",
-        "reason": "第3条2項は音楽学習環境の整備に当たり障害者等への配慮を求める。学習環境整備の政策原則であり、障害児世帯の給付額や費用負担軽減を直接定めない。",
+        "reason": "障害に関する規定は音楽学習環境を整備する際の配慮を求めるもので、世帯への給付・負担軽減を定めていないため（第3条2項）。",
         "evidence": [
           {
             "article": "第三条",
@@ -5484,7 +5483,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "long_term_care_adult_age_scope",
-        "reason": "第9条の被保険者は40歳以上、第7条の要介護者等も40歳以上を対象とする。障害児本人が対象となる介護給付・利用者負担ではないため除外する。共生型サービス等の規定は別法の障害児支援給付を置き換えるものではない。",
+        "reason": "保険給付・負担の対象は40歳以上で、障害児本人への給付・利用者負担を定めていないため（第7条、第9条）。",
         "evidence": [
           {
             "article": "第九条",
@@ -5835,7 +5834,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "government_organization",
-        "reason": "第4条で特別支援学校を含む初等中等教育や教科書に関する文部科学省の所掌事務を定める。教育給付の具体的受給要件・額を定める法律ではない。",
+        "reason": "第4条の特別支援学校・教科書に関する規定は文部科学省の担当事務を定めるもので、障害児世帯への給付や負担額を直接調整する規定ではないため除外する。",
         "evidence": [
           {
             "article": "第四条",
@@ -6039,7 +6038,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "institutional_business_and_provider_support",
-        "reason": "第14条は情報通信研究機構の研究開発等の業務に障害者利用円滑化法に基づく業務を含める。事業実施機関の権限・財務に関する規定で、障害児世帯への直接給付の根拠ではない。",
+        "reason": "第14条は障害者利用円滑化法に基づく業務を機構の業務範囲に含める規定であり、障害児世帯への給付や利用者負担を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第十四条",
@@ -6181,7 +6180,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "disaster_land_use_and_facility_safety",
-        "reason": "第10条は障害者等が利用する施設を含む開発行為の制限・許可の対象を定める。規制は施設用途・土砂災害危険性を条件とし、障害児世帯への給付・費用軽減を条件付きで付与するものではない。",
+        "reason": "第10条の障害者等が利用する施設に関する規定は、開発行為の制限・許可を定めるもので、障害児世帯への金銭給付や自己負担額を調整する規定ではないため除外する。",
         "evidence": [
           {
             "article": "第十条",
@@ -6391,7 +6390,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "building_standards_not_disability_household_eligibility",
-        "reason": "第163条の56第2項第5号はバリアフリー基準への不適合をマンションの要除却等認定の要件にする。認定・再生事業の対象は建物の性能であって居住世帯の障害の有無ではなく、障害児世帯固有の給付・減免ではない。",
+        "reason": "第163条の56第2項第5号は、バリアフリー基準への不適合をマンションの要除却等認定の要件とする。建物の認定に関する規定であり、障害児世帯への給付や支払額を直接調整しないため除外する。",
         "evidence": [
           {
             "article": "第百六十三条の五十六",
@@ -6566,7 +6565,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "reinsurance_and_provider_finance",
-        "reason": "第12条第1項第10号は地方公共団体が扶養共済加入者に負う責任を機構が保険する業務を定め、第2項は共済自体を条例に基づく制度とする。本法は自治体・機構間の保険と施設事業者融資を規律し、障害児世帯の給付請求権・掛金を直接定めない。",
+        "reason": "第12条第1項第10号・第2項は、条例に基づく扶養共済について自治体が負う責任を機構が保険する仕組みを定める。自治体・機構間の保険規定であり、障害児世帯への給付や掛金を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第十二条",
@@ -6630,7 +6629,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "institutional_service_organization",
-        "reason": "第3条・第11条はのぞみの園の目的と重度知的障害者支援施設の設置運営、調査研究、研修等の業務を定める。施設利用の給付・利用者負担の具体的規定は本法ではなく、機関設置法として除外する。",
+        "reason": "第3条・第11条の障害者に関する規定は、施設の設置運営・調査研究・研修等の業務を定めるもので、障害児世帯への金銭給付や利用者負担額を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第三条",
@@ -7215,7 +7214,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "legal_sex_status_procedure",
-        "reason": "第3条の審判は18歳以上で現に未成年の子がいない者等を対象とする法令上の性別取扱変更で、第4条もその身分法上の効果を定める。障害児世帯への給付・サービス費・税控除を定める法律ではない。",
+        "reason": "第3条・第4条は法令上の性別の取扱いの変更とその身分法上の効果を定める規定であり、障害児世帯の給付・サービス費・税額を直接調整するものではないため除外する。",
         "evidence": [
           {
             "article": "第三条",
@@ -7380,7 +7379,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "universal_emergency_protection",
-        "reason": "第9条は国民保護措置で障害者等への配慮を求める規定である。救援・損失補償等は武力攻撃等の被害を条件とする一般制度で、障害の存在を要件とする世帯給付の上乗せ・負担減免は本則に見いだせない。",
+        "reason": "第9条の障害者等に関する規定は国民保護措置での配慮を求めるもので、障害を要件とする世帯給付の上乗せや自己負担軽減を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第九条",
@@ -7847,7 +7846,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "elder_abuse_safeguards_not_child_financial_benefit",
-        "reason": "第2条第1項は高齢者を65歳以上とし、第6項は65歳未満の障害者の施設等虐待に第3章を適用する。これは虐待防止の適用範囲であり、障害児世帯の給付・料金減免を直接定めない。第28条の成年後見費用軽減も高齢者虐待を対象とする。",
+        "reason": "第2条第6項の65歳未満の障害者への適用は施設等での虐待防止に関するもので、障害児世帯への給付・料金減免を直接定めないため除外する。第28条の成年後見費用軽減は高齢者虐待を対象とする。",
         "evidence": [
           {
             "article": "第二条",
@@ -8190,7 +8189,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "housing_supply_and_guarantor_reinsurance",
-        "reason": "第2条は障害者を住宅確保要配慮者の一類型とし、第10条は賃貸条件の適正基準、第20条・第80条は保証業者と住宅金融支援機構の保険を定める。本則は入居円滑化・供給と保証制度であり、障害児世帯の家賃・保証料の減免や給付を直接定めない。",
+        "reason": "第2条・第10条・第20条等は、障害者を含む者の入居円滑化、賃貸条件の基準及び保証業者と住宅金融支援機構との保険を定める。障害児世帯への家賃・保証料の減免や金銭給付を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -8493,7 +8492,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "family_court_procedure_not_benefit_rule",
-        "reason": "家事審判・調停の手続法であり、第232条は性別の取扱い変更審判に係る手続を定める。手続費用の一般規定はあるが、障害児世帯の障害を条件とする給付や費用減免を定めるものではない。検索語の出現位置には節題・目次等も含まれる。",
+        "reason": "第232条は性別の取扱い変更審判の手続に関する規定であり、障害児世帯の給付や費用減免を直接定めないため除外する。手続費用については一般規定がある。",
         "evidence": [
           {
             "article": "第二百三十二条",
@@ -8711,7 +8710,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "dental_health_policy_no_direct_entitlement",
-        "reason": "第9条は障害者等が歯科検診・歯科医療を受けられるよう必要な施策を求める。具体的な医療費助成や自己負担免除の受給要件・額を本法に定めていない。",
+        "reason": "第9条は障害者等が歯科検診・歯科医療を受けられるよう施策を求める規定であり、患者・世帯への医療費支給や自己負担免除を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第九条",
@@ -9461,7 +9460,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "allergy_policy_and_institutional_accommodation",
-        "reason": "第9条は学校・障害者支援施設等の設置者にアレルギー疾患を有する者への配慮を求める。障害そのものを条件とする医療費給付や世帯負担減免を具体的に定めない。",
+        "reason": "第9条の障害者支援施設等に関する規定はアレルギー疾患を有する者への配慮を求めるもので、障害児世帯の給付や自己負担額を直接調整しないため除外する。",
         "evidence": [
           {
             "article": "第九条",
@@ -9643,7 +9642,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "education_opportunity_policy_not_disability_condition",
-        "reason": "第2条は特別支援学校小学部・中学部を学校の定義に含めるが、不登校児童生徒等の教育機会確保を対象とする施策法である。教材提供等も障害を要件にした世帯給付・負担減免ではない。",
+        "reason": "第2条の特別支援学校への言及は学校の定義であり、教材提供等は教育機会を確保するための学習支援である。障害児世帯への金銭給付や負担額の調整を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -9933,7 +9932,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "reading_access_policy_no_specified_household_benefit",
-        "reason": "第14条は視覚障害者等による読書用端末機器等の入手支援施策を求めるが、本法に購入費給付・利用料減免の具体的受給要件・額はない。図書館・電子書籍等の提供体制と読書環境整備の施策として除外する。",
+        "reason": "第14条は視覚障害者等による読書用端末機器等の入手支援施策を求めるもので、障害児世帯への購入費支給や利用料減免を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第十四条",
@@ -10326,7 +10325,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "information_access_policy_and_development_support",
-        "reason": "第11条は情報取得機器・役務の開発及び提供に対する助成、情報提供・入手支援等の施策を求める。家計への購入費支給や利用料減免の具体的受給要件・額は本法に定めず、開発普及・情報アクセス政策として除外する。",
+        "reason": "第11条の助成・支援は情報取得機器等の開発・提供・入手を促進する施策であり、障害児世帯への購入費支給や利用料減免を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第十一条",
@@ -10417,7 +10416,7 @@
         "review_status": "verified",
         "scope_review_required": false,
         "reason_code": "diversity_awareness_policy",
-        "reason": "第6条は特別支援学校を含む学校で性的指向・ジェンダーアイデンティティの多様性に関する理解増進に努める規定である。障害児世帯の障害を条件とする金銭給付・負担軽減を設定するものではない。",
+        "reason": "第6条の特別支援学校への言及は学校での多様性に関する理解増進に係るもので、障害児世帯への金銭給付や負担軽減を直接定めないため除外する。",
         "evidence": [
           {
             "article": "第六条",

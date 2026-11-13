@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const TABLE_TITLE = "表A2　e-Gov法令検索による抽出結果と採否";
 const DATA_SCHEMA = "2.1.0";
-export const DATA_REVISION = "1a6f73b6bcecece3cf5e755eb1b5ee6f1e0363059f670ffde163825e888decc6";
+export const DATA_REVISION = "fca9515c851e547a870733e52e01f414b46ff0aa5be9e00e49bd5bbb273cdda7";
 
 async function readLawData(response) {
   const text = await response.text();
@@ -36,17 +36,10 @@ function screeningCategory(law) {
 
 function ScreeningStatus({ law }) {
   const category = screeningCategory(law);
-  const verified = law.screening?.review_status === "verified";
-
   return (
-    <>
-      <span className={`research-status ${category}`}>
-        {category === "candidate" ? "採用候補" : category === "excluded" ? "除外" : "判定要確認"}
-      </span>
-      <small className="research-review-note">{verified ? "原典確認済み" : "原典確認中"}</small>
-      {category === "candidate" && law.screening?.scope_review_required &&
-        <small className="research-review-note">適用条件の確認が必要</small>}
-    </>
+    <span className={`research-status ${category}`}>
+      {category === "candidate" ? "採用候補" : "除外"}
+    </span>
   );
 }
 
@@ -56,7 +49,6 @@ function ScreeningReason({ law }) {
     <>
       <p>{reason || "法令ごとの理由は未記載です。"}</p>
       {law.screening?.discussion_point && <p className="research-discussion-point"><strong>検討事項：</strong>{law.screening.discussion_point}</p>}
-      {law.screening?.review_status !== "verified" && <small className="research-review-note">原典との照合が完了していません。</small>}
     </>
   );
 }
@@ -65,7 +57,6 @@ function ScreeningEvidence({ law }) {
   const evidence = law.screening?.evidence || [];
   return (
     <>
-      {law.screening?.review_status !== "verified" && <p>確認根拠を原典と照合中です。</p>}
       {evidence.length > 0 && <details className="research-evidence-details">
         <summary>根拠条文・原文（{evidence.length}件）</summary>
         {evidence.map((item, index) => (
@@ -76,7 +67,7 @@ function ScreeningEvidence({ law }) {
           </div>
         ))}
       </details>}
-      {evidence.length === 0 && law.screening?.review_status === "verified" && <p>条文・確認根拠の記載はありません。</p>}
+      {evidence.length === 0 && <p>条文・確認根拠の記載はありません。</p>}
       {law.source_url && <p><a href={law.source_url} target="_blank" rel="noreferrer">法令原文（e-Gov）</a></p>}
     </>
   );
@@ -93,8 +84,7 @@ function LawGroupTable({ headingId, title, caption, rows }) {
             <tr>
               <th scope="col">法令ID</th>
               <th scope="col">法令名</th>
-              <th scope="col">検索語</th>
-              <th scope="col">採否・確認状況</th>
+              <th scope="col">採否</th>
               <th scope="col">法令ごとの採否理由</th>
               <th scope="col">確認根拠（条文・原文リンク）</th>
             </tr>
@@ -104,8 +94,7 @@ function LawGroupTable({ headingId, title, caption, rows }) {
               <tr key={law.law_id}>
                 <th scope="row" className="appendix-mono">{law.law_id}</th>
                 <td data-label="法令名">{law.law_title}{law.law_num && <small className="research-law-number">{law.law_num}</small>}</td>
-                <td data-label="検索語">{(law.matched_keywords || []).join("、")}</td>
-                <td data-label="採否・確認状況"><ScreeningStatus law={law} /></td>
+                <td data-label="採否"><ScreeningStatus law={law} /></td>
                 <td data-label="法令ごとの採否理由"><ScreeningReason law={law} /></td>
                 <td data-label="確認根拠（条文・原文リンク）"><ScreeningEvidence law={law} /></td>
               </tr>
@@ -131,11 +120,7 @@ function LawScreeningTable({ data, dataUrl }) {
   }, { candidate: 0, excluded: 0, pending: 0 }), [laws]);
 
   const rows = useMemo(() => laws.filter((law) => {
-    if (filter === "scope-review") {
-      if (screeningCategory(law) !== "candidate" || !law.screening?.scope_review_required) return false;
-    } else if (filter === "pending") {
-      if (law.screening?.review_status === "verified") return false;
-    } else if (filter !== "all" && screeningCategory(law) !== filter) return false;
+    if (filter !== "all" && screeningCategory(law) !== filter) return false;
     const haystack = [
       law.law_id,
       law.law_num,
@@ -174,14 +159,13 @@ function LawScreeningTable({ data, dataUrl }) {
         {data.method?.keywords && <p>検索語：{data.method.keywords.join("、")}。</p>}
         {data.method?.combination && <p>集計方法：{data.method.combination}。</p>}
         {data.method?.inclusion_criterion && <p>候補抽出基準：{data.method.inclusion_criterion}</p>}
-        {data.method?.review_status_note && <p>{data.method.review_status_note}</p>}
       </div>
       <p className="research-note">抽出{laws.length}件、除外{statistics.excluded}件、候補{statistics.candidate}件{statistics.pending > 0 ? `、判定要確認${statistics.pending}件` : ""}。</p>
       <p className="research-note">{data.method?.candidate_note || "候補への収録は、モデル世帯の試算への採用を意味しない。"}</p>
       <div className="research-controls">
         <label>
           <span>法令・採否根拠を検索</span>
-          <input type="search" value={query} placeholder="法令ID・法令名・法令番号・検索語・採否理由・検討事項・条文" onChange={(event) => setQuery(event.currentTarget.value)} />
+          <input type="search" value={query} placeholder="法令ID・法令名・法令番号・採否理由・検討事項・条文" onChange={(event) => setQuery(event.currentTarget.value)} />
         </label>
         <label>
           <span>採否の表示</span>
@@ -189,8 +173,6 @@ function LawScreeningTable({ data, dataUrl }) {
             <option value="all">全件</option>
             <option value="candidate">採用候補</option>
             <option value="excluded">除外のみ</option>
-            <option value="pending">原典確認中</option>
-            <option value="scope-review">適用条件要確認</option>
           </select>
         </label>
         <output aria-live="polite">{rows.length}件表示（全{laws.length}件）</output>

@@ -116,18 +116,19 @@ test("除外理由をデータの順序で示し、最後に候補法令の表�
   expect(screen.queryByText(/999件|現行法令数|非現行|原典確認中0|表示しない内部の取得手順/)).not.toBeInTheDocument();
 });
 
-test("全表にID先頭の6列、個別理由、条文と原文リンクを保持する", async () => {
+test("全表にID先頭の5列、個別理由、条文と原文リンクを保持する", async () => {
   await renderSample();
   const tables = screen.getAllByRole("table");
   tables.forEach((table) => {
-    expect(within(table).getAllByRole("columnheader")).toHaveLength(6);
+    expect(within(table).getAllByRole("columnheader")).toHaveLength(5);
     expect(within(table).getAllByRole("columnheader")[0]).toHaveTextContent("法令ID");
+    expect(within(table).queryByRole("columnheader", { name: "検索語" })).not.toBeInTheDocument();
   });
   sample.laws.forEach((law) => {
     const row = screen.getByRole("row", { name: new RegExp(law.law_id) });
     expect(within(row).getByRole("rowheader")).toHaveTextContent(law.law_id);
     expect(within(row).getByRole("rowheader")).toHaveAttribute("scope", "row");
-    expect(within(row).getAllByRole("cell")).toHaveLength(5);
+    expect(within(row).getAllByRole("cell")).toHaveLength(4);
     within(row).getAllByRole("cell").forEach((cell) => expect(cell).toHaveAttribute("data-label"));
     expect(within(row).getByText(law.screening.reason)).toBeVisible();
     expect(within(row).getByRole("link", { name: "法令原文（e-Gov）" })).toHaveAttribute("href", law.source_url);
@@ -137,29 +138,25 @@ test("全表にID先頭の6列、個別理由、条文と原文リンクを保�
   expect(within(rowA).getByText("給付についての原文を省略せず記載する。")).toBeVisible();
   expect(within(rowA).getByRole("link", { name: "第十条の原文" })).toHaveAttribute("href", "https://example.org/laws/a#article10");
   const cells = within(rowA).getAllByRole("cell");
-  expect(within(cells[3]).getByText("検討事項：")).toBeVisible();
-  expect(within(cells[3]).getByText(sample.laws[0].screening.discussion_point)).toBeVisible();
-  expect(within(cells[4]).queryByText(sample.laws[0].screening.discussion_point)).not.toBeInTheDocument();
+  expect(within(cells[2]).getByText("検討事項：")).toBeVisible();
+  expect(within(cells[2]).getByText(sample.laws[0].screening.discussion_point)).toBeVisible();
+  expect(within(cells[3]).queryByText(sample.laws[0].screening.discussion_point)).not.toBeInTheDocument();
   const download = screen.getByRole("link", { name: "法令抽出・採否JSONをダウンロード" });
   expect(download).toHaveAttribute("href", expect.stringContaining("/data/research/egov-law-screening.json"));
   expect(download).toHaveAttribute("download");
 });
 
-test("採否の区分と原典の確認状況を混同しない", async () => {
+test("採否だけを表示し、作業上の確認状況を公開表示しない", async () => {
   await renderSample();
   const candidateRow = screen.getByRole("row", { name: /LAW-F/ });
   expect(within(candidateRow).getByText("採用候補", { exact: true })).toBeVisible();
-  expect(within(candidateRow).getByText("原典確認中", { exact: true })).toBeVisible();
-  expect(within(candidateRow).getByText("適用条件の確認が必要", { exact: true })).toBeVisible();
-  expect(within(candidateRow).queryByText("原典確認済み", { exact: true })).not.toBeInTheDocument();
   const excludedRow = screen.getByRole("row", { name: /LAW-D/ });
   expect(within(excludedRow).getByText("除外", { exact: true })).toBeVisible();
-  expect(within(excludedRow).getByText("原典確認中", { exact: true })).toBeVisible();
-  expect(screen.getByText("原典確認済みは採用確定を意味しない。")).toBeInTheDocument();
+  expect(screen.queryByText(/原典確認済み|原典確認中|適用条件の確認が必要|原典との照合が完了|確認根拠を原典と照合中/)).not.toBeInTheDocument();
   expect(screen.getByText(/モデル世帯の試算への採用を意味しない/)).toBeInTheDocument();
 });
 
-test("候補・除外・原典確認中・適用条件の絞り込みと検索を保持する", async () => {
+test("候補・除外の絞り込みと検索を保持する", async () => {
   await renderSample();
   const filter = screen.getByRole("combobox", { name: "採否の表示" });
   fireEvent.change(filter, { target: { value: "candidate" } });
@@ -170,13 +167,7 @@ test("候補・除外・原典確認中・適用条件の絞り込みと検索�
   expect(screen.getAllByRole("table")).toHaveLength(4);
   expect(screen.queryByRole("table", { name: "候補法令の個別検討" })).not.toBeInTheDocument();
   expect(screen.getByText("4件表示（全7件）")).toBeInTheDocument();
-  fireEvent.change(filter, { target: { value: "pending" } });
-  expect(screen.getByText("職域制度の除外法")).toBeInTheDocument();
-  expect(screen.getByText("原典照合中の候補法")).toBeInTheDocument();
-  expect(screen.getByText("2件表示（全7件）")).toBeInTheDocument();
-  fireEvent.change(filter, { target: { value: "scope-review" } });
-  expect(screen.getByText("原典照合中の候補法")).toBeInTheDocument();
-  expect(screen.getByText("1件表示（全7件）")).toBeInTheDocument();
+  expect(within(filter).getAllByRole("option")).toHaveLength(3);
   fireEvent.change(filter, { target: { value: "all" } });
   const search = screen.getByRole("searchbox", { name: "法令・採否根拠を検索" });
   fireEvent.change(search, { target: { value: "個別輸入" } });

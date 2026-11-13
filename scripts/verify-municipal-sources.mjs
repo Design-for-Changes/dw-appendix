@@ -6,9 +6,9 @@ assert.equal(data.municipalities.length, 26);
 assert.equal(new Set(data.municipalities.map((city) => city.code)).size, 26);
 assert.equal(data.municipalities.filter((city) => city.classification === "政令指定都市").length, 20);
 assert.equal(data.municipalities.filter((city) => city.classification === "中核市").length, 6);
-assert.equal(data.scope.population_reference_date, "2025-01-01");
+assert.equal(data.scope.population_reference_date, "2026-01-01");
 const allowedCityKeys = new Set(["code", "name", "prefecture", "classification", "population", "sources"]);
-const allowedSourceKeys = new Set(["title", "url", "edition", "checked_on", "verification"]);
+const allowedSourceKeys = new Set(["title", "url", "edition", "checked_on"]);
 for (const city of data.municipalities) {
   assert.match(city.code, /^\d{6}$/);
   assert.ok(city.sources.length > 0, `${city.name}: source missing`);

@@ -17,6 +17,8 @@ test("資料を独立して読み込み、市名で絞り込む", async () => {
   jest.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => sample });
   render(<MunicipalSourcesAppendix />);
   expect(await screen.findByText("福祉案内A")).toHaveAttribute("href", "https://example.org/a");
+  expect(screen.getByText(/最終確認日：2026-11-13/)).toBeInTheDocument();
+  expect(screen.getByText("自治体制度の調査")).toBeInTheDocument();
   expect(screen.getByText("資料確認中")).toBeInTheDocument();
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "対象市A" } });
   expect(screen.getByText("1市表示")).toBeInTheDocument();

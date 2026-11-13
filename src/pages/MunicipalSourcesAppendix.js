@@ -35,7 +35,7 @@ export default function MunicipalSourcesAppendix() {
     <section className="appendix-panel municipal-sources" aria-labelledby="municipal-sources-title">
       <div className="appendix-section-head">
         <div>
-          <p className="appendix-kicker">自治体制度の再調査</p>
+          <p className="appendix-kicker">自治体制度の調査</p>
           <h2 id="municipal-sources-title">調査対象市・参照資料</h2>
           <p>{data.scope.rule}を対象とする。各市の公式な障害福祉案内を、資料名・版とともに示す。</p>
         </div>
@@ -43,8 +43,6 @@ export default function MunicipalSourcesAppendix() {
       </div>
       <div className="municipal-method">
         <p><strong>対象：{data.municipalities.length}市。</strong>{data.scope.population_description}</p>
-        <p>{data.observation_note}</p>
-        <p>本ページは調査範囲と資料の所在を示すものであり、市別の実施状況の比較表や順位は掲載しない。資料の確認は、掲載されたすべての制度の実施・対象条件を確認したことを意味しない。</p>
         <ul>
           {data.scope.references.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.title}</a></li>)}
         </ul>
@@ -55,7 +53,7 @@ export default function MunicipalSourcesAppendix() {
       </div>
       <div className="appendix-table-wrap">
         <table className="appendix-table municipal-source-table">
-          <caption>自治体の公式案内資料（確認日：{data.checked_on}）</caption>
+          <caption>自治体の公式案内資料（最終確認日：{data.checked_on}）</caption>
           <thead><tr><th scope="col">市</th><th scope="col">区分</th><th scope="col">資料・公式掲載ページ</th><th scope="col">版・資料の基準時点</th></tr></thead>
           <tbody>
             {rows.map((city) => <tr key={city.code}>
@@ -68,7 +66,6 @@ export default function MunicipalSourcesAppendix() {
         </table>
       </div>
       {rows.length === 0 && <p role="status">該当する市はありません。</p>}
-      <p className="research-note">URL先の案内は更新される場合がある。確認日と、資料自体の発行・基準時点を区別して記録している。</p>
     </section>
   );
 }

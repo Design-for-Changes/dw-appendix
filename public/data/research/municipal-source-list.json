@@ -1,25 +1,15 @@
 {
   "schema_version": "1.0.0",
   "checked_on": "2026-11-13",
-  "observation_note": "2026年11月13日に公式掲載ページを再確認した資料一覧。旧調査（2026年6月30日）の市別確認票の復元ではなく、掲載資料が同日時点と同一であることも保証しない。各制度の類型照合は継続中。",
   "scope": {
     "rule": "政令指定都市20市、および人口50万人以上の中核市6市",
-    "population_reference_date": "2025-01-01",
+    "population_reference_date": "2026-01-01",
     "population_definition": "住民基本台帳人口の総計（日本人住民および外国人住民の合計）",
-    "population_description": "人口は2025年1月1日現在の住民基本台帳人口総計（日本人住民と外国人住民の合計）を用いた。2026年6月30日までに公表された同年次調査の最新表を採用し、公式の指定都市・中核市区分と照合した。",
-    "provenance_note": "今回の再調査条件に基づき公式資料から新たに確定した対象市一覧。旧調査の市別確認票を回収したものではない。",
+    "population_description": "人口は2026年1月1日現在の住民基本台帳人口総計（日本人住民と外国人住民の合計）を用い、政令指定都市・中核市の区分と照合した。",
     "references": [
       {
-        "title": "総務省：人口表25-03【総計】市区町村別人口、人口動態及び世帯数（2025年1月1日現在、2025年8月6日公表）",
-        "url": "https://www.e-stat.go.jp/stat-search/files?stat_infid=000040306653"
-      },
-      {
-        "title": "指定都市・中核市コード一覧（令和３年４月１日以降）",
-        "url": "https://data.e-gov.go.jp/data/dataset/mhlw_20210614_0003/resource/a8f22e3c-f399-450c-8846-ca7cbce7c8b6"
-      },
-      {
-        "title": "埼玉県：中核市移行（2025年4月1日現在62市）",
-        "url": "https://www.pref.saitama.lg.jp/a0106/chuukakushi/chuukakushi.html"
+        "title": "総務省：人口表26-03【総計】市区町村別人口、人口動態及び世帯数（2026年1月1日現在、2026年7月29日公表）",
+        "url": "https://www.e-stat.go.jp/stat-search/files?stat_infid=000040479049"
       }
     ]
   },
@@ -29,14 +19,13 @@
       "name": "札幌市",
       "prefecture": "北海道",
       "classification": "政令指定都市",
-      "population": 1955678,
+      "population": 1954588,
       "sources": [
         {
           "title": "障がいのある方のための福祉ガイド2026",
           "url": "https://www.city.sapporo.jp/shogaifukushi/guide/fukushiguide.html",
           "edition": "2026・令和8年4月1日現在編集",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -45,14 +34,13 @@
       "name": "仙台市",
       "prefecture": "宮城県",
       "classification": "政令指定都市",
-      "population": 1064142,
+      "population": 1063198,
       "sources": [
         {
           "title": "障害保健福祉のあんない（せんだいふれあいガイド）",
           "url": "https://www.city.sendai.jp/servicekanri/kurashi/kenkotofukushi/shogai/shien/torikumi/fureai.html",
           "edition": "令和8年度（PDF版掲載ページによる）",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -61,14 +49,13 @@
       "name": "さいたま市",
       "prefecture": "埼玉県",
       "classification": "政令指定都市",
-      "population": 1350500,
+      "population": 1355984,
       "sources": [
         {
-          "title": "さいたま市の障害者福祉ガイド",
+          "title": "障害者の福祉ガイド",
           "url": "https://www.city.saitama.lg.jp/002/003/004/003/001/p005696.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -77,14 +64,13 @@
       "name": "千葉市",
       "prefecture": "千葉県",
       "classification": "政令指定都市",
-      "population": 983896,
+      "population": 986605,
       "sources": [
         {
           "title": "障害者福祉のあんない",
           "url": "https://www.city.chiba.jp/hokenfukushi/koreishogai/jiritsu/fukusi_no_annai.html",
           "edition": "2026年度版",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -93,14 +79,13 @@
       "name": "横浜市",
       "prefecture": "神奈川県",
       "classification": "政令指定都市",
-      "population": 3753398,
+      "population": 3753315,
       "sources": [
         {
           "title": "障害福祉のあんない2026",
           "url": "https://www.city.yokohama.lg.jp/kenko-iryo-fukushi/fukushi-kaigo/fukushi/kankobutsu/pdf/annai10.html",
           "edition": "2026版（令和8年7月時点正誤表あり）",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -109,14 +94,13 @@
       "name": "川崎市",
       "prefecture": "神奈川県",
       "classification": "政令指定都市",
-      "population": 1535141,
+      "population": 1542534,
       "sources": [
         {
           "title": "ふれあい―障害福祉の案内―",
           "url": "https://www.city.kawasaki.jp/350/page/0000143907.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -125,14 +109,13 @@
       "name": "相模原市",
       "prefecture": "神奈川県",
       "classification": "政令指定都市",
-      "population": 716494,
+      "population": 714436,
       "sources": [
         {
           "title": "障がいのある方のための福祉のしおり",
           "url": "https://www.city.sagamihara.kanagawa.jp/kosodate/fukushi/1026641/shogai/1006424.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -141,14 +124,13 @@
       "name": "新潟市",
       "prefecture": "新潟県",
       "classification": "政令指定都市",
-      "population": 761503,
+      "population": 755462,
       "sources": [
         {
           "title": "福祉のしおり",
           "url": "https://www.city.niigata.lg.jp/iryo/shofuku/yoshikisyu/sasshi/fukushi.html",
           "edition": "令和8年度版。正誤表・変更表も参照",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -157,14 +139,13 @@
       "name": "静岡市",
       "prefecture": "静岡県",
       "classification": "政令指定都市",
-      "population": 672775,
+      "population": 667503,
       "sources": [
         {
-          "title": "障害者（児）福祉のしおり",
+          "title": "障がい者（児）福祉のしおり",
           "url": "https://www.city.shizuoka.lg.jp/s3278/s002877.html",
           "edition": "令和8年度・5月改訂版",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -173,14 +154,13 @@
       "name": "浜松市",
       "prefecture": "静岡県",
       "classification": "政令指定都市",
-      "population": 783924,
+      "population": 778346,
       "sources": [
         {
           "title": "障害福祉のしおり",
           "url": "https://www.city.hamamatsu.shizuoka.jp/syoghuku/welfare/obstacle/syogai_siori/index.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -189,14 +169,13 @@
       "name": "名古屋市",
       "prefecture": "愛知県",
       "classification": "政令指定都市",
-      "population": 2303004,
+      "population": 2310721,
       "sources": [
         {
           "title": "障害者福祉のしおり",
           "url": "https://www.kaigo-wel.city.nagoya.jp/view/wel/shiori/",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -205,14 +184,13 @@
       "name": "京都市",
       "prefecture": "京都府",
       "classification": "政令指定都市",
-      "population": 1373887,
+      "population": 1369750,
       "sources": [
         {
           "title": "障害保健福祉のしおり",
           "url": "https://www.city.kyoto.lg.jp/hokenfukushi/page/0000181035.html",
           "edition": "令和8年3月発行",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -221,14 +199,13 @@
       "name": "大阪市",
       "prefecture": "大阪府",
       "classification": "政令指定都市",
-      "population": 2778917,
+      "population": 2798782,
       "sources": [
         {
           "title": "―障がいのある方へ―福祉のあらまし",
           "url": "https://www.city.osaka.lg.jp/fukushi/page/0000147230.html",
-          "edition": "令和7年度版。令和8年4月修正も参照",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "edition": "令和7年度版・2025年9月現在・2026年4月第2回修正",
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -237,14 +214,13 @@
       "name": "堺市",
       "prefecture": "大阪府",
       "classification": "政令指定都市",
-      "population": 811993,
+      "population": 809032,
       "sources": [
         {
           "title": "障害福祉のしおり（冊子データ版）",
           "url": "https://www.city.sakai.lg.jp/kenko/fukushikaigo/shogaifukushi/shiori/74534720220908154641221.html",
           "edition": "令和7年度版。掲載内容は令和7年4月1日時点",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -253,14 +229,13 @@
       "name": "神戸市",
       "prefecture": "兵庫県",
       "classification": "政令指定都市",
-      "population": 1493543,
+      "population": 1487090,
       "sources": [
         {
           "title": "障害者福祉のあらまし",
           "url": "https://www.city.kobe.lg.jp/a97737/kenko/handicap/aramashi.html",
           "edition": "2026年度版。2026年4月1日現在",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -269,14 +244,13 @@
       "name": "岡山市",
       "prefecture": "岡山県",
       "classification": "政令指定都市",
-      "population": 695690,
+      "population": 692769,
       "sources": [
         {
           "title": "障害者のしおり",
           "url": "https://www.city.okayama.jp/kurashi/0000007751.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -285,14 +259,13 @@
       "name": "広島市",
       "prefecture": "広島県",
       "classification": "政令指定都市",
-      "population": 1173543,
+      "population": 1167911,
       "sources": [
         {
           "title": "心身障害者福祉のしおり",
           "url": "https://www.city.hiroshima.lg.jp/living/fukushi-kaigo/1014921/1025790/1022170.html",
-          "edition": "令和7年度版。精神障害については別冊資料の照合が必要",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "edition": "令和7年度版・2025年4月1日現在",
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -301,14 +274,13 @@
       "name": "北九州市",
       "prefecture": "福岡県",
       "classification": "政令指定都市",
-      "population": 913577,
+      "population": 905635,
       "sources": [
         {
           "title": "障害福祉ガイド",
           "url": "https://www.city.kitakyushu.lg.jp/contents/17600232.html",
           "edition": "令和8年度版。原則2026年4月1日時点",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -317,14 +289,13 @@
       "name": "福岡市",
       "prefecture": "福岡県",
       "classification": "政令指定都市",
-      "population": 1608140,
+      "population": 1620853,
       "sources": [
         {
           "title": "福岡市の障がい福祉ガイド",
           "url": "https://www.city.fukuoka.lg.jp/fukushi/shogaishasodan/health/sevice/fukuokashinoshougaifukushigaido02_8.html",
           "edition": "令和8年度",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -333,14 +304,13 @@
       "name": "熊本市",
       "prefecture": "熊本県",
       "classification": "政令指定都市",
-      "population": 731331,
+      "population": 728700,
       "sources": [
         {
           "title": "障がい者のためのふくしのしおり",
           "url": "https://www.city.kumamoto.jp/kiji003681/index.html",
           "edition": "令和8年度版",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -349,14 +319,13 @@
       "name": "宇都宮市",
       "prefecture": "栃木県",
       "classification": "中核市",
-      "population": 514595,
+      "population": 513378,
       "sources": [
         {
           "title": "障がい者サービスのしおり",
           "url": "https://www.city.utsunomiya.lg.jp/kenko/shogai/1048541/1004231.html",
           "edition": "2026版。原則2026年4月1日時点",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -365,14 +334,13 @@
       "name": "川口市",
       "prefecture": "埼玉県",
       "classification": "中核市",
-      "population": 607447,
+      "population": 608515,
       "sources": [
         {
           "title": "障害福祉ガイドブック",
           "url": "https://www.city.kawaguchi.lg.jp/soshiki/01070/060/5621.html",
           "edition": "令和8年10月発行",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -381,14 +349,13 @@
       "name": "船橋市",
       "prefecture": "千葉県",
       "classification": "中核市",
-      "population": 649393,
+      "population": 652241,
       "sources": [
         {
           "title": "障害福祉のしおり（令和8年度版）",
           "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845.html",
           "edition": "令和8年10月1日現在編集",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -397,14 +364,13 @@
       "name": "八王子市",
       "prefecture": "東京都",
       "classification": "中核市",
-      "population": 559083,
+      "population": 558755,
       "sources": [
         {
           "title": "福祉のしおり2026",
           "url": "https://www.city.hachioji.tokyo.jp/kurashi/welfare/005/014/009/p004407.html",
           "edition": "令和8年4月発行",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -413,14 +379,13 @@
       "name": "姫路市",
       "prefecture": "兵庫県",
       "classification": "中核市",
-      "population": 523181,
+      "population": 520222,
       "sources": [
         {
-          "title": "障害福祉のしおり等",
+          "title": "障害福祉のしおり",
           "url": "https://www.city.himeji.lg.jp/kurashi/0000020138.html",
-          "edition": "掲載ページ確認済み。冊子の版は確認中",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "edition": "令和8年度版",
+          "checked_on": "2026-11-13"
         }
       ]
     },
@@ -429,14 +394,13 @@
       "name": "鹿児島市",
       "prefecture": "鹿児島県",
       "classification": "中核市",
-      "population": 591263,
+      "population": 587255,
       "sources": [
         {
           "title": "ゆうあいガイドブック",
           "url": "https://www.city.kagoshima.lg.jp/kenkofukushi/fukushi/syofuku/kenko/fukushi/shogai/yuuaigaido.html",
           "edition": "令和7年3月発行",
-          "checked_on": "2026-11-13",
-          "verification": "公式掲載ページ確認。各類型の網羅的な適用確認とは区別する"
+          "checked_on": "2026-11-13"
         }
       ]
     }

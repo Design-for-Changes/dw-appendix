@@ -1,6 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
 
 const TABLE_TITLE = "表A2　e-Gov法令検索による抽出結果と採否";
+const DATA_SCHEMA = "2.1.0";
+export const DATA_REVISION = "1a6f73b6bcecece3cf5e755eb1b5ee6f1e0363059f670ffde163825e888decc6";
+
+async function readLawData(response) {
+  const text = await response.text();
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  const revision = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  if (revision !== DATA_REVISION) throw new Error("Mismatched law-screening revision");
+  return validateLawData(JSON.parse(text));
+}
+
+function validateLawData(data) {
+  const categories = data?.method?.exclusion_categories;
+  if (data?.schema_version !== DATA_SCHEMA || !Array.isArray(data.laws) || !Array.isArray(categories) || categories.length === 0) {
+    throw new Error("Incompatible law-screening data");
+  }
+  const categoryIds = new Set(categories.map((category) => category.id));
+  const lawIds = new Set(data.laws.map((law) => law.law_id));
+  if (categoryIds.size !== categories.length || lawIds.size !== data.laws.length || data.laws.some((law) =>
+    !["candidate", "included", "excluded"].includes(law.screening?.status) ||
+    (law.screening.status === "excluded" && !categoryIds.has(law.screening.exclusion_category_id))
+  )) {
+    throw new Error("Incomplete law-screening classification");
+  }
+  return data;
+}
 
 function screeningCategory(law) {
   if (["candidate", "included"].includes(law.screening?.status)) return "candidate";
@@ -131,8 +157,6 @@ function LawScreeningTable({ data, dataUrl }) {
     number: index + 1,
     rows: rows.filter((law) => screeningCategory(law) === "excluded" && law.screening?.exclusion_category_id === category.id),
   }));
-  const unclassifiedExcluded = rows.filter((law) => screeningCategory(law) === "excluded" && !exclusionCategories.some((category) => category.id === law.screening?.exclusion_category_id));
-  const undecided = rows.filter((law) => screeningCategory(law) === "pending");
   const candidates = rows.filter((law) => screeningCategory(law) === "candidate");
 
   return (
@@ -178,8 +202,6 @@ function LawScreeningTable({ data, dataUrl }) {
         caption={`除外理由${group.number}に該当する法令`}
         rows={group.rows}
       />)}
-      {unclassifiedExcluded.length > 0 && <LawGroupTable headingId="law-screening-exclusion-unclassified" title="除外理由の分類が未記録の法令" caption="除外理由の分類が未記録の法令" rows={unclassifiedExcluded} />}
-      {undecided.length > 0 && <LawGroupTable headingId="law-screening-undecided" title="判定を確認する法令" caption="判定を確認する法令" rows={undecided} />}
       {candidates.length > 0 && <LawGroupTable headingId="law-screening-candidates" title="残った候補の個別検討" caption="候補法令の個別検討" rows={candidates} />}
       {rows.length === 0 && <p role="status">該当する法令はありません。</p>}
     </section>
@@ -190,14 +212,14 @@ export default function ResearchDataAppendix() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
   const base = process.env.PUBLIC_URL || ".";
-  const dataUrl = `${base}/data/research/egov-law-screening.json`;
+  const dataUrl = `${base}/data/research/egov-law-screening.json?v=${DATA_REVISION}`;
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(dataUrl, { signal: controller.signal })
+    fetch(dataUrl, { signal: controller.signal, cache: "no-store" })
       .then((response) => {
         if (!response.ok) throw new Error(`law screening: ${response.status}`);
-        return response.json();
+        return readLawData(response);
       })
       .then(setData)
       .catch((cause) => {

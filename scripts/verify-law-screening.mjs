@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 const d=JSON.parse(fs.readFileSync(new URL('../public/data/research/egov-law-screening.json',import.meta.url),'utf8'));
+const dataBytes=fs.readFileSync(new URL('../public/data/research/egov-law-screening.json',import.meta.url));
+const pageSource=fs.readFileSync(new URL('../src/pages/ResearchDataAppendix.js',import.meta.url),'utf8');
+const revision=pageSource.match(/const DATA_REVISION = "([a-f0-9]{64})"/)[1];
+assert.equal(revision,crypto.createHash('sha256').update(dataBytes).digest('hex'),'Law data revision must match the published JSON');
 assert.equal(new Set(d.laws.map(l=>l.law_id)).size,d.laws.length);
 assert.equal(d.counts.total_laws,d.laws.length);
 const count=f=>d.laws.filter(f).length;

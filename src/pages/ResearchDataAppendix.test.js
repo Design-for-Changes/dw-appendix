@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import ResearchDataAppendix from "./ResearchDataAppendix";
+import { TextEncoder } from "util";
+import ResearchDataAppendix, { DATA_REVISION } from "./ResearchDataAppendix";
 
 const exclusionCategories = [
   { id: "C1", label: "障害児世帯の家計に直接作用する給付・負担等を定めていない" },
@@ -20,7 +21,7 @@ function makeLaw(id, title, screening) {
 }
 
 const sample = {
-  schema_version: "2.0.0",
+  schema_version: "2.1.0",
   research_as_of: "2026-11-13",
   source: { name: "e-Gov法令検索 法令API Version 2" },
   method: {
@@ -70,10 +71,18 @@ const sample = {
   ],
 };
 
+beforeEach(() => {
+  global.TextEncoder = TextEncoder;
+  Object.defineProperty(global, "crypto", { configurable: true, value: { subtle: {
+    digest: jest.fn().mockResolvedValue(Uint8Array.from(DATA_REVISION.match(/../g), (byte) => parseInt(byte, 16)).buffer),
+  } } });
+});
 afterEach(() => { jest.restoreAllMocks(); });
 
+const dataResponse = (data) => ({ ok: true, text: async () => JSON.stringify(data) });
+
 async function renderSample(data = sample) {
-  jest.spyOn(global, "fetch").mockResolvedValue({ ok: true, json: async () => data });
+  jest.spyOn(global, "fetch").mockResolvedValue(dataResponse(data));
   render(<ResearchDataAppendix />);
   await screen.findByRole("heading", { level: 2, name: /表A2\s+e-Gov法令検索による抽出結果と採否/ });
 }
@@ -84,8 +93,9 @@ test("除外理由をデータの順序で示し、最後に候補法令の表�
   expect(global.fetch).toHaveBeenCalledTimes(1);
   expect(global.fetch).toHaveBeenCalledWith(
     expect.stringContaining("/data/research/egov-law-screening.json"),
-    expect.objectContaining({ signal: expect.any(AbortSignal) })
+    expect.objectContaining({ signal: expect.any(AbortSignal), cache: "no-store" })
   );
+  expect(global.fetch.mock.calls[0][0]).toMatch(/egov-law-screening\.json\?v=[a-f0-9]{64}$/);
   expect(global.fetch.mock.calls.some(([url]) => url.includes("municipal"))).toBe(false);
   expect(tables).toHaveLength(5);
   const headings = screen.getAllByRole("heading", { level: 3 });
@@ -183,14 +193,37 @@ test("候補・除外・原典確認中・適用条件の絞り込みと検索�
   expect(screen.getByText("7件表示（全7件）")).toBeInTheDocument();
 });
 
-test("分類IDが欠けた除外法や判定未設定の法令を黙って落とさない", async () => {
-  const data = { ...sample, laws: [makeLaw("X", "除外理由未分類の法", { status: "excluded", review_status: "pending" }), makeLaw("Y", "判定が未設定の法")] };
-  await renderSample(data);
-  expect(screen.getByRole("table", { name: "除外理由の分類が未記録の法令" })).toBeInTheDocument();
-  expect(screen.getByRole("table", { name: "判定を確認する法令" })).toBeInTheDocument();
-  expect(screen.getByText("除外理由未分類の法")).toBeInTheDocument();
-  expect(screen.getByText("判定が未設定の法")).toBeInTheDocument();
-  expect(screen.getByText("抽出2件、除外1件、候補0件、判定要確認1件。")).toBeInTheDocument();
+test.each([
+  ["分類IDの欠落", makeLaw("X", "除外理由未分類の法", { status: "excluded", review_status: "verified" })],
+  ["未知の分類ID", makeLaw("X", "除外理由未分類の法", { status: "excluded", review_status: "verified", exclusion_category_id: "UNKNOWN" })],
+  ["判定の欠落", makeLaw("Y", "判定が未設定の法")],
+])("%sの法令を正常な表として表示しない", async (_label, law) => {
+  const data = { ...sample, laws: [law] };
+  jest.spyOn(global, "fetch").mockResolvedValue(dataResponse(data));
+  render(<ResearchDataAppendix />);
+  expect(await screen.findByRole("alert")).toHaveTextContent("法令抽出資料を読み込めませんでした。");
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  expect(screen.queryByText(/分類が未記録/)).not.toBeInTheDocument();
+});
+
+test("旧版186法のデータを現行の分類表として表示しない", async () => {
+  const data = { ...sample, schema_version: "2.0.0", counts: { total_laws: 186, excluded_laws: 137, candidate_laws: 49 }, method: { ...sample.method, exclusion_categories: undefined } };
+  jest.spyOn(global, "fetch").mockResolvedValue(dataResponse(data));
+  render(<ResearchDataAppendix />);
+  expect(await screen.findByRole("alert")).toBeInTheDocument();
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  expect(screen.queryByText(/抽出186件|除外137件|候補49件|分類が未記録/)).not.toBeInTheDocument();
+});
+
+test("同じスキーマでも内容が異なる旧データを表示しない", async () => {
+  global.crypto.subtle.digest.mockResolvedValue(new Uint8Array(32).buffer);
+  jest.spyOn(global, "fetch").mockResolvedValue(dataResponse(sample));
+  render(<ResearchDataAppendix />);
+  expect(await screen.findByRole("alert")).toBeInTheDocument();
+  const [algorithm, bytes] = global.crypto.subtle.digest.mock.calls[0];
+  expect(algorithm).toBe("SHA-256");
+  expect(Array.from(bytes)).toEqual(Array.from(new TextEncoder().encode(JSON.stringify(sample))));
+  expect(screen.queryByRole("table")).not.toBeInTheDocument();
 });
 
 test("法令資料の読み込み中と表示する", () => {

@@ -13,7 +13,13 @@ const APPENDIX_PAGES = [
   { mode: "rules", letter: "C", label: "所得判定・変動方法", hash: "#income-assessment" },
   { mode: "current", letter: "D", label: "現行制度", hash: "#current" },
   { mode: "optimal", letter: "E", label: "全体最適モデル", hash: "#optimal" },
+  { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
 ];
+
+function viewModeForHash(hash) {
+  if (hash.startsWith("#calculation-function") || hash.startsWith("#calculation-flow")) return "functions";
+  return APPENDIX_PAGES.find((page) => page.hash === hash)?.mode || "current";
+}
 
 const X_MIN = 200;
 const X_MAX = 1500;
@@ -1296,10 +1302,12 @@ function BreakdownPanel({ point }) {
 }
 
 export default function AppendixCliffMap() {
-  const [viewMode, setViewMode] = useState(() =>
-    window.location.hash === "#calculation-functions" ? "current" :
-      APPENDIX_PAGES.find((page) => page.hash === window.location.hash)?.mode || "current"
-  );
+  const [viewMode, setViewMode] = useState(() => viewModeForHash(window.location.hash));
+  useEffect(() => {
+    const followHash = () => setViewMode(viewModeForHash(window.location.hash));
+    window.addEventListener("hashchange", followHash);
+    return () => window.removeEventListener("hashchange", followHash);
+  }, []);
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
@@ -1364,9 +1372,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "current" && <CalculationReferenceAppendix />}
-
-      {viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

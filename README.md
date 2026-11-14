@@ -40,7 +40,7 @@ npm run fetch:egov-screening
 ## Web Appendixの使用データ
 - 表A1　主な制度の所得判定・変動方法（`#income-assessment`）
 - 表A2　e-Gov法令検索の結果と採否（`#law-screening`）
-- 表A3　計算内容と関数の対応（`#calculation-functions`、Web Appendix D内）
+- 表A3　計算内容と関数の対応（`#calculation-functions`、Web Appendix F「関数資料」）
 
 表A1は「所得判定・変動方法」タブに7列・10行の詳細と原典リンクを掲載する。データは
 `public/data/research/income-assessment-rules.json`。
@@ -49,7 +49,7 @@ npm run fetch:egov-screening
 法令ごとの理由・根拠条文・原文リンクは `public/data/research/egov-law-screening.json` に収録する。
 自治体の参照資料は `public/data/research/municipal-source-list.json`。26市の基本資料に加え、実際に参照したPDF・個別制度案内・要綱を掲載し、市別の類型該当や○×表は公開しない。
 
-表A3は計算の流れとソース関数を対応させ、名前付き関数の引数・返却値・所在を検索できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。クラスは使用していない。
+表A3は計算の流れからページ内の関数説明へ移動でき、関数説明から対応する処理・ソースへ辿れる。名前付き関数の引数・返却値・所在を検索でき、各関数への直接URLも利用できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。クラスは使用していない。
 
 ## ドキュメント
 - `docs/model-household.md`：提示ケースとモデル条件。

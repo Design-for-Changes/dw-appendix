@@ -13,12 +13,15 @@
 | Web Appendix C | 所得判定・変動方法 | `#income-assessment` |
 | Web Appendix D | 現行制度 | `#current` |
 | Web Appendix E | 全体最適モデル | `#optimal` |
+| Web Appendix F | 関数資料 | `#calculation-functions` |
 
 表A1〜表A3は表番号として維持し、ページ記号とは区別する。旧URLの直接リンクは引き続き利用できる。記号を指定しない従来の入口は現行制度（D）を表示する。
 
 ## 表A3　計算内容と関数の対応
 
-Web Appendix Dの折りたたみ欄に、計算の流れと関数の対応、名前付き関数一覧を掲載する。直接参照は `#calculation-functions`。`src/data/calculation-function-catalog.json` は `src/calc/` と系列生成スクリプトを対象として、構文木とJSDocから生成する。無名コールバック、表示コンポーネント、検証スクリプトは一覧の対象外とし、一覧の件数と対象範囲を明記する。ファイルのハッシュ、関数の所在、必須の説明はビルド時の検証で照合する。
+Web Appendix F「関数資料」に、計算の流れと関数の対応、名前付き関数一覧を掲載する。直接参照は従来と同じ `#calculation-functions`。対応表の関数名はページ内の説明へ、関数説明は対応する処理行とソースへリンクする。関数はファイルと階層名の完全IDで識別し、同名関数を区別する。深いURLからの再読込にも対応し、フィルターで宛先が非表示の場合は移動時に解除する。
+
+`src/data/calculation-function-catalog.json` は `src/calc/` と系列生成スクリプトを対象として、構文木とJSDocから生成する。無名コールバック、表示コンポーネント、検証スクリプトは一覧の対象外とし、一覧の件数と対象範囲を明記する。ファイルのハッシュ、関数の所在、必須の説明はビルド時の検証で照合する。
 
 ## 表A1　主な制度の所得判定・変動方法
 

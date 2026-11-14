@@ -119,8 +119,12 @@
 .research-excluded-group > summary { cursor: pointer; padding: 10px 0; font-weight: 700; }
 .research-excluded-group .research-law-group { margin-top: 4px; }
 .research-evidence { font-size: 12px; margin: 8px 0; }
-.function-reference-details > summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
-.function-reference-details > p { line-height: 1.8; }
+.function-reference > p { line-height: 1.8; }
+.function-reference-nav { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 16px 0 24px; }
+.function-reference [id] { scroll-margin-top: 24px; }
+.function-reference tr:target, .function-reference tr:focus { background: #e9f2ff; outline: 2px solid #2358a6; outline-offset: -2px; }
+.function-reference h3 { margin-top: 32px; }
+.function-backlinks { display: grid; gap: 5px; margin-top: 12px; font-size: 0.85rem; }
 .function-flow-table { min-width: 760px; }
 .function-catalog-table { min-width: 1160px; }
 .function-catalog-table td, .function-catalog-table th { white-space: normal; overflow-wrap: anywhere; }

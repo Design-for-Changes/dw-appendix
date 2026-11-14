@@ -22,6 +22,7 @@ const pages = [
   { letter: "C", title: "所得判定・変動方法", hash: "#income-assessment", region: "所得判定詳細" },
   { letter: "D", title: "現行制度", hash: "#current" },
   { letter: "E", title: "全体最適モデル", hash: "#optimal" },
+  { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
 ];
 
 beforeEach(() => {
@@ -30,11 +31,20 @@ beforeEach(() => {
 });
 afterEach(() => { window.history.replaceState(null, "", "/"); });
 
-test("関数一覧の直接リンクでもWeb Appendix Dを表示する", () => {
+test("関数一覧は独立したWeb Appendix Fに表示し、Dには含めない", () => {
   window.history.replaceState(null, "", "/#calculation-functions");
   render(<AppendixCliffMap />);
-  expectSelectedPage(pages.find((page) => page.letter === "D"));
+  expectSelectedPage(pages.find((page) => page.letter === "F"));
   expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "表示ケース" })).not.toBeInTheDocument();
+  fireEvent.click(pageButton(pages[3]));
+  expect(screen.queryByRole("heading", { name: "表A3　計算処理・関数一覧" })).not.toBeInTheDocument();
+});
+
+test.each(["#calculation-flow-medical", "#calculation-function-list", "#calculation-function-src%2Fcalc%2FoptimalModel.js%3AcomputeOptimalModel"])("%sの直接URLでもFを選択する", (hash) => {
+  window.history.replaceState(null, "", "/" + hash);
+  render(<AppendixCliffMap />);
+  expectSelectedPage(pages[5]);
 });
 
 function pageButton(page) {
@@ -80,7 +90,7 @@ test("空hashは従来の現行制度を表示し、ページ番号はDになる
   expect(window.location.hash).toBe("");
 });
 
-test("メニューは本文の出現順AからEに並ぶ", () => {
+test("メニューはAからFに並ぶ", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(

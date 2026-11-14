@@ -2,6 +2,20 @@
 
 制度の抽出結果、採否、原典及び自治体の参照資料を収録する。法令検索は「法令検索・採否」タブで表示する。
 
+## ページ識別記号
+
+本文での参照順にページを識別する。記号はメニューと各ページの見出しに表示する。
+
+| ページ | 内容 | 直接リンク |
+| --- | --- | --- |
+| Web Appendix A | 法令検索・採否 | `#law-screening` |
+| Web Appendix B | 調査対象・参照資料 | `#municipal-sources` |
+| Web Appendix C | 所得判定・変動方法 | `#income-assessment` |
+| Web Appendix D | 現行制度 | `#current` |
+| Web Appendix E | 全体最適モデル | `#optimal` |
+
+表A1・表A2は表番号として維持し、ページ記号とは区別する。旧URLの直接リンクは引き続き利用できる。記号を指定しない従来の入口は現行制度（D）を表示する。
+
 ## 表A1　主な制度の所得判定・変動方法
 
 `public/data/research/income-assessment-rules.json` に、判定単位・主たる判定対象・その他の判定対象・所得指標・変動方法を7列、10行で収録する。Web Appendixの「所得判定・変動方法」タブで表示し、直接参照は `#income-assessment`。自治体制度の具体例は船橋市である。

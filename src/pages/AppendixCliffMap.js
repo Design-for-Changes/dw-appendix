@@ -6,6 +6,14 @@ import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
 import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
 import ResearchDataAppendix from "./ResearchDataAppendix";
 
+const APPENDIX_PAGES = [
+  { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
+  { mode: "sources", letter: "B", label: "調査対象・参照資料", hash: "#municipal-sources" },
+  { mode: "rules", letter: "C", label: "所得判定・変動方法", hash: "#income-assessment" },
+  { mode: "current", letter: "D", label: "現行制度", hash: "#current" },
+  { mode: "optimal", letter: "E", label: "全体最適モデル", hash: "#optimal" },
+];
+
 const X_MIN = 200;
 const X_MAX = 1500;
 const X_TICKS = [200, 400, 600, 800, 1000, 1200, 1400, 1500];
@@ -1261,22 +1269,19 @@ function BreakdownPanel({ point }) {
 }
 
 export default function AppendixCliffMap() {
-  const [viewMode, setViewMode] = useState(() => {
-    if (window.location.hash === "#municipal-sources") return "sources";
-    if (window.location.hash === "#income-assessment") return "rules";
-    if (window.location.hash === "#law-screening") return "laws";
-    if (window.location.hash === "#optimal") return "optimal";
-    return "current";
-  });
+  const [viewMode, setViewMode] = useState(() =>
+    APPENDIX_PAGES.find((page) => page.hash === window.location.hash)?.mode || "current"
+  );
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
   const { data, ready, selectedPoint } = appendixData;
 
   const selected = data.find((d) => d.id === selectedId) || data[0];
+  const activePage = APPENDIX_PAGES.find((page) => page.mode === viewMode);
   const selectViewMode = (mode) => {
     setViewMode(mode);
-    const hash = { sources: "#municipal-sources", rules: "#income-assessment", laws: "#law-screening", optimal: "#optimal", current: "" }[mode];
+    const hash = APPENDIX_PAGES.find((page) => page.mode === mode).hash;
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
   };
   const caseAccent = selected?.color || "#9aa7ad";
@@ -1295,47 +1300,23 @@ export default function AppendixCliffMap() {
       </section>
 
       <nav className="appendix-mode-tabs" aria-label="表示内容">
-        <button
-          type="button"
-          className={viewMode === "current" ? "active" : ""}
-          aria-pressed={viewMode === "current"}
-          onClick={() => selectViewMode("current")}
-        >
-          現行制度
-        </button>
-        <button
-          type="button"
-          className={viewMode === "optimal" ? "active" : ""}
-          aria-pressed={viewMode === "optimal"}
-          onClick={() => selectViewMode("optimal")}
-        >
-          全体最適モデル
-        </button>
-        <button
-          type="button"
-          className={viewMode === "sources" ? "active" : ""}
-          aria-pressed={viewMode === "sources"}
-          onClick={() => selectViewMode("sources")}
-        >
-          調査対象・参照資料
-        </button>
-        <button
-          type="button"
-          className={viewMode === "rules" ? "active" : ""}
-          aria-pressed={viewMode === "rules"}
-          onClick={() => selectViewMode("rules")}
-        >
-          所得判定・変動方法
-        </button>
-        <button
-          type="button"
-          className={viewMode === "laws" ? "active" : ""}
-          aria-pressed={viewMode === "laws"}
-          onClick={() => selectViewMode("laws")}
-        >
-          法令検索・採否
-        </button>
+        {APPENDIX_PAGES.map((page) => (
+          <button
+            key={page.mode}
+            type="button"
+            className={viewMode === page.mode ? "active" : ""}
+            aria-pressed={viewMode === page.mode}
+            onClick={() => selectViewMode(page.mode)}
+          >
+            {page.letter}　{page.label}
+          </button>
+        ))}
       </nav>
+
+      <header className="appendix-page-heading" aria-labelledby="appendix-page-title">
+        <h2 id="appendix-page-title">Web Appendix {activePage.letter}　{activePage.label}</h2>
+        <a href={activePage.hash}>このページへのリンク</a>
+      </header>
 
       {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {

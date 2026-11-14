@@ -30,6 +30,13 @@ beforeEach(() => {
 });
 afterEach(() => { window.history.replaceState(null, "", "/"); });
 
+test("関数一覧の直接リンクでもWeb Appendix Dを表示する", () => {
+  window.history.replaceState(null, "", "/#calculation-functions");
+  render(<AppendixCliffMap />);
+  expectSelectedPage(pages.find((page) => page.letter === "D"));
+  expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeInTheDocument();
+});
+
 function pageButton(page) {
   return within(screen.getByRole("navigation", { name: "表示内容" }))
     .getByRole("button", { name: new RegExp("^" + page.letter + "\\s+" + page.title + "$") });

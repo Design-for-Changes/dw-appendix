@@ -12,11 +12,14 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "@babel/parser": "7.28.4"
+  },
   "homepage": ".",
   "scripts": {
-    "prestart": "npm run generate:appendix",
+    "prestart": "npm run generate:appendix && npm run generate:functions",
     "start": "react-scripts start",
-    "prebuild": "npm run generate:appendix",
+    "prebuild": "npm run generate:appendix && npm run generate:functions",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -24,9 +27,16 @@
     "gen:social": "node scripts/gen_social_json.js",
     "gen:data": "npm run gen:basic && npm run gen:social",
     "generate:appendix": "node scripts/generate-appendix-data.mjs",
+    "generate:functions": "node scripts/generate-function-catalog.mjs",
     "fetch:egov-screening": "node scripts/fetch-egov-law-screening.mjs",
-    "preverify": "npm run generate:appendix",
-    "verify": "node scripts/verify-social-insurance.mjs && node scripts/verify-independent-oracle.mjs && node scripts/verify-source-coverage.mjs && node scripts/verify.mjs && node scripts/verify-appendix-data.mjs && node scripts/verify-municipal-sources.mjs && node scripts/verify-income-assessment.mjs && node scripts/verify-law-screening.mjs",
+    "preverify": "npm run generate:appendix && npm run generate:functions",
+    "verify": "node scripts/verify-social-insurance.mjs && node scripts/verify-independent-oracle.mjs && node scripts/verify-source-coverage.mjs && node scripts/verify.mjs && node scripts/verify-appendix-data.mjs && node scripts/verify-municipal-sources.mjs && node scripts/verify-income-assessment.mjs && node scripts/verify-law-screening.mjs && npm run verify:functions && npm run verify:contract",
+    "verify:functions": "node scripts/verify-function-catalog.mjs",
+    "verify:contract": "node scripts/verify-refactor-contract.mjs",
+    "verify:appendix-data": "node scripts/verify-appendix-data.mjs",
+    "verify:sources": "node scripts/verify-source-coverage.mjs",
+    "verify:oracle": "node scripts/verify-independent-oracle.mjs",
+    "verify:social": "node scripts/verify-social-insurance.mjs",
     "report:cliff-causes": "node scripts/report-cliff-causes.mjs"
   },
   "eslintConfig": {

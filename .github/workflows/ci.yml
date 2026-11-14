@@ -29,3 +29,8 @@ jobs:
 
       - name: Verify (回帰検証：正解表と照合)
         run: npm run verify
+
+      - name: Test (表示・ナビゲーション・関数対応表)
+        run: npm test -- --watch=false --runInBand
+        env:
+          CI: "true"

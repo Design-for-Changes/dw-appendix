@@ -5,7 +5,7 @@
  * 役割：計算コア（src/calc/computePoint.js）を回して給与掃引の系列を作り、
  * fixtures/cases.json の期待崖（status=baseline_confirmed のみ）と自動照合する。
  *
- * 前提となる計算コアのインターフェース（第1タスク＝計算コア抽出で用意する）：
+ * 計算コアの互換インターフェース：
  *   import { computeSeries, buildHousehold } from "../src/calc/computePoint.js"
  *
  *   buildHousehold(caseHousehold) -> household
@@ -16,8 +16,8 @@
  *     tables は public/data の静的JSON群（下でNode側から読み込んで注入する）。
  *     ※ React/DOM に一切依存しない純粋関数であること。
  *
- * 計算コアが未抽出（＝第1タスク未完）の場合は、SKIP して exit 0（初期コミットのCIを緑にするため）。
- * コアがある場合、baseline_confirmed のケースが一つでも不一致なら exit 1。
+ * 計算コアが存在しない・読み込めない場合も失敗として exit 1。
+ * baseline_confirmed のケースが一つでも不一致なら exit 1。
  */
 import fs from "node:fs";
 import path from "node:path";

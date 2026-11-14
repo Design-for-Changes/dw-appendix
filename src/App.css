@@ -119,6 +119,18 @@
 .research-excluded-group > summary { cursor: pointer; padding: 10px 0; font-weight: 700; }
 .research-excluded-group .research-law-group { margin-top: 4px; }
 .research-evidence { font-size: 12px; margin: 8px 0; }
+.function-reference-details > summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
+.function-reference-details > p { line-height: 1.8; }
+.function-flow-table { min-width: 760px; }
+.function-catalog-table { min-width: 1160px; }
+.function-catalog-table td, .function-catalog-table th { white-space: normal; overflow-wrap: anywhere; }
+.function-catalog-table p { margin: 0 0 6px; }
+.function-catalog-table small, .function-source-link { display: block; margin-top: 4px; }
+.function-catalog-table th:nth-child(2) { min-width: 180px; }
+.function-catalog-table td:nth-child(3) { min-width: 230px; }
+.function-catalog-table td:nth-child(4), .function-catalog-table td:nth-child(5) { min-width: 170px; }
+.optimal-implementation-assumptions summary { cursor: pointer; font-weight: 700; padding: 10px 0; }
+.optimal-implementation-assumptions li { line-height: 1.8; margin-bottom: 6px; }
 
 .appendix-mode-tabs button {
   border: 0;

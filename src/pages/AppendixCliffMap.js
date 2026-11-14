@@ -5,6 +5,7 @@ import { useAppendixData } from "../hooks/useAppendixData";
 import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
 import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
 import ResearchDataAppendix from "./ResearchDataAppendix";
+import CalculationReferenceAppendix from "./CalculationReferenceAppendix";
 
 const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
@@ -551,6 +552,21 @@ function OptimalModelSummary({ caseDef, selectedSalary }) {
           <strong>{fmtWan(point.disposableFloorWan)}</strong>
           <small>T₀ ＋ G − U</small>
         </article>
+        <article>
+          <span>現行制度の可処分所得</span>
+          <strong>{fmtWan(point.currentDisposableWan)}</strong>
+          <small>同じ給与収入での比較基準</small>
+        </article>
+        <article>
+          <span>調整モデル後の可処分所得</span>
+          <strong>{fmtWan(point.optimalDisposableWan)}</strong>
+          <small>T₀ ＋ G − P</small>
+        </article>
+        <article>
+          <span>現行との差（調整後 − 現行）</span>
+          <strong>{fmtWan(point.optimalDisposableWan - point.currentDisposableWan)}</strong>
+          <small>負の値は同じ給与で可処分所得が減ることを示す</small>
+        </article>
       </div>
       <div className="optimal-formula-grid">
         <div>
@@ -595,6 +611,17 @@ function OptimalModelSummary({ caseDef, selectedSalary }) {
           <p>Ymin ＝ T₀ ＋ G − U</p>
         </div>
       </div>
+      <details className="optimal-implementation-assumptions">
+        <summary>数値試算で実際に置いている仮定</summary>
+        <ul>
+          <li>H_dは、就学奨励費の需要額計算に含まれる月額の障害者加算を年換算した値である。</li>
+          <li>H_cは月額{fmtYen(model.careNeedMonthlyYen)}×障害児福祉手当対象児数×12を追加需要の代理値として用いる。観測した介護費用ではなく、B＝κ(H_d＋H_c)ではこの代理値にもκを掛けている。</li>
+          <li>医療的ケアに対応する追加需要は、独立した項として数値化していない。</li>
+          <li>Eplanは給与200〜1,500万円の系列から求めた費用負担の最大値と就学奨励費による負担軽減の最大値の合計であり、給与によらない世帯定数である。Eextraは0とする。</li>
+          <li>負担上限はGを含む支給後資源で判定するため、Gが満額の給与帯でもUが正になる場合がある。</li>
+          <li>税制・社会保険料による段差が残る場合があり、この試算が全所得帯で可処分所得を増やすことや、給付水準の最適性を示すものではない。</li>
+        </ul>
+      </details>
       <p className="optimal-model-note">
         提案モデルでは、特児等の現行満額を直接用いず、障害程度と常時介護による追加需要Hに共通保障係数2.18を乗じて満額Bを算出する。
         支給前資源T₀から支給額Gを決め、Gを加えた支給後資源T₁によって総合負担上限Uを決定する。
@@ -1270,7 +1297,8 @@ function BreakdownPanel({ point }) {
 
 export default function AppendixCliffMap() {
   const [viewMode, setViewMode] = useState(() =>
-    APPENDIX_PAGES.find((page) => page.hash === window.location.hash)?.mode || "current"
+    window.location.hash === "#calculation-functions" ? "current" :
+      APPENDIX_PAGES.find((page) => page.hash === window.location.hash)?.mode || "current"
   );
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
@@ -1335,6 +1363,8 @@ export default function AppendixCliffMap() {
           );
         })}
       </section>}
+
+      {viewMode === "current" && <CalculationReferenceAppendix />}
 
       {viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">

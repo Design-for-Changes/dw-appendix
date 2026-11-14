@@ -18,10 +18,20 @@ for (const entry of manifest.entries || []) {
 for (const filename of await readdir("public/sources")) {
   if (!expectedFiles.has(filename)) failures.push(`${filename}: not registered in manifest`);
 }
-const source = [
-  await readFile("src/calc/computePoint.js", "utf8"),
-  await readFile("src/calc/calculationSources.js", "utf8"),
-].join("\n");
+/** 計算モジュールを再帰列挙し、分割先にある原典URLも同じ基準で検証する。 */
+async function calculationFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const filename = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await calculationFiles(filename));
+    else if (entry.isFile() && entry.name.endsWith(".js")) files.push(filename);
+  }
+  return files.sort();
+}
+const source = (await Promise.all(
+  (await calculationFiles("src/calc")).map((filename) => readFile(filename, "utf8"))
+)).join("\n");
 for (const entry of manifest.entries || []) {
   if (!source.includes(entry.archivePath)) failures.push(`${entry.id}: archive not referenced by core`);
   if (!source.includes(entry.originalUrl)) failures.push(`${entry.id}: original URL not referenced by core`);

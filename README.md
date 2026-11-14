@@ -11,9 +11,11 @@ Web Appendix。障害児世帯モデルで、世帯主の給与に対する可�
 地点を「崖」として表示する静的Webアプリケーションである。
 
 ## 再現性
-- `src/calc/computePoint.js`：給与点ごとの計算コア。
+- `src/calc/computePoint.js`：給与点ごとの計算を組み合わせる入口。税・社会保険・手当・医療・教育の計算は同ディレクトリのモジュールに分離。
+- `src/calc/optimalModel.js`：現行制度系列から探索的な調整モデルを算出。
 - `fixtures/cases.json`：モデル世帯と期待される変化点。
 - `scripts/verify.mjs`：計算系列と期待値の回帰照合。
+- `fixtures/refactor-contract.json`：リファクタリング前の21条件・27,321給与点と、生成JSON160ファイルの出力ハッシュ。既存出力との一致を検証するもので、制度解釈の正しさを保証するものではない。
 - `public/sources/`：計算に使用した公的資料の収録版。
 - `public/sources/manifest.json`：原典URL、取得日、収録ファイルのSHA-256。
 - `.github/workflows/ci.yml`：ビルド、回帰照合、資料整合性の自動検証。
@@ -37,17 +39,21 @@ npm run fetch:egov-screening
 
 ## Web Appendixの使用データ
 - 表A1　主な制度の所得判定・変動方法（`#income-assessment`）
-- 表A2　e-Gov法令検索の結果と選定候補（`#law-screening`）
+- 表A2　e-Gov法令検索の結果と採否（`#law-screening`）
+- 表A3　計算内容と関数の対応（`#calculation-functions`、Web Appendix D内）
 
 表A1は「所得判定・変動方法」タブに7列・10行の詳細と原典リンクを掲載する。データは
 `public/data/research/income-assessment-rules.json`。
 
-表A2は現行184法律を対象に、除外した法律を理由別の表に整理し、残る法律を個別検討の候補として示す。候補への収録は試算への採用確定を意味しない。
+表A2は現行184法律を対象に、採用9法律と、理由別に分類した除外175法律を示す。法律の採用と数値試算の対象選定は区別する。
 法令ごとの理由・根拠条文・原文リンクは `public/data/research/egov-law-screening.json` に収録する。
 自治体の参照資料は `public/data/research/municipal-source-list.json`。26市の基本資料に加え、実際に参照したPDF・個別制度案内・要綱を掲載し、市別の類型該当や○×表は公開しない。
 
+表A3は計算の流れとソース関数を対応させ、名前付き関数の引数・返却値・所在を検索できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。クラスは使用していない。
+
 ## ドキュメント
 - `docs/model-household.md`：提示ケースとモデル条件。
+- `docs/calculation-architecture.md`：モジュール構成、関数一覧の生成、検証と未解決の計算範囲。
 - `docs/model-social-insurance.md`：社会保険料の近似式と検算。
 - `docs/calculation-source-registry.md`：計算根拠と確度。
 - `docs/appendix-data-pipeline.md`：計算コアと表示用データの分離・整合性検証。

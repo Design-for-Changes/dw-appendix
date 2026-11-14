@@ -1,26 +1,71 @@
+/**
+ * 有限数へ変換し、不正値は指定の既定値へ置き換える。
+ * @remarks 共通。単位: 入力の単位を維持。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} value 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} fallback 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} number。単位: 入力の単位を維持
+ */
 function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 }
 
+/**
+ * 万円値を指定桁数の文字列にする。
+ * @remarks 崖説明・表示。単位: 万円。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} value 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} digits 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} string。単位: 万円
+ */
 function wan(value, digits = 1) {
   return `${toNumber(value).toFixed(digits)}万`;
 }
 
+/**
+ * 円額を整数四捨五入し、桁区切り文字列にする。
+ * @remarks 崖説明・表示。単位: 円。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} value 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} string。単位: 円
+ */
 function yen(value) {
   return `${Math.round(toNumber(value)).toLocaleString("ja-JP")}円`;
 }
 
+/**
+ * 型別に値の変化を判定し、数値には許容差を適用する。
+ * @remarks 崖の原因。単位: 数値の既定許容差1e-9。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} a 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} b 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} eps 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} boolean。単位: 数値の既定許容差1e-9
+ */
 function changed(a, b, eps = 1e-9) {
   if (typeof a === "boolean" || typeof b === "boolean") return Boolean(a) !== Boolean(b);
   if (typeof a === "string" || typeof b === "string") return String(a ?? "") !== String(b ?? "");
   return Math.abs(toNumber(a) - toNumber(b)) > eps;
 }
 
+/**
+ * 原因と設定属性・説明を出力配列へ追加する。
+ * @remarks 崖の原因。単位: 無単位。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} cause 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} confidence 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} whatHappened 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 無単位
+ */
 function pushCause(out, cause, confidence, whatHappened) {
   out.push({ cause, confidence, whatHappened });
 }
 
+/**
+ * 特児の支給資格・年額の変化を原因行に追加する。
+ * @remarks N01-1 差分。単位: 万円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円/年
+ */
 function compareTcca(out, before, after) {
   const b = before?.programs?.tcca || {};
   const a = after?.programs?.tcca || {};
@@ -36,6 +81,14 @@ function compareTcca(out, before, after) {
   );
 }
 
+/**
+ * 福祉手当の年額・扶養義務者判定の変化を原因行に追加する。
+ * @remarks N01-2 差分。単位: 万円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円/年
+ */
 function compareWelfareAllowance(out, before, after) {
   const b = before?.programs?.welfareAllowance || {};
   const a = after?.programs?.welfareAllowance || {};
@@ -51,11 +104,23 @@ function compareWelfareAllowance(out, before, after) {
   );
 }
 
+/**
+ * 利用料内訳の世帯員識別キーを取得する。
+ * @remarks 通所差分。単位: 無単位。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} detail 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} string。単位: 無単位
+ */
 function detailKey(detail) {
   return String(detail?.who || "");
 }
 
 // 制度上の負担上限月額（区分と年齢から導出）。コアは実負担(min結果)しか持たないため表示側で復元。
+/**
+ * 年齢と区分から説明用の制度上限月額を復元する。実負担とは区別する。
+ * @remarks 通所差分。単位: 円/月。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} detail 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} number。単位: 円/月
+ */
 function statutoryCapYen(detail) {
   const type = String(detail?.type || "");
   const age = toNumber(detail?.age, 0);
@@ -65,6 +130,14 @@ function statutoryCapYen(detail) {
   return 0;
 }
 
+/**
+ * 児童別と世帯合算の利用料変化を比較し、同じ内容の説明はまとめる。
+ * @remarks 通所差分。単位: 円/月と万円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 円/月と万円/年
+ */
 function compareService(out, before, after) {
   const b = before?.programs?.service || {};
   const a = after?.programs?.service || {};
@@ -78,11 +151,22 @@ function compareService(out, before, after) {
   }
   if (!changes.length && !changed(b.annualWan, a.annualWan)) return;
 
+/**
+   * 採用実負担を取得し、欠損時だけ制度上限を使う。
+   * @remarks 通所差分。単位: 円/月。式・境界条件・丸めは移動前の実装を維持。
+   * @param {*} detail 判定対象・区分または補助値（呼出側の定義に従う）
+   * @returns {*} number。単位: 円/月
+   */
   const adoptedMonthlyYen = (detail) => {
     const value = toNumber(detail?.monthlyUpperYen, NaN);
     return Number.isFinite(value) ? value : statutoryCapYen(detail);
   };
 
+/**
+   * 通所区分・採用月額・制度上限と代表値の説明文字列を作る。
+   * @remarks 通所差分。単位: 円/月。式・境界条件・丸めは移動前の実装を維持。
+   * @returns {*} string。単位: 円/月
+   */
   const describe = ({ prev, next }) => {
     const prevType = prev.type || "対象外";
     const nextType = next.type || "対象外";
@@ -97,6 +181,11 @@ function compareService(out, before, after) {
     }
     return s;
   };
+/**
+   * 同内容の通所変化を統合表示するための識別文字列を作る。
+   * @remarks 通所差分。単位: 無単位。式・境界条件・丸めは移動前の実装を維持。
+   * @returns {*} string。単位: 無単位
+   */
   const signature = ({ prev, next }) =>
     `${prev.type || "対象外"}→${next.type || "対象外"}|${adoptedMonthlyYen(prev)}→${adoptedMonthlyYen(next)}|${statutoryCapYen(prev)}→${statutoryCapYen(next)}|${next.rawMonthlyYen}`;
   let text;
@@ -115,6 +204,14 @@ function compareService(out, before, after) {
   pushCause(out, "障害児通所支援", a.confidence || b.confidence || "strict", text);
 }
 
+/**
+ * 医療費助成の資格・自己負担変化を原因行へ追加する。
+ * @remarks M01 差分。単位: 万円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円/年
+ */
 function compareM01(out, before, after) {
   const b = before?.programs?.m01 || {};
   const a = after?.programs?.m01 || {};
@@ -130,6 +227,14 @@ function compareM01(out, before, after) {
   );
 }
 
+/**
+ * 就学奨励費の区分・年額変化を原因行へ追加する。
+ * @remarks N04 差分。単位: 万円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円/年
+ */
 function compareN04(out, before, after) {
   const b = before?.programs?.n04 || {};
   const a = after?.programs?.n04 || {};
@@ -142,6 +247,14 @@ function compareN04(out, before, after) {
   );
 }
 
+/**
+ * 配偶者控除と特別控除の変化を税目ごとに説明する。
+ * @remarks 税控除差分。単位: 万円。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円
+ */
 function compareSpouseDeductions(out, before, after) {
   const b = before?.deductions || {};
   const a = after?.deductions || {};
@@ -167,6 +280,14 @@ function compareSpouseDeductions(out, before, after) {
   }
 }
 
+/**
+ * 他の原因がない場合に税・保険・給付・負担の差を説明する。
+ * @remarks 崖の原因補助。単位: 万円/年。表示変化閾値0.05。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} out 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} before 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} after 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} void（配列更新）。単位: 万円/年。表示変化閾値0.05
+ */
 function compareFallback(out, before, after) {
   if (out.length) return;
   const bTax = toNumber(before?.tax?.totalWan);
@@ -185,6 +306,13 @@ function compareFallback(out, before, after) {
   pushCause(out, "その他", "strict", pieces.length ? pieces.join(" / ") : "主要制度・控除の状態変化なし");
 }
 
+/**
+ * 隣接する二つの給与点の内訳から制度別の変化原因を列挙する。
+ * @remarks 崖の原因。単位: 表示内の金額は万円/年または円/月。式・境界条件・丸めは移動前の実装を維持。
+ * @param {*} beforePoint 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} afterPoint 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} 原因オブジェクト配列。単位: 表示内の金額は万円/年または円/月
+ */
 export function explainCliffCauses(beforePoint, afterPoint) {
   const before = beforePoint?.breakdown || {};
   const after = afterPoint?.breakdown || {};
@@ -199,6 +327,13 @@ export function explainCliffCauses(beforePoint, afterPoint) {
   return out;
 }
 
+/**
+ * 下落閾値と表示範囲に従い崖・Q/R・回復幅・原因を抽出する。
+ * @remarks 崖/Q/R。単位: 給与・幅・可処分所得=万円。dropは1桁丸め。式・境界条件・丸めは移動前の実装を維持。
+ * @param {Array} series 計算行・系列または設定行の配列
+ * @param {object} options 世帯・制度設定または計算条件
+ * @returns {*} 崖レコード配列。単位: 給与・幅・可処分所得=万円。dropは1桁丸め
+ */
 export function detectCliffCauseRows(series, options = {}) {
   const minDropManyen = toNumber(options.minDropManyen, 3);
   const xMin = toNumber(options.xMin, -Infinity);
@@ -231,6 +366,14 @@ export function detectCliffCauseRows(series, options = {}) {
   return rows;
 }
 
+/**
+ * 下落後水準以下にあった最後の給与点を後方探索する。
+ * @remarks 崖/Q。単位: 給与・可処分所得=万円。式・境界条件・丸めは移動前の実装を維持。
+ * @param {Array} series 計算行・系列または設定行の配列
+ * @param {*} cliffIndex 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} yAfter 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} Pointまたはnull。単位: 給与・可処分所得=万円
+ */
 function findQ(series, cliffIndex, yAfter) {
   for (let i = cliffIndex - 1; i >= 0; i -= 1) {
     const point = series[i];
@@ -239,6 +382,15 @@ function findQ(series, cliffIndex, yAfter) {
   return null;
 }
 
+/**
+ * 下落前水準へ初めて回復する給与点を上限まで前方探索する。
+ * @remarks 崖/R。単位: 給与・可処分所得=万円。式・境界条件・丸めは移動前の実装を維持。
+ * @param {Array} series 計算行・系列または設定行の配列
+ * @param {*} cliffIndex 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} yBefore 判定対象・区分または補助値（呼出側の定義に従う）
+ * @param {*} xMax 判定対象・区分または補助値（呼出側の定義に従う）
+ * @returns {*} Pointまたはnull。単位: 給与・可処分所得=万円
+ */
 function findR(series, cliffIndex, yBefore, xMax) {
   for (let i = cliffIndex + 1; i < series.length; i += 1) {
     const point = series[i];

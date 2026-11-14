@@ -1333,7 +1333,7 @@ export default function AppendixCliffMap() {
           aria-pressed={viewMode === "laws"}
           onClick={() => selectViewMode("laws")}
         >
-          法令検索・採否候補
+          法令検索・採否
         </button>
       </nav>
 

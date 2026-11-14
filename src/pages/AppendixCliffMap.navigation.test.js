@@ -13,7 +13,7 @@ afterEach(() => { window.history.replaceState(null, "", "/"); });
 test("法令検索の直接リンクとタブ切替は計算データに依存しない", () => {
   window.history.replaceState(null, "", "/#law-screening");
   render(<AppendixCliffMap />);
-  expect(screen.getByRole("button", { name: "法令検索・採否候補" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "法令検索・採否" })).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByRole("region", { name: "法令検索" })).toHaveTextContent("表A2");
   fireEvent.click(screen.getByRole("button", { name: "調査対象・参照資料" }));
   expect(window.location.hash).toBe("#municipal-sources");

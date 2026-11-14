@@ -95,6 +95,9 @@
 .research-law-table td:nth-child(2) { min-width: 170px; }
 .research-law-table td:nth-child(4), .research-law-table td:nth-child(5) { min-width: 260px; }
 .research-law-table details summary { cursor: pointer; color: #315f89; }
+.research-excluded-group { margin-top: 12px; }
+.research-excluded-group > summary { cursor: pointer; padding: 10px 0; font-weight: 700; }
+.research-excluded-group .research-law-group { margin-top: 4px; }
 .research-evidence { font-size: 12px; margin: 8px 0; }
 
 .appendix-mode-tabs button {

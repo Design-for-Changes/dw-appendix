@@ -1,6 +1,6 @@
 {
   "schema_version": "2.1.0",
-  "title": "e-Gov法令検索による抽出結果と選定候補",
+  "title": "e-Gov法令検索による抽出結果と採否",
   "research_as_of": "2026-11-13",
   "retrieved_at": "2026-11-13T09:22:20.076Z",
   "source": {
@@ -18,8 +18,7 @@
     ],
     "combination": "各検索語による結果の法令ID単位の和集合",
     "inclusion_criterion": "障害を要件として、障害児世帯の手当・給付、利用者負担、控除・減免等を通じて可処分所得に直接作用する規定を含む法律。",
-    "exclusion_criterion": "障害児世帯の可処分所得に直接作用する規定を含まないもの。障害を要件としないもの。就労・職域・災害・特定の障害原因等を前提とするもの。障害固有の給付・負担要件が本則に定められていないもの。",
-    "candidate_note": "候補への収録は試算への採用を意味しない。",
+    "exclusion_criterion": "障害児世帯の可処分所得に直接作用する規定を含まないもの。障害を要件としないもの。本研究で対象外とした特定条件下の制度・過年度の改定特例。障害固有の給付・負担要件が本則に定められていないもの。",
     "exclusion_categories": [
       {
         "id": "C1",
@@ -31,26 +30,28 @@
       },
       {
         "id": "C2",
-        "label": "就労・職域・災害・特定の障害原因等を前提とするもの"
+        "label": "本研究で対象外とした特定条件下の制度・過年度の改定特例"
       },
       {
         "id": "C4",
         "label": "障害固有の給付・負担要件が本則に定められていないもの"
       }
-    ]
+    ],
+    "selection_note": "法律の採用と、モデル世帯の試算対象の選定は区別する。"
   },
   "counts": {
     "total_laws": 184,
     "current_laws": 184,
-    "candidate_laws": 24,
-    "excluded_laws": 160,
-    "scope_review_laws": 24,
+    "candidate_laws": 0,
+    "excluded_laws": 175,
+    "scope_review_laws": 0,
     "exclusions_by_category": {
-      "C1": 115,
+      "C1": 116,
       "C5": 19,
-      "C2": 23,
+      "C2": 37,
       "C4": 3
-    }
+    },
+    "included_laws": 9
   },
   "query_statistics": [
     {
@@ -140,11 +141,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_tariff_exemption",
-        "reason": "第14条16号は、身体障害者用に特に製作された器具等として政令で定める輸入貨物の関税を免除する。",
+        "reason": "第14条第16号は身体障害者用器具等の輸入貨物に対する関税免除を定めるため、物品の輸入を前提とする税負担調整として除外する。",
         "evidence": [
           {
             "article": "第十四条",
@@ -154,8 +155,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "障害児世帯による個人輸入に係る関税免除を、世帯の可処分所得への直接作用に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/143AC0000000054",
@@ -435,9 +435,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "child_disability_service_benefit",
         "reason": "第21条の5の3は、障害児通所支援の費用について保護者への給付と家計の負担能力をしん酌した自己負担相当額を定める。",
         "evidence": [
@@ -453,7 +453,6 @@
         "effect": "現物給付",
         "summary": "障害児通所支援・障害児入所支援等",
         "exclusion_category_id": null,
-        "discussion_point": "児童福祉法のうち、どの給付・利用者負担制度を比較対象とするか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/322AC0000000164",
@@ -1144,11 +1143,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "adult_definition_child_boundary",
-        "reason": "第4条の身体障害者は18歳以上とされ、第38条は本人・扶養義務者の負担能力に応じた措置費徴収を定める。第15条の手帳交付は児童にも及ぶ。",
+        "reason": "第4条の身体障害者は18歳以上とされ、第38条の費用徴収もその者への行政措置を対象とするため、18歳以上を対象とする措置制度として除外する。",
         "evidence": [
           {
             "article": "第四条",
@@ -1170,8 +1169,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "18・19歳の障害者に対する措置費徴収を障害児世帯の分析対象に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/324AC1000000283",
@@ -1217,9 +1215,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_inheritance_gift_tax",
         "reason": "第19条の4は障害者の相続税控除、第21条の4は特定障害者扶養信託に係る贈与税非課税を定める。",
         "evidence": [
@@ -1241,7 +1239,6 @@
         "effect": "税制",
         "summary": "相続税の障害者控除、特定障害者扶養信託の贈与税非課税",
         "exclusion_category_id": null,
-        "discussion_point": "相続・贈与を特定事情として除外するか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000073",
@@ -1464,9 +1461,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_resident_tax",
         "reason": "第295条は障害者等の住民税非課税、第314条の2は障害者控除・同居特別障害者控除を定める。",
         "evidence": [
@@ -1488,7 +1485,6 @@
         "effect": "税制",
         "summary": "住民税の障害者控除、非課税限度額判定",
         "exclusion_category_id": null,
-        "discussion_point": "障害者控除・本人非課税特例に加え、地方税法内の他の障害関連税目も比較対象に含めるか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0000000226",
@@ -1534,11 +1530,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "psychiatric_involuntary_hospitalization_cost",
-        "reason": "第30条は措置入院等の費用の公費負担、第31条は本人・扶養義務者の負担能力に応じた費用徴収を定める。",
+        "reason": "第30条・第31条は都道府県知事による措置入院等の費用負担・徴収を定めるため、措置入院という特定の処遇を前提とする負担制度として除外する。",
         "evidence": [
           {
             "article": "第三十条",
@@ -1554,8 +1550,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "措置入院による費用負担を、特定事情として除外するか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/325AC0100000123",
@@ -2284,9 +2279,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "special_needs_school_expenses",
         "reason": "第2条は、特別支援学校就学に必要な経費について保護者の負担能力に応じた支弁を定める。",
         "evidence": [
@@ -2302,7 +2297,6 @@
         "effect": "実費補填",
         "summary": "特別支援教育就学奨励費",
         "exclusion_category_id": null,
-        "discussion_point": "特別支援学校への就学という条件を、特定事情の除外条件に含めるか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/329AC0000000144",
@@ -2609,9 +2603,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_special_tax_measures",
         "reason": "第4条は障害者等の少額公債利子非課税、第41条の3の11は特別障害者本人・同一生計配偶者・扶養親族等を要件とする所得金額調整控除を定める。",
         "evidence": [
@@ -2633,7 +2627,6 @@
         "effect": "税制",
         "summary": "障害者等の少額貯蓄利子非課税（マル優）等",
         "exclusion_category_id": null,
-        "discussion_point": "所得金額調整控除・利子非課税等のうち、どの税制特例を比較対象とするか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/332AC0000000026",
@@ -3064,11 +3057,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "intellectual_disability_measures_cost",
-        "reason": "第15条の4は障害福祉サービスの措置、第27条は本人・扶養義務者の負担能力に応じた費用徴収を定める。第9条等は18歳以上の対象を示す。",
+        "reason": "第15条の4・第16条第1項第2号・第27条は、やむを得ない事由で介護給付費等を受けることが著しく困難な場合の行政措置と費用徴収を定めるため、例外的な措置を前提とする制度として除外する。",
         "evidence": [
           {
             "article": "第十五条の四",
@@ -3090,8 +3083,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "18・19歳の障害者に対する措置費徴収を障害児世帯の分析対象に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/335AC0000000037",
@@ -3821,9 +3813,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "special_child_disability_cash_benefits",
         "reason": "第3条は障害児を監護・養育する父母等への特別児童扶養手当、第17条は重度障害児本人への障害児福祉手当を定める。",
         "evidence": [
@@ -3845,7 +3837,6 @@
         "effect": "現金給付",
         "summary": "特別児童扶養手当・障害児福祉手当の支給",
         "exclusion_category_id": null,
-        "discussion_point": "成人向け手当を分離し、障害児対象の二つの手当だけを比較対象にするか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/339AC0000000134",
@@ -3898,9 +3889,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_income_tax_deduction",
         "reason": "第79条は障害者本人及び障害のある同一生計配偶者・扶養親族に応じた所得控除を定める。",
         "evidence": [
@@ -3916,7 +3907,6 @@
         "effect": "税制",
         "summary": "障害者控除・特別障害者控除・同居特別障害者加算",
         "exclusion_category_id": null,
-        "discussion_point": "障害者控除に加え、障害者等の利子非課税も比較対象に含めるか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/340AC0000000033",
@@ -6127,11 +6117,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則・表は平成12年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
+        "reason": "本則・表は平成12年4月から平成13年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則・表",
@@ -6145,8 +6135,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "平成12年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/412AC0000000034",
@@ -6226,11 +6215,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則・表は平成13年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
+        "reason": "本則・表は平成13年4月から平成14年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則・表",
@@ -6244,8 +6233,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "平成13年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/413AC0000000013",
@@ -6329,11 +6317,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則・表は平成14年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
+        "reason": "本則・表は平成14年4月から平成15年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則・表",
@@ -6347,8 +6335,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "平成14年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/414AC0000000021",
@@ -6899,11 +6886,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則第1項・表は平成15年度の月分について、特別児童扶養手当・障害児福祉手当等の額を物価指数に基づいて改定する。",
+        "reason": "本則・表は平成15年4月から平成16年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -6917,8 +6904,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "平成15年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000019",
@@ -6995,11 +6981,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_related_rent_reduction",
-        "reason": "第25条第4項は、居住者が身体障害者等で通常の家賃支払が困難な場合に、家賃を減免できると定める。",
+        "reason": "第25条第4項は機構の賃貸住宅に居住する身体障害者等で通常の家賃支払が困難な場合などの家賃減免を定めるため、特定住宅への居住と支払困難等を前提とする制度として除外する。",
         "evidence": [
           {
             "article": "第二十五条",
@@ -7008,8 +6994,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "居住者の年齢・世帯関係を踏まえ、この減免を障害児世帯への家賃軽減として選定対象に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/415AC0000000100",
@@ -7265,11 +7250,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則第1項・表は平成16年度の月分について、特別児童扶養手当・障害児福祉手当等の額の改定特例を定める。",
+        "reason": "本則・表は平成16年4月から平成17年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -7283,8 +7268,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "平成16年度の改定特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC0000000023",
@@ -7326,11 +7310,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "cognitive_impairment_legal_aid_costs",
-        "reason": "第30条は、認知機能が十分でない特定援助対象者への法律援助として、公的給付に係る行政不服申立て等の費用立替え・相談援助を定め、第34条は費用負担等を規程の対象とする。",
+        "reason": "第30条・第34条は認知機能が十分でない者等の民事裁判等・行政不服申立てや法律相談に係る費用の立替え・償還等を定めるため、法的手続・相談を必要とする場面の援助として除外する。",
         "evidence": [
           {
             "article": "第三十条",
@@ -7344,8 +7328,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "障害児への適用範囲と紛争等の前提条件を踏まえ、この法律援助を選定対象に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/416AC0000000074",
@@ -7634,11 +7617,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "historical_benefit_adjustment_scope",
-        "reason": "本則・表は、平成25年10月から平成27年3月まで等の月分について、特別児童扶養手当・障害児福祉手当等の特例額を定める。",
+        "reason": "本則・表は平成25年10月から平成27年3月までの特別児童扶養手当・障害児福祉手当等の額の改定特例を定めるため、特定の過去の支給月分に限る措置として除外する。",
         "evidence": [
           {
             "article": "本則第1項・表",
@@ -7652,8 +7635,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "過去の月分に係る手当額の特例を、選定の対象時点との関係でどのように扱うか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC0000000009",
@@ -7781,9 +7763,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "direct_disability_service_medical_and_assistive_benefits",
         "reason": "第29条は障害福祉サービス費、第58条は自立支援医療費、第76条は障害児の保護者を含む者への補装具の購入・借受け・修理費の支給を定める。",
         "evidence": [
@@ -7808,7 +7790,6 @@
         "effect": "現物給付",
         "summary": "自立支援医療・補装具費・障害福祉サービス等",
         "exclusion_category_id": null,
-        "discussion_point": "障害児世帯に作用するどの給付・負担調整規定を、本法の代表として法律一覧に示すか。",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/417AC0000000123",
@@ -8935,11 +8916,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "guardianship_cost_relief_scope",
-        "reason": "第44条は、障害者の成年後見制度利用に係る経済的負担の軽減措置を国・地方公共団体に求める。",
+        "reason": "第44条は障害者虐待の防止等のための成年後見制度の利用に係る経済的負担の軽減措置を求めるため、成年後見制度の利用を前提とする支援として除外する。",
         "evidence": [
           {
             "article": "第四十四条",
@@ -8948,8 +8929,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "対象年齢と施策の具体性を踏まえ、この負担軽減措置を障害児世帯に直接作用する規定に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/423AC1000000079",
@@ -9546,11 +9526,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "adult_guardian_remuneration_subsidy_scope",
-        "reason": "第11条第8号は、成年後見人等への報酬支払の助成を含む支援の充実に必要な措置を定める。",
+        "reason": "第11条第8号は成年後見人等に対する報酬支払の助成等を求めるため、成年後見制度の利用を前提とする費用支援として除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -9564,8 +9544,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "個別の助成対象・要件を本則から特定できないこの規定を、障害児世帯への負担調整の根拠として選定対象に含めるか。",
+        "exclusion_category_id": "C2",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/428AC1000000029",
@@ -9868,9 +9847,9 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "included",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_tax_exemption_personal_scope",
         "reason": "第4条第1項第2号は、前年合計所得135万円以下の障害者等を森林環境税の非課税対象とする。未成年者も同じ非課税類型に含む。",
         "evidence": [
@@ -9882,8 +9861,10 @@
         ],
         "checked_on": "2026-11-13",
         "exclusion_category_id": null,
-        "discussion_point": "未成年者への非課税と重なる点、対象年齢及び本人課税と世帯家計の関係を踏まえ、障害児の障害に固有の作用をどう判断するか。",
-        "selection_checked_on": "2026-11-13"
+        "selection_checked_on": "2026-11-13",
+        "id": "N09",
+        "effect": "税制",
+        "summary": "森林環境税の障害者等に対する非課税"
       },
       "source_url": "https://laws.e-gov.go.jp/law/431AC0000000003",
       "current_status": {
@@ -10040,11 +10021,11 @@
         ]
       },
       "screening": {
-        "status": "candidate",
+        "status": "excluded",
         "review_status": "verified",
-        "scope_review_required": true,
+        "scope_review_required": false,
         "reason_code": "disability_specific_service_fee_regulation",
-        "reason": "第2条は聴覚障害者等向けの電話リレーサービスを定義し、第7条・第10条は利用料金を基本方針・認可規程の対象とする。",
+        "reason": "第7条・第10条は電話リレーサービスの提供体制と利用料金の設定・認可を定めるが、障害児世帯への金銭給付や利用料の減免を本則で直接定めるものではないため除外する。",
         "evidence": [
           {
             "article": "第二条",
@@ -10058,8 +10039,7 @@
           }
         ],
         "checked_on": "2026-11-13",
-        "exclusion_category_id": null,
-        "discussion_point": "利用料金に係る認可制度を、障害を要件とする世帯負担の規定として選定対象に含めるか。",
+        "exclusion_category_id": "C1",
         "selection_checked_on": "2026-11-13"
       },
       "source_url": "https://laws.e-gov.go.jp/law/502AC0000000053",

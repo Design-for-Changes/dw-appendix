@@ -77,6 +77,14 @@ const TABLE1_REFERENCES = new Map([
       summary: "相続税の障害者控除、特定障害者扶養信託の贈与税非課税",
     },
   ],
+  [
+    "森林環境税及び森林環境譲与税に関する法律",
+    {
+      id: "N09",
+      effect: "税制",
+      summary: "森林環境税の障害者等に対する非課税",
+    },
+  ],
 ]);
 
 function readArg(name, fallback) {

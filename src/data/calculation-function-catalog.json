@@ -1,22 +1,26 @@
 {
   "schemaVersion": 1,
-  "revision": "fb0e36e251b9a88177de4464e90cd7237122d9f825a068e816ae3f738ce33c5b",
-  "scope": "src/calcと表示データ生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、検証スクリプトは対象外。",
+  "revision": "35905ddcb6d1bc2879965572d40b64397fa473c6befaae41a9212e1f0a4352c3",
+  "scope": "src/calcと表示データ・条件生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証スクリプトは対象外。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 94,
+  "functionCount": 115,
   "classCount": 0,
   "sources": [
     {
       "file": "scripts/generate-appendix-data.mjs",
-      "sha256": "7a59470eaa81993267f17ee73f27327cdc68896ff0b126aa2d29936db443ae58"
+      "sha256": "601445b6e4e6a4e185605729435586b5bc9e8a38407212120cd8cbf01bb59251"
+    },
+    {
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "sha256": "06fd7fba4c685b7bd1114fc18bbbb6f2c9e129c8d947ffc32be3265c8a528398"
     },
     {
       "file": "src/calc/allowances.js",
-      "sha256": "53f55ff52cd5b43aa841f4dd02610a5bdab22717a5323de6fbfd9724a1c0a4fb"
+      "sha256": "749f6ca3c23b41ebb32dabed0ac362a56cf24aa1636a49a0be25cd275777e0d2"
     },
     {
       "file": "src/calc/calculationSources.js",
-      "sha256": "3cc56e4caabe98fd2c8f5af01af0e4da1d9d6605878e70c1d78e4b53ac99f292"
+      "sha256": "a148ebb65218b7cdc387a1923b06c42e6ac180245516788ff50e89e7f572671a"
     },
     {
       "file": "src/calc/cliffCauseAnalysis.js",
@@ -24,19 +28,23 @@
     },
     {
       "file": "src/calc/computePoint.js",
-      "sha256": "c199a7a3b06b4db469ca710712430a0805a9fce371c9a9b69f3473fa7133d72d"
+      "sha256": "f272214b8491e4cb8c198e61953d6fd0b417de7d05591c34cdbf0fc4d7fadc95"
     },
     {
       "file": "src/calc/deductions.js",
-      "sha256": "63861a6bfeb320bf5e9e1f53b2d4c6c8d5cf04438f1604231eeecbbe4cc902bc"
+      "sha256": "7216ccb1b057f50c938223f5311df6154f92d2a709395e94146664b6fafcf608"
     },
     {
       "file": "src/calc/educationAid.js",
-      "sha256": "c2343bf4cffce5ddb597836f0edf3436d1d8d2e7136dd1dc039739b1d65ca99c"
+      "sha256": "0f5ae86312e4d0264b5550d7ebbf2dbaab193dfc0a60510aa6461186a2aa518d"
     },
     {
       "file": "src/calc/household.js",
-      "sha256": "23ba5d2ad8f6422d042fe3559f6172a4c954ee9207174578fb5a5031f691eb6a"
+      "sha256": "8e2788fcb7ae9cb1579e026b66980d31914b629760d1981eac2181be878f560d"
+    },
+    {
+      "file": "src/calc/illustrativeAdjustment.js",
+      "sha256": "2906aba746213c3a88f075ac5a1e696c2698bd40853757d905c6cf4209c9af24"
     },
     {
       "file": "src/calc/medicalAid.js",
@@ -44,7 +52,7 @@
     },
     {
       "file": "src/calc/numeric.js",
-      "sha256": "5137a0abcc66ddf57822c988665479581b71f4571f55f70f060f25817c399bda"
+      "sha256": "02c9acfb34404b83ffc6aa531dfaf37f0b33da4e86e97f0e292e62c7dffd79ce"
     },
     {
       "file": "src/calc/optimalModel.js",
@@ -52,7 +60,7 @@
     },
     {
       "file": "src/calc/socialInsurance.js",
-      "sha256": "d645c6a78c5c23c0eaef41f2d8430deb5101776b6d70c03b0892e4140438d92f"
+      "sha256": "df1cea49ab4677d1369a6ce97d33551dcc5d5bb0e0f2c607b2c00b8e33c25543"
     },
     {
       "file": "src/calc/tableUtils.js",
@@ -60,11 +68,11 @@
     },
     {
       "file": "src/calc/taxDescriptions.js",
-      "sha256": "f456dd8ae8ea08bca002af889e5538af7780ad94c5d29c2eb082a58d6d3e1dbb"
+      "sha256": "1622ac9ee4a08472653ff31f7e2fd8ca3d47c120324f7b3bcb959e0cfe8f7142"
     },
     {
       "file": "src/calc/taxes.js",
-      "sha256": "bdba449cc81d165d3ff78efc48984638015a8794a43ff2f6ee0396d27696f49b"
+      "sha256": "35a81309b8f8b2b5fa33beb6aefbeb2d2d8264b2b6461da3cc612ecf6cde7325"
     }
   ],
   "functions": [
@@ -207,7 +215,7 @@
       "file": "scripts/generate-appendix-data.mjs",
       "category": "表示データ生成",
       "line": 140,
-      "endLine": 257,
+      "endLine": 261,
       "role": "内部関数",
       "signature": "compactBreakdown(breakdown)",
       "description": "計算内訳から表示に必要な項目を選ぶ。円・万円の単位と金額は元のまま保持する。",
@@ -216,14 +224,136 @@
       "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-appendix-data.mjs#L140"
     },
     {
+      "id": "scripts/generate-revision-scenarios.mjs:enumerateFamilyProfiles",
+      "name": "enumerateFamilyProfiles",
+      "qualifiedName": "enumerateFamilyProfiles",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 30,
+      "endLine": 52,
+      "role": "内部モジュール間",
+      "signature": "enumerateFamilyProfiles()",
+      "description": "子どもを同年齢・同条件で交換可能とした31の人数構成を列挙する。",
+      "params": [],
+      "returns": "{object[]} n=1～3、1≦d≦n、A/B/Cの非負人数構成。人口ウェイトは付けない。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L30"
+    },
+    {
+      "id": "scripts/generate-revision-scenarios.mjs:multiplyKnown",
+      "name": "multiplyKnown",
+      "qualifiedName": "multiplyKnown",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 60,
+      "endLine": 62,
+      "role": "内部モジュール間",
+      "signature": "multiplyKnown(value, count)",
+      "description": "入力が有限の非負数の場合だけ人数倍し、未確定値を0円にしない。",
+      "params": [
+        "{number|null} value 年額又は月額の円額。",
+        "{number} count 人数。"
+      ],
+      "returns": "{number|null} 合計円額、又は未確定を示すnull。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L60"
+    },
+    {
+      "id": "scripts/generate-revision-scenarios.mjs:makeRevisionChildren",
+      "name": "makeRevisionChildren",
+      "qualifiedName": "makeRevisionChildren",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 69,
+      "endLine": 88,
+      "role": "内部モジュール間",
+      "signature": "makeRevisionChildren(family)",
+      "description": "給付資格と独立に明示した税法上の区分仮定を含む児童入力を作る。",
+      "params": [
+        "{object} family A/B/Cの人数構成。"
+      ],
+      "returns": "{object[]} 全員7歳の児童入力。利用額と需要額は別に設定する。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L69"
+    },
+    {
+      "id": "scripts/generate-revision-scenarios.mjs:makeRevisionEducationProfile",
+      "name": "makeRevisionEducationProfile",
+      "qualifiedName": "makeRevisionEducationProfile",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 96,
+      "endLine": 126,
+      "role": "内部モジュール間",
+      "signature": "makeRevisionEducationProfile(family, needInputs)",
+      "description": "新研究の学校条件と、未確定を保持したN04需要測定入力を作る。",
+      "params": [
+        "{object} family A/B/C人数構成。",
+        "{object} needInputs 原典値又は明示した仮定値。未確定はnull。"
+      ],
+      "returns": "{object} programs.n04EducationProfileへ渡す入力。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L96"
+    },
+    {
+      "id": "scripts/generate-revision-scenarios.mjs:generateRevisionScenarios",
+      "name": "generateRevisionScenarios",
+      "qualifiedName": "generateRevisionScenarios",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 133,
+      "endLine": 233,
+      "role": "計算エントリ",
+      "signature": "generateRevisionScenarios({ needInputs = REVISION_NEED_INPUTS } = {})",
+      "description": "31構成×配偶者給与3条件×児童別利用額3条件を、結果未計算の279条件として生成する。",
+      "params": [
+        "{object} options.needInputs 明示されたN04需要額入力。省略時は未確定を維持。"
+      ],
+      "returns": "{object} 旧3ケースと独立した条件データ。人口・財政影響・最適値を推定しない。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L133"
+    },
+    {
+      "id": "scripts/generate-revision-scenarios.mjs:main",
+      "name": "main",
+      "qualifiedName": "main",
+      "kind": "function",
+      "file": "scripts/generate-revision-scenarios.mjs",
+      "category": "表示データ生成",
+      "line": 239,
+      "endLine": 245,
+      "role": "内部関数",
+      "signature": "main()",
+      "description": "条件データを生成して保存する。--need-inputsで、根拠を記した確定入力JSONを指定できる。",
+      "params": [],
+      "returns": "{void} public/data/research/revision-scenarios.jsonを更新する。既存系列は変更しない。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/generate-revision-scenarios.mjs#L239"
+    },
+    {
+      "id": "src/calc/allowances.js:calcChildSupportMonthlyYen",
+      "name": "calcChildSupportMonthlyYen",
+      "qualifiedName": "calcChildSupportMonthlyYen",
+      "kind": "function",
+      "file": "src/calc/allowances.js",
+      "category": "現金給付",
+      "line": 7,
+      "endLine": 20,
+      "role": "内部モジュール間",
+      "signature": "calcChildSupportMonthlyYen({ incomeYen, fuyoCount, childrenCount, statutoryAddYen = 0 })",
+      "description": "令和8年4月以降の児童扶養手当月額を、判定済所得と法定扶養人数から求める。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L7"
+    },
+    {
       "id": "src/calc/allowances.js:calcBasicDisabilityPensionYenFor",
       "name": "calcBasicDisabilityPensionYenFor",
       "qualifiedName": "calcBasicDisabilityPensionYenFor",
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 11,
-      "endLine": 42,
+      "line": 30,
+      "endLine": 61,
       "role": "内部モジュール間",
       "signature": "calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan)",
       "description": "本人区分、20歳前所得制限、世帯主の子加算から障害基礎年金を求める。",
@@ -233,7 +363,7 @@
         "{number} totalIncomeWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 円/年。支給係数適用後Math.round",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L11"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L30"
     },
     {
       "id": "src/calc/allowances.js:calcLimitFuyoInfo",
@@ -242,8 +372,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 51,
-      "endLine": 72,
+      "line": 70,
+      "endLine": 91,
       "role": "内部モジュール間",
       "signature": "calcLimitFuyoInfo(ctx, rows)",
       "description": "所得要件を満たす扶養親族数と年齢による法定加算額を求める。",
@@ -252,7 +382,7 @@
         "{Array} rows 計算行・系列または設定行の配列"
       ],
       "returns": "{*} {count,statutoryAddYen,dependents}。単位: 人数、円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L51"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L70"
     },
     {
       "id": "src/calc/allowances.js:calcLegacyDisabilityAddedFuyoCount",
@@ -261,8 +391,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 81,
-      "endLine": 105,
+      "line": 100,
+      "endLine": 124,
       "role": "内部モジュール間",
       "signature": "calcLegacyDisabilityAddedFuyoCount(ctx, rows)",
       "description": "互換用に障害区分による旧式人数加算を求める。現特児限度人数には使わない。",
@@ -271,7 +401,7 @@
         "{Array} rows 計算行・系列または設定行の配列"
       ],
       "returns": "{*} number。単位: 人数",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L81"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L100"
     },
     {
       "id": "src/calc/allowances.js:calcLegacyDisabilityAddedFuyoCount.addForHead",
@@ -280,8 +410,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 90,
-      "endLine": 90,
+      "line": 109,
+      "endLine": 109,
       "role": "内部関数",
       "signature": "addForHead(row)",
       "description": "旧互換の世帯主人員加算を求める。",
@@ -289,7 +419,7 @@
         "{*} row 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 人数",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L90"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L109"
     },
     {
       "id": "src/calc/allowances.js:calcLegacyDisabilityAddedFuyoCount.addForFamily",
@@ -298,8 +428,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 97,
-      "endLine": 101,
+      "line": 116,
+      "endLine": 120,
       "role": "内部関数",
       "signature": "addForFamily(row)",
       "description": "障害と同居特別区分から旧互換の家族人員加算を求める。",
@@ -307,7 +437,7 @@
         "{*} row 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 人数",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L97"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L116"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal",
@@ -316,8 +446,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 115,
-      "endLine": 355,
+      "line": 134,
+      "endLine": 375,
       "role": "内部モジュール間",
       "signature": "calcTccaComputedLocal(ctx, cols, spSpLT)",
       "description": "受給資格者と家族の判定所得・限度額を計算し特別児童扶養手当の支給額を求める。",
@@ -327,7 +457,7 @@
         "{*} spSpLT 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} 所得判定・限度額・Map・月額等。単位: 所得=万円/年、限度/調整所得=円/年、支給=円/月",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L115"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L134"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.allowanceIncomeWan",
@@ -336,8 +466,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 125,
-      "endLine": 125,
+      "line": 144,
+      "endLine": 144,
       "role": "内部関数",
       "signature": "allowanceIncomeWan(row)",
       "description": "税計算で差し引いた所得金額調整控除を手当の所得判定用に戻す。",
@@ -345,7 +475,7 @@
         "{*} row 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L125"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L144"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.incomeLimitParts",
@@ -354,8 +484,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 137,
-      "endLine": 155,
+      "line": 156,
+      "endLine": 174,
       "role": "内部関数",
       "signature": "incomeLimitParts(kind, fuyoCount, statutoryAddYen = 0)",
       "description": "扶養人数別基準額と法定加算から特児所得限度額の内訳を求める。",
@@ -365,7 +495,7 @@
         "{number} statutoryAddYen 円（年額/月額は関数の単位欄参照）"
       ],
       "returns": "{*} 限度額オブジェクト。単位: 円/年、人数",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L137"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L156"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.tccaDisWan",
@@ -374,8 +504,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 162,
-      "endLine": 165,
+      "line": 181,
+      "endLine": 184,
       "role": "内部関数",
       "signature": "tccaDisWan(who)",
       "description": "世帯員名に対応する手当用障害者控除額を取得する。",
@@ -383,7 +513,7 @@
         "{*} who 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L162"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L181"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.isChildDep",
@@ -392,8 +522,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 172,
-      "endLine": 175,
+      "line": 191,
+      "endLine": 194,
       "role": "内部関数",
       "signature": "isChildDep(who)",
       "description": "児童の合計所得が58万円以下かを判定する。",
@@ -401,7 +531,7 @@
         "{*} who 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} boolean。単位: 所得=万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L172"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L191"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.addFamily",
@@ -410,8 +540,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 264,
-      "endLine": 293,
+      "line": 283,
+      "endLine": 312,
       "role": "内部関数",
       "signature": "addFamily(who, totalWan, wsWan, disWan)",
       "description": "家族の判定所得と控除内訳を閉包のfamilyByWho Mapへ追加する。",
@@ -422,7 +552,7 @@
         "{number} disWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} void（Map更新）。単位: 万円/年と円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L264"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L283"
     },
     {
       "id": "src/calc/allowances.js:calcTccaComputedLocal.gradeToMonthlyYen",
@@ -431,8 +561,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 311,
-      "endLine": 311,
+      "line": 330,
+      "endLine": 330,
       "role": "内部関数",
       "signature": "gradeToMonthlyYen(g)",
       "description": "特児の入力等級を月額手当額へ対応付ける。",
@@ -440,7 +570,7 @@
         "{*} g 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 円/月",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L311"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L330"
     },
     {
       "id": "src/calc/allowances.js:calcWelfareAllowanceLimitSelfYen",
@@ -449,8 +579,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 363,
-      "endLine": 368,
+      "line": 383,
+      "endLine": 388,
       "role": "内部モジュール間",
       "signature": "calcWelfareAllowanceLimitSelfYen(fuyoCount)",
       "description": "障害児福祉手当等の本人所得限度額を扶養人数から求める。",
@@ -458,7 +588,7 @@
         "{*} fuyoCount 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L363"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L383"
     },
     {
       "id": "src/calc/allowances.js:calcWelfareAllowanceLimitObligorYen",
@@ -467,8 +597,8 @@
       "kind": "function",
       "file": "src/calc/allowances.js",
       "category": "現金給付",
-      "line": 376,
-      "endLine": 382,
+      "line": 396,
+      "endLine": 402,
       "role": "内部モジュール間",
       "signature": "calcWelfareAllowanceLimitObligorYen(fuyoCount)",
       "description": "障害児福祉手当等の配偶者・扶養義務者所得限度額を求める。",
@@ -476,7 +606,7 @@
         "{*} fuyoCount 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L376"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/allowances.js#L396"
     },
     {
       "id": "src/calc/cliffCauseAnalysis.js:toNumber",
@@ -881,14 +1011,46 @@
       "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/cliffCauseAnalysis.js#L394"
     },
     {
+      "id": "src/calc/computePoint.js:calcServiceAssessmentLevyYen",
+      "name": "calcServiceAssessmentLevyYen",
+      "qualifiedName": "calcServiceAssessmentLevyYen",
+      "kind": "function",
+      "file": "src/calc/computePoint.js",
+      "category": "統合計算",
+      "line": 23,
+      "endLine": 26,
+      "role": "内部モジュール間",
+      "signature": "calcServiceAssessmentLevyYen(municipalIncomeLevyYen, dependentAges)",
+      "description": "通所判定用の市町村民税所得割から、旧年少・特定扶養控除相当税額を差し引く。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L23"
+    },
+    {
+      "id": "src/calc/computePoint.js:getChildDayServiceCapYen",
+      "name": "getChildDayServiceCapYen",
+      "qualifiedName": "getChildDayServiceCapYen",
+      "kind": "function",
+      "file": "src/calc/computePoint.js",
+      "category": "統合計算",
+      "line": 32,
+      "endLine": 35,
+      "role": "内部モジュール間",
+      "signature": "getChildDayServiceCapYen(assessmentLevyYen, householdTaxable)",
+      "description": "障害児通所支援の世帯課税状況と判定用所得割から月額上限を選ぶ。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L32"
+    },
+    {
       "id": "src/calc/computePoint.js:computeSeries",
       "name": "computeSeries",
       "qualifiedName": "computeSeries",
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 29,
-      "endLine": 39,
+      "line": 47,
+      "endLine": 57,
       "role": "計算エントリ",
       "signature": "computeSeries({ household, scenario = \"s2\", tables, sweep } = {})",
       "description": "世帯条件を固定し、世帯主の給与収入を指定刻みで変化させて全返値を求める。",
@@ -900,7 +1062,7 @@
         "{object} [options.sweep] min/max/step（給与収入、万円/年）"
       ],
       "returns": "{*} Point配列。単位: 給与・年間収支は万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L29"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L47"
     },
     {
       "id": "src/calc/computePoint.js:computePoint",
@@ -909,8 +1071,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 48,
-      "endLine": 701,
+      "line": 66,
+      "endLine": 846,
       "role": "内部関数",
       "signature": "computePoint(ctx, x)",
       "description": "各制度を同じ給与点に適用し、世帯収支と計算過程の詳細を集計する。",
@@ -919,7 +1081,7 @@
         "{number} x 世帯主の給与収入（万円/年）"
       ],
       "returns": "{*} Pointオブジェクト。単位: 原則万円/年。Yen付き詳細は円、支給月額は円/月",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L48"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L66"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.levySumWanFor",
@@ -928,8 +1090,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 155,
-      "endLine": 173,
+      "line": 220,
+      "endLine": 238,
       "role": "内部関数",
       "signature": "levySumWanFor(who)",
       "description": "利用者の年齢と続柄に応じた所得割の判定範囲を合算する。",
@@ -937,7 +1099,23 @@
         "{*} who 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L155"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L220"
+    },
+    {
+      "id": "src/calc/computePoint.js:computePoint.serviceTaxableFor",
+      "name": "serviceTaxableFor",
+      "qualifiedName": "computePoint.serviceTaxableFor",
+      "kind": "function",
+      "file": "src/calc/computePoint.js",
+      "category": "統合計算",
+      "line": 243,
+      "endLine": 250,
+      "role": "内部関数",
+      "signature": "serviceTaxableFor(who)",
+      "description": "利用者の年齢・続柄に対応する世帯範囲に住民税課税者がいるかを調べる。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L243"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.monthlyFeeYen",
@@ -946,17 +1124,17 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 181,
-      "endLine": 189,
+      "line": 258,
+      "endLine": 266,
       "role": "内部関数",
-      "signature": "monthlyFeeYen(sumLevyWan, age)",
+      "signature": "monthlyFeeYen(sumLevyWan, age, taxable)",
       "description": "年齢と所得区分から採用月額負担を求め、児童では代表利用料と制度上限の小さい方を使う。",
       "params": [
         "{number} sumLevyWan 万円（年額。補助値は呼出側の定義に従う）",
         "{number} age 年齢（歳）"
       ],
       "returns": "{*} number。単位: 円/月",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L181"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L258"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.serviceType",
@@ -965,17 +1143,17 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 197,
-      "endLine": 204,
+      "line": 274,
+      "endLine": 281,
       "role": "内部関数",
-      "signature": "serviceType(sumLevyWan, age)",
+      "signature": "serviceType(sumLevyWan, age, taxable)",
       "description": "年齢と所得割から非課税・無償化・一般1/2を選ぶ。",
       "params": [
         "{number} sumLevyWan 万円（年額。補助値は呼出側の定義に従う）",
         "{number} age 年齢（歳）"
       ],
       "returns": "{*} string。単位: 所得割は万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L197"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L274"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.serviceConfidence",
@@ -984,8 +1162,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 212,
-      "endLine": 217,
+      "line": 289,
+      "endLine": 294,
       "role": "内部関数",
       "signature": "serviceConfidence(sumLevyWan, age)",
       "description": "児童一般2区分で代表利用料を用いる状態を区別する。",
@@ -994,7 +1172,7 @@
         "{number} age 年齢（歳）"
       ],
       "returns": "{*} strictまたはrepresentative。単位: 無単位",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L212"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L289"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.calcWelfareDisabilityDeductionWan",
@@ -1003,8 +1181,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 276,
-      "endLine": 310,
+      "line": 410,
+      "endLine": 444,
       "role": "内部関数",
       "signature": "calcWelfareDisabilityDeductionWan(col, mode)",
       "description": "本人・扶養義務者区分に応じた障害家族の手当用控除額を合算する。",
@@ -1013,7 +1191,7 @@
         "{*} mode 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L276"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L410"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.calcWelfareDisabilityDeductionWan.isDepLike",
@@ -1022,8 +1200,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 286,
-      "endLine": 289,
+      "line": 420,
+      "endLine": 423,
       "role": "内部関数",
       "signature": "isDepLike(w)",
       "description": "世帯員名に対応する所得が58万円以下かを判定する。",
@@ -1031,7 +1209,7 @@
         "{*} w 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} boolean。単位: 所得=万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L286"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L420"
     },
     {
       "id": "src/calc/computePoint.js:computePoint.calcWelfareAdjustedIncomeDetail",
@@ -1040,8 +1218,8 @@
       "kind": "function",
       "file": "src/calc/computePoint.js",
       "category": "統合計算",
-      "line": 318,
-      "endLine": 388,
+      "line": 452,
+      "endLine": 522,
       "role": "内部関数",
       "signature": "calcWelfareAdjustedIncomeDetail(col, mode = \"self\")",
       "description": "本人と扶養義務者で異なる控除を適用し、福祉手当の判定所得内訳を作る。",
@@ -1050,7 +1228,7 @@
         "{*} mode 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} 控除・判定所得オブジェクト。単位: 万円/年と円/年。判定円はMath.round",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L318"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/computePoint.js#L452"
     },
     {
       "id": "src/calc/deductions.js:amountByBands",
@@ -1215,7 +1393,7 @@
       "file": "src/calc/deductions.js",
       "category": "税・所得控除",
       "line": 201,
-      "endLine": 241,
+      "endLine": 247,
       "role": "内部モジュール間",
       "signature": "getDisabilityDeductionForTaxpayerWan(ctx, col, kind, rows)",
       "description": "扶養家族の障害者控除を世帯主へ帰属させ、本人との二重適用を避ける。",
@@ -1271,8 +1449,8 @@
       "kind": "function",
       "file": "src/calc/deductions.js",
       "category": "税・所得控除",
-      "line": 253,
-      "endLine": 261,
+      "line": 259,
+      "endLine": 267,
       "role": "内部モジュール間",
       "signature": "getTaxable(ctx, col, kind, rows, headDedCommonWithKin)",
       "description": "所得から本人と世帯主に帰属する控除を減算して非負の課税所得を求める。",
@@ -1284,7 +1462,7 @@
         "{*} headDedCommonWithKin 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/deductions.js#L253"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/deductions.js#L259"
     },
     {
       "id": "src/calc/educationAid.js:n04AmountForAge",
@@ -1293,8 +1471,8 @@
       "kind": "function",
       "file": "src/calc/educationAid.js",
       "category": "就学奨励費",
-      "line": 58,
-      "endLine": 61,
+      "line": 81,
+      "endLine": 84,
       "role": "内部モジュール間",
       "signature": "n04AmountForAge(age)",
       "description": "年齢帯に対応する生活扶助第1類の月額を取得する。",
@@ -1302,7 +1480,7 @@
         "{number} age 年齢（歳）"
       ],
       "returns": "{*} number。単位: 円/月",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L58"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L81"
     },
     {
       "id": "src/calc/educationAid.js:n04BySize",
@@ -1311,8 +1489,8 @@
       "kind": "function",
       "file": "src/calc/educationAid.js",
       "category": "就学奨励費",
-      "line": 70,
-      "endLine": 74,
+      "line": 93,
+      "endLine": 97,
       "role": "内部モジュール間",
       "signature": "n04BySize(table, size)",
       "description": "世帯人数別の需要額要素を取得し、9人超は9人値を使う。",
@@ -1321,7 +1499,7 @@
         "{*} size 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 入力表により円/月または率",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L70"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L93"
     },
     {
       "id": "src/calc/educationAid.js:ceilToTenYen",
@@ -1330,8 +1508,8 @@
       "kind": "function",
       "file": "src/calc/educationAid.js",
       "category": "就学奨励費",
-      "line": 82,
-      "endLine": 84,
+      "line": 105,
+      "endLine": 107,
       "role": "内部モジュール間",
       "signature": "ceilToTenYen(value)",
       "description": "需要額の指定要素を10円単位で切り上げる。",
@@ -1339,7 +1517,82 @@
         "{*} value 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L82"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L105"
+    },
+    {
+      "id": "src/calc/educationAid.js:validateN04EducationProfile",
+      "name": "validateN04EducationProfile",
+      "qualifiedName": "validateN04EducationProfile",
+      "kind": "function",
+      "file": "src/calc/educationAid.js",
+      "category": "就学奨励費",
+      "line": 114,
+      "endLine": 135,
+      "role": "内部モジュール間",
+      "signature": "validateN04EducationProfile(profile)",
+      "description": "新研究用N04入力を検証し、未確定の需要額要素を0円へ置換せず列挙する。",
+      "params": [
+        "{object} profile 学校・年度・費目・需要額の条件。金額は円。"
+      ],
+      "returns": "{string[]} 算定を妨げる入力上の問題。空配列なら入力が充足している。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L114"
+    },
+    {
+      "id": "src/calc/educationAid.js:calcN04ExpenseSupport",
+      "name": "calcN04ExpenseSupport",
+      "qualifiedName": "calcN04ExpenseSupport",
+      "kind": "function",
+      "file": "src/calc/educationAid.js",
+      "category": "就学奨励費",
+      "line": 144,
+      "endLine": 171,
+      "role": "内部モジュール間",
+      "signature": "calcN04ExpenseSupport(profile, supportClass)",
+      "description": "特別支援学校小学部の学用品費を、対象実費・支弁区分別補助率・上限から算定する。",
+      "params": [
+        "{object} profile 費目入力。expenses[0].annualExpenseYenは対象児1人の対象実費。",
+        "{string} supportClass 第1区分／第2区分／第3区分。"
+      ],
+      "returns": "{object} 対象実費、率、上限、給付額の内訳（円/児童・年）。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L144"
+    },
+    {
+      "id": "src/calc/educationAid.js:n04VerifiedSizeValue",
+      "name": "n04VerifiedSizeValue",
+      "qualifiedName": "n04VerifiedSizeValue",
+      "kind": "function",
+      "file": "src/calc/educationAid.js",
+      "category": "就学奨励費",
+      "line": 179,
+      "endLine": 184,
+      "role": "内部モジュール間",
+      "signature": "n04VerifiedSizeValue(table, size)",
+      "description": "需要額の人数別表を、確認した人数の範囲内だけ参照する。",
+      "params": [
+        "{object} table 人数をキーとする円額又は率の表。",
+        "{number} size 世帯人数（人）。"
+      ],
+      "returns": "{number} 表の値。不足する人数を他人数の値や0で補完しない。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L179"
+    },
+    {
+      "id": "src/calc/educationAid.js:calcN04ProfileDetail",
+      "name": "calcN04ProfileDetail",
+      "qualifiedName": "calcN04ProfileDetail",
+      "kind": "function",
+      "file": "src/calc/educationAid.js",
+      "category": "就学奨励費",
+      "line": 193,
+      "endLine": 266,
+      "role": "内部モジュール間",
+      "signature": "calcN04ProfileDetail(ctx, rows)",
+      "description": "費目限定の新研究用N04を計算し、未確定入力があれば計算を中止する。",
+      "params": [
+        "{object} ctx 世帯とprograms.n04EducationProfileの明示条件。",
+        "{Array} rows 所得・社会保険料・年齢を含む世帯員の計算行。"
+      ],
+      "returns": "{object} 支弁区分、費目別給付、需要額の全採用要素と出典。",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L193"
     },
     {
       "id": "src/calc/educationAid.js:calcN04Detail",
@@ -1348,8 +1601,8 @@
       "kind": "function",
       "file": "src/calc/educationAid.js",
       "category": "就学奨励費",
-      "line": 93,
-      "endLine": 228,
+      "line": 275,
+      "endLine": 411,
       "role": "内部モジュール間",
       "signature": "calcN04Detail(ctx, rows)",
       "description": "生活保護基準に基づく需要額と世帯所得比から就学奨励費の支弁区分と年額を求める。",
@@ -1358,7 +1611,7 @@
         "{Array} rows 計算行・系列または設定行の配列"
       ],
       "returns": "{*} 判定・需要額内訳・年額・出典。単位: 需要額=円/月、所得/給付=万円/年。ratio<1.5/<2.5",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L93"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/educationAid.js#L275"
     },
     {
       "id": "src/calc/household.js:buildHousehold",
@@ -1368,7 +1621,7 @@
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
       "line": 15,
-      "endLine": 78,
+      "endLine": 84,
       "role": "計算エントリ",
       "signature": "buildHousehold(caseHousehold = {})",
       "description": "世帯入力を正規化し、年齢・障害区分・給付・助成の既定値を設定する。",
@@ -1385,8 +1638,8 @@
       "kind": "function",
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
-      "line": 87,
-      "endLine": 89,
+      "line": 93,
+      "endLine": 95,
       "role": "内部モジュール間",
       "signature": "getConfig(tables, key)",
       "description": "ネストされた設定、旧形式の設定、空オブジェクトの順に取得する。",
@@ -1395,7 +1648,7 @@
         "{*} key 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} 設定オブジェクト。単位: 設定ごとに定義",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L87"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L93"
     },
     {
       "id": "src/calc/household.js:getRequiredTables",
@@ -1404,8 +1657,8 @@
       "kind": "function",
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
-      "line": 97,
-      "endLine": 116,
+      "line": 103,
+      "endLine": 122,
       "role": "内部モジュール間",
       "signature": "getRequiredTables(tables = {})",
       "description": "静的表と控除設定を内部コンテキストの名前へ対応付ける。",
@@ -1413,7 +1666,7 @@
         "{object} tables 世帯・制度設定または計算条件"
       ],
       "returns": "{*} 表・設定オブジェクト。単位: 表ごとに定義",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L97"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L103"
     },
     {
       "id": "src/calc/household.js:createContext",
@@ -1422,8 +1675,8 @@
       "kind": "function",
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
-      "line": 127,
-      "endLine": 140,
+      "line": 133,
+      "endLine": 179,
       "role": "内部モジュール間",
       "signature": "createContext({ household, scenario, tables })",
       "description": "世帯、入力表、年度キー、勤労学生控除を計算コンテキストへまとめる。",
@@ -1434,7 +1687,7 @@
         "{object} options.tables 静的表と控除設定"
       ],
       "returns": "{*} ctxオブジェクト。単位: 金額は万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L127"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L133"
     },
     {
       "id": "src/calc/household.js:calcOne",
@@ -1443,8 +1696,8 @@
       "kind": "function",
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
-      "line": 152,
-      "endLine": 203,
+      "line": 191,
+      "endLine": 244,
       "role": "内部モジュール間",
       "signature": "calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {})",
       "description": "個人給与から給与所得控除、社会保険、基礎控除表を適用し個人計算行を作る。",
@@ -1456,7 +1709,7 @@
         "{object} opts 世帯・制度設定または計算条件"
       ],
       "returns": "{*} 個人計算行。単位: 万円/年。表キーはMath.round",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L152"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L191"
     },
     {
       "id": "src/calc/household.js:buildRows",
@@ -1465,8 +1718,8 @@
       "kind": "function",
       "file": "src/calc/household.js",
       "category": "世帯・入力条件",
-      "line": 212,
-      "endLine": 296,
+      "line": 253,
+      "endLine": 342,
       "role": "内部モジュール間",
       "signature": "buildRows(ctx, headSalaryWan)",
       "description": "世帯員の計算行を作り、家族要件に応じて所得金額調整控除を再計算する。",
@@ -1475,7 +1728,90 @@
         "{number} headSalaryWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} 個人計算行配列。単位: 万円/年。年齢は歳",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L212"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/household.js#L253"
+    },
+    {
+      "id": "src/calc/illustrativeAdjustment.js:unitInterval",
+      "name": "unitInterval",
+      "qualifiedName": "unitInterval",
+      "kind": "function",
+      "file": "src/calc/illustrativeAdjustment.js",
+      "category": "探索的調整モデル",
+      "line": 7,
+      "endLine": 9,
+      "role": "内部関数",
+      "signature": "unitInterval(value)",
+      "description": "比率を0〜1に制限する。金額を丸める関数ではない。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/illustrativeAdjustment.js#L7"
+    },
+    {
+      "id": "src/calc/illustrativeAdjustment.js:requireFiniteNumber",
+      "name": "requireFiniteNumber",
+      "qualifiedName": "requireFiniteNumber",
+      "kind": "function",
+      "file": "src/calc/illustrativeAdjustment.js",
+      "category": "探索的調整モデル",
+      "line": 12,
+      "endLine": 15,
+      "role": "内部関数",
+      "signature": "requireFiniteNumber(value, name)",
+      "description": "欠損や数値文字列を0円へ暗黙変換せず、有限の金額入力だけを受け付ける。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/illustrativeAdjustment.js#L12"
+    },
+    {
+      "id": "src/calc/illustrativeAdjustment.js:computeIllustrativeAdjustment",
+      "name": "computeIllustrativeAdjustment",
+      "qualifiedName": "computeIllustrativeAdjustment",
+      "kind": "function",
+      "file": "src/calc/illustrativeAdjustment.js",
+      "category": "探索的調整モデル",
+      "line": 25,
+      "endLine": 52,
+      "role": "計算エントリ",
+      "signature": "computeIllustrativeAdjustment(series, options)",
+      "description": "給与掃引範囲内の最大現金給付を上限Bとして、支給Gと負担上限Uを連続化する。",
+      "params": [
+        "{Array<object>} series 同じ家族・利用条件における給与系列",
+        "{object} options 年間需要額と対象実支出、逓減区間、負担上限率"
+      ],
+      "returns": "{object} 円滑化の比較系列と、同じ給与での現行との差",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/illustrativeAdjustment.js#L25"
+    },
+    {
+      "id": "src/calc/illustrativeAdjustment.js:computeIllustrativeAdjustment.direct",
+      "name": "direct",
+      "qualifiedName": "computeIllustrativeAdjustment.direct",
+      "kind": "function",
+      "file": "src/calc/illustrativeAdjustment.js",
+      "category": "探索的調整モデル",
+      "line": 31,
+      "endLine": 31,
+      "role": "内部関数",
+      "signature": "direct(point)",
+      "description": "総現金給付から取り出す調整対象の二手当額。欠損は未受給0円と区別する。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/illustrativeAdjustment.js#L31"
+    },
+    {
+      "id": "src/calc/illustrativeAdjustment.js:summarizeAdjustmentImpact",
+      "name": "summarizeAdjustmentImpact",
+      "qualifiedName": "summarizeAdjustmentImpact",
+      "kind": "function",
+      "file": "src/calc/illustrativeAdjustment.js",
+      "category": "探索的調整モデル",
+      "line": 55,
+      "endLine": 67,
+      "role": "内部モジュール間",
+      "signature": "summarizeAdjustmentImpact(points)",
+      "description": "同じ給与における増減額と、負担増側になる連続給与区間を求める。人口比ではない。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/illustrativeAdjustment.js#L55"
     },
     {
       "id": "src/calc/medicalAid.js:calcM01Detail",
@@ -1504,7 +1840,7 @@
       "file": "src/calc/numeric.js",
       "category": "数値・表の補助処理",
       "line": 9,
-      "endLine": 15,
+      "endLine": 16,
       "role": "内部モジュール間",
       "signature": "normalizeScenario(scenario)",
       "description": "年度キーをs1/s2/s3へ正規化する。未知の値はs2とする。",
@@ -1521,8 +1857,8 @@
       "kind": "function",
       "file": "src/calc/numeric.js",
       "category": "数値・表の補助処理",
-      "line": 24,
-      "endLine": 27,
+      "line": 25,
+      "endLine": 28,
       "role": "内部モジュール間",
       "signature": "toNumber(v, fallback = 0)",
       "description": "有限数へ変換し、不正値は指定の既定値へ置き換える。",
@@ -1531,7 +1867,7 @@
         "{*} fallback 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 入力の単位を維持",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L24"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L25"
     },
     {
       "id": "src/calc/numeric.js:roundWan",
@@ -1540,8 +1876,8 @@
       "kind": "function",
       "file": "src/calc/numeric.js",
       "category": "数値・表の補助処理",
-      "line": 36,
-      "endLine": 39,
+      "line": 37,
+      "endLine": 40,
       "role": "内部モジュール間",
       "signature": "roundWan(v, digits = 4)",
       "description": "万円値を指定小数桁で四捨五入する。既定は小数4桁。",
@@ -1550,7 +1886,7 @@
         "{*} digits 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L36"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L37"
     },
     {
       "id": "src/calc/numeric.js:compactDeductions",
@@ -1559,8 +1895,8 @@
       "kind": "function",
       "file": "src/calc/numeric.js",
       "category": "数値・表の補助処理",
-      "line": 47,
-      "endLine": 52,
+      "line": 48,
+      "endLine": 53,
       "role": "内部モジュール間",
       "signature": "compactDeductions(items)",
       "description": "控除内訳を万円4桁へ丸め、常時表示指定以外のゼロ行を除く。",
@@ -1568,7 +1904,7 @@
         "{Array} items 計算行・系列または設定行の配列"
       ],
       "returns": "{*} 控除配列。単位: 万円",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L47"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/numeric.js#L48"
     },
     {
       "id": "src/calc/optimalModel.js:clampRatio",
@@ -1613,8 +1949,8 @@
       "kind": "function",
       "file": "src/calc/socialInsurance.js",
       "category": "社会保険料",
-      "line": 26,
-      "endLine": 66,
+      "line": 27,
+      "endLine": 67,
       "role": "計算エントリ",
       "signature": "calculateSocialInsuranceComponents(salaryWan, age, scenarioKey)",
       "description": "年度別本人負担率と年齢・上限を適用し、社会保険料の成分と合計を求める。",
@@ -1624,7 +1960,7 @@
         "{string} scenarioKey 年度キー（s1/s2/s3または旧別名）"
       ],
       "returns": "{*} 成分・率・式・totalWanのオブジェクト。単位: 万円/年。年収基礎の近似、成分は円丸めしない",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L26"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L27"
     },
     {
       "id": "src/calc/socialInsurance.js:calculateSocialInsuranceComponents.percent",
@@ -1633,8 +1969,8 @@
       "kind": "function",
       "file": "src/calc/socialInsurance.js",
       "category": "社会保険料",
-      "line": 43,
-      "endLine": 43,
+      "line": 44,
+      "endLine": 44,
       "role": "内部関数",
       "signature": "percent(rate)",
       "description": "小数の料率を百分率の説明文字列へ変換する。",
@@ -1642,7 +1978,7 @@
         "{*} rate 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} string。単位: %（小数4桁丸め）",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L43"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L44"
     },
     {
       "id": "src/calc/socialInsurance.js:describeSocialInsuranceDeduction",
@@ -1651,8 +1987,8 @@
       "kind": "function",
       "file": "src/calc/socialInsurance.js",
       "category": "社会保険料",
-      "line": 78,
-      "endLine": 115,
+      "line": 79,
+      "endLine": 116,
       "role": "内部モジュール間",
       "signature": "describeSocialInsuranceDeduction(salaryWan, age, scenarioKey, totalWan, exemptSocial)",
       "description": "社会保険料と被扶養扱いの計算条件・内訳の説明を構築する。",
@@ -1664,7 +2000,7 @@
         "{*} exemptSocial 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} 説明オブジェクト。単位: 万円/年。130万円以下の被扶養扱いを維持",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L78"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/socialInsurance.js#L79"
     },
     {
       "id": "src/calc/tableUtils.js:clampInt",
@@ -1728,14 +2064,46 @@
       "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/tableUtils.js#L46"
     },
     {
+      "id": "src/calc/taxDescriptions.js:calcEmploymentIncomeDeductionR8FinalWan",
+      "name": "calcEmploymentIncomeDeductionR8FinalWan",
+      "qualifiedName": "calcEmploymentIncomeDeductionR8FinalWan",
+      "kind": "function",
+      "file": "src/calc/taxDescriptions.js",
+      "category": "税・所得控除",
+      "line": 8,
+      "endLine": 21,
+      "role": "内部モジュール間",
+      "signature": "calcEmploymentIncomeDeductionR8FinalWan(salaryWan)",
+      "description": "令和8年分の年末確定給与所得控除を、年末調整表の端数処理も含めて求める。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L8"
+    },
+    {
+      "id": "src/calc/taxDescriptions.js:calcBasicIncomeTaxDeductionR8FinalWan",
+      "name": "calcBasicIncomeTaxDeductionR8FinalWan",
+      "qualifiedName": "calcBasicIncomeTaxDeductionR8FinalWan",
+      "kind": "function",
+      "file": "src/calc/taxDescriptions.js",
+      "category": "税・所得控除",
+      "line": 27,
+      "endLine": 36,
+      "role": "内部モジュール間",
+      "signature": "calcBasicIncomeTaxDeductionR8FinalWan(totalIncomeWan)",
+      "description": "令和8年分（12月1日施行の年末確定税）の基礎控除を丸め前の合計所得で選ぶ。",
+      "params": [],
+      "returns": "",
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L27"
+    },
+    {
       "id": "src/calc/taxDescriptions.js:calcIncomeAdjustmentDeductionWan",
       "name": "calcIncomeAdjustmentDeductionWan",
       "qualifiedName": "calcIncomeAdjustmentDeductionWan",
       "kind": "function",
       "file": "src/calc/taxDescriptions.js",
       "category": "税・所得控除",
-      "line": 11,
-      "endLine": 17,
+      "line": 45,
+      "endLine": 51,
       "role": "内部モジュール間",
       "signature": "calcIncomeAdjustmentDeductionWan(salaryWan, eligible)",
       "description": "対象者の給与850万円超部分へ所得金額調整控除を適用する。",
@@ -1744,7 +2112,7 @@
         "{*} eligible 判定対象・区分または補助値（呼出側の定義に従う）"
       ],
       "returns": "{*} number。単位: 万円/年。給与上限1000、控除上限15",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L11"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L45"
     },
     {
       "id": "src/calc/taxDescriptions.js:describeEmploymentIncomeDeduction",
@@ -1753,8 +2121,8 @@
       "kind": "function",
       "file": "src/calc/taxDescriptions.js",
       "category": "税・所得控除",
-      "line": 28,
-      "endLine": 125,
+      "line": 62,
+      "endLine": 161,
       "role": "内部モジュール間",
       "signature": "describeEmploymentIncomeDeduction(salaryWan, scenarioKey, tableWan, incomeAdjustmentWan)",
       "description": "給与所得控除の表採用値に、対応する所得帯・式・調整控除の説明を付ける。",
@@ -1765,7 +2133,7 @@
         "{number} incomeAdjustmentWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} 説明オブジェクト。単位: 万円/年。説明用丸めはroundWan",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L28"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L62"
     },
     {
       "id": "src/calc/taxDescriptions.js:describeBasicDeduction",
@@ -1774,8 +2142,8 @@
       "kind": "function",
       "file": "src/calc/taxDescriptions.js",
       "category": "税・所得控除",
-      "line": 136,
-      "endLine": 187,
+      "line": 172,
+      "endLine": 223,
       "role": "内部モジュール間",
       "signature": "describeBasicDeduction(kind, scenarioKey, totalIncomeWan, amountWan)",
       "description": "年度と所得帯に対応する基礎控除の説明と表採用値をまとめる。",
@@ -1786,7 +2154,7 @@
         "{number} amountWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} 説明オブジェクト。単位: 万円/年",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L136"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxDescriptions.js#L172"
     },
     {
       "id": "src/calc/taxes.js:floorTaxableWanToThousandYen",
@@ -1814,9 +2182,9 @@
       "file": "src/calc/taxes.js",
       "category": "税・所得控除",
       "line": 30,
-      "endLine": 44,
+      "endLine": 51,
       "role": "内部モジュール間",
-      "signature": "getIncomeTaxParts(taxableWan)",
+      "signature": "getIncomeTaxParts(taxableWan, options = {})",
       "description": "1000円単位課税所得へ所得税速算表を適用し、税額と説明用内訳を返す。",
       "params": [
         "{number} taxableWan 万円（年額。補助値は呼出側の定義に従う）"
@@ -1831,16 +2199,16 @@
       "kind": "function",
       "file": "src/calc/taxes.js",
       "category": "税・所得控除",
-      "line": 52,
-      "endLine": 79,
+      "line": 59,
+      "endLine": 114,
       "role": "内部モジュール間",
-      "signature": "getResidentTaxParts(taxableWan)",
+      "signature": "getResidentTaxParts(taxableWan, options = {})",
       "description": "住民税の所得割・調整控除・均等割と市県内訳を現行実装式で求める。",
       "params": [
         "{number} taxableWan 万円（年額。補助値は呼出側の定義に従う）"
       ],
       "returns": "{*} 所得割・均等割・totalWan等。単位: 円/年と万円/年。税額と市町村分にMath.round",
-      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxes.js#L52"
+      "sourceUrl": "https://github.com/Design-for-Changes/dw-appendix/blob/main/src/calc/taxes.js#L59"
     }
   ]
 }

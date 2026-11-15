@@ -15,14 +15,16 @@ jest.mock("./MunicipalSourcesAppendix", () => () => mockReferencePagesLoading
 jest.mock("./ResearchDataAppendix", () => () => mockReferencePagesLoading
   ? <p role="status">法令資料を読み込んでいます。</p>
   : <section aria-label="法令検索">表A2</section>);
+jest.mock("./RevisionScenariosAppendix", () => () => <section aria-label="モデル条件">条件表</section>);
 
 const pages = [
   { letter: "A", title: "法令検索・採否", hash: "#law-screening", region: "法令検索" },
   { letter: "B", title: "調査対象・参照資料", hash: "#municipal-sources", region: "参照資料" },
-  { letter: "C", title: "所得判定・変動方法", hash: "#income-assessment", region: "所得判定詳細" },
+  { letter: "C", title: "所得区分・判定方法（船橋市例）", hash: "#income-assessment", region: "所得判定詳細" },
   { letter: "D", title: "現行制度", hash: "#current" },
-  { letter: "E", title: "全体最適モデル", hash: "#optimal" },
+  { letter: "E", title: "調整モデル（探索例）", hash: "#optimal" },
   { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
+  { letter: "G", title: "モデル条件・感度分析", hash: "#revision-scenarios", region: "モデル条件" },
 ];
 
 beforeEach(() => {
@@ -90,7 +92,7 @@ test("空hashは従来の現行制度を表示し、ページ番号はDになる
   expect(window.location.hash).toBe("");
 });
 
-test("メニューはAからFに並ぶ", () => {
+test("メニューはAからGに並ぶ", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(

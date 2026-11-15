@@ -26,7 +26,7 @@ test("独立資料は初期表示され、94関数とソース・JSONを保持�
 test("計算処理からページ内説明へ移動し、対応する全処理へ戻れる", () => {
   render(<CalculationReferenceAppendix />);
   const flow = flowTable();
-  expect(within(flow).getAllByRole("rowheader")).toHaveLength(10);
+  expect(within(flow).getAllByRole("rowheader")).toHaveLength(12);
   for (const link of within(flow).getAllByRole("link")) {
     const target = targetFor(link);
     expect(target).toBeInTheDocument();

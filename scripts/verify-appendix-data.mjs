@@ -27,6 +27,7 @@ function fail(message) {
 
 const summary = loadJSON(SUMMARY_PATH);
 const fixtures = loadJSON(FIXTURES_PATH);
+const correctedExpectations = loadJSON(path.join(ROOT, "fixtures", "display-corrections-20261115.json"));
 if (summary.schemaVersion !== 1) fail("summary schemaVersion");
 if (summary.cases?.length !== 3) fail("summary case count");
 const expectedPointCount = summary.range.max - summary.range.min + 1;
@@ -169,11 +170,13 @@ for (const displayCase of summary.cases) {
     }
   });
 
-  const expectedCliffs = fixture.expected?.cliffs || [];
+  const expectedCliffs = correctedExpectations.cases.find(item => item.id === displayCase.id)?.cliffs;
+  if (!expectedCliffs) fail(`${displayCase.id}: corrected expectation missing`);
+  if (displayCase.cliffs.length !== expectedCliffs.length) fail(`${displayCase.id}: unexpected cliff count`);
   for (const expected of expectedCliffs) {
     const actual = displayCase.cliffs.find((cliff) => cliff.x === expected.salaryManyen);
     if (!actual) fail(`${displayCase.id}: cliff ${expected.salaryManyen} missing`);
-    if (Math.abs(actual.drop - expected.dropManyen) > 1) {
+    if (Math.abs(actual.drop - expected.dropManyen) > 1e-8) {
       fail(`${displayCase.id}: cliff drop ${expected.salaryManyen}`);
     }
   }

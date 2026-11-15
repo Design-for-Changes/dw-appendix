@@ -8,10 +8,12 @@ const FLOW = [
   { id: "tax", name: "所得控除・税額", description: "本人・配偶者・扶養親族の控除から所得税・住民税を計算する。", functions: ["src/calc/deductions.js:calcDependentDeductionFromRows", "src/calc/deductions.js:calcSpouseDeductionFromRows", "src/calc/taxes.js:getIncomeTaxParts", "src/calc/taxes.js:getResidentTaxParts"] },
   { id: "cash", name: "現金給付", description: "制度固有の判定所得・扶養人数から手当の支給可否と額を求める。児童手当等の処理は統合集計内にある。", functions: ["src/calc/allowances.js:calcTccaComputedLocal", "src/calc/computePoint.js:computePoint.calcWelfareAdjustedIncomeDetail", "src/calc/allowances.js:calcBasicDisabilityPensionYenFor", "src/calc/computePoint.js:computePoint"] },
   { id: "medical", name: "医療費助成", description: "所得割額と対象人数から、設定した医療費助成の対象・自己負担を求める。", functions: ["src/calc/medicalAid.js:calcM01Detail"] },
-  { id: "education", name: "就学奨励費", description: "世帯収入額と生活保護基準による需要額の比率から支弁区分を判定する。", functions: ["src/calc/educationAid.js:calcN04Detail"] },
+  { id: "education", name: "就学奨励費", description: "世帯収入額と生活保護基準による需要額の比率から支弁区分を判定する。新プロフィールの需要測定で必須入力が欠けた場合は計算を停止する。", functions: ["src/calc/educationAid.js:calcN04Detail", "src/calc/educationAid.js:validateN04EducationProfile"] },
+  { id: "service", name: "通所利用料と世帯合算", description: "税徴収額とは別に判定用の所得割額を求める。児童別の上限適用前負担を合計してから世帯上限を適用する。", functions: ["src/calc/computePoint.js:computePoint.serviceTaxableFor", "src/calc/computePoint.js:computePoint"] },
   { id: "disposable", name: "可処分所得の集計", description: "税・社会保険料控除後の手取額に給付と費用負担を合成する。", functions: ["src/calc/computePoint.js:computePoint"] },
   { id: "cliffs", name: "低下・回復の抽出", description: "表示用はdetectCliffsからexplainCliffCausesを呼び、原因とQ/R点を記録する。detectCliffCauseRowsは別の報告用処理である。", functions: ["src/calc/cliffCauseAnalysis.js:explainCliffCauses", "scripts/generate-appendix-data.mjs:detectCliffs", "src/calc/cliffCauseAnalysis.js:detectCliffCauseRows"] },
-  { id: "optimal", name: "探索的調整モデル", description: "需要Dに基づく支給G、支給後資源に基づく上限Uと精算後所得を計算する。", functions: ["src/calc/optimalModel.js:computeOptimalModel"] },
+  { id: "optimal", name: "探索的調整モデル", description: "旧係数モデルと新しい条件付き比較例を区別する。いずれも最適性・財政中立を推定するものではない。", functions: ["src/calc/optimalModel.js:computeOptimalModel", "src/calc/illustrativeAdjustment.js:computeIllustrativeAdjustment", "src/calc/illustrativeAdjustment.js:summarizeAdjustmentImpact"] },
+  { id: "conditions", name: "拡張条件の生成と欠損確認", description: "家族31構成、配偶者給与3条件、利用額3条件を列挙する。N04必須入力の未確定を0円に置き換えず、結果未算出として保持する。", functions: ["scripts/generate-revision-scenarios.mjs:enumerateFamilyProfiles", "scripts/generate-revision-scenarios.mjs:generateRevisionScenarios"] },
   { id: "data", name: "表示データ生成", description: "計算内訳を必要項目に整理し、曲線と給与点別内訳を圧縮JSONに保存する。", functions: ["scripts/generate-appendix-data.mjs:compactBreakdown", "scripts/generate-appendix-data.mjs:writeGzipJSON"] },
 ];
 

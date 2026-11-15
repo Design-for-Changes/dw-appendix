@@ -4,7 +4,7 @@ import { normalizeScenario, toNumber } from "./numeric.js";
 import { M01_KENSHIN_ANNUAL_YEN_DEFAULT } from "./medicalAid.js";
 import { N04_NEED_R7 } from "./educationAid.js";
 import { calculateSocialInsuranceComponents, describeSocialInsuranceDeduction } from "./socialInsurance.js";
-import { calcIncomeAdjustmentDeductionWan, describeEmploymentIncomeDeduction, describeBasicDeduction } from "./taxDescriptions.js";
+import { calcIncomeAdjustmentDeductionWan, describeEmploymentIncomeDeduction, describeBasicDeduction, calcEmploymentIncomeDeductionR8FinalWan, calcBasicIncomeTaxDeductionR8FinalWan } from "./taxDescriptions.js";
 
 /**
  * 世帯入力を正規化し、年齢・障害区分・給付・助成の既定値を設定する。
@@ -17,6 +17,9 @@ export function buildHousehold(caseHousehold = {}) {
   const spouseInput = caseHousehold.spouse || {};
   const childrenInput = Array.isArray(caseHousehold.children) ? caseHousehold.children : [];
   const programsInput = caseHousehold.programs || {};
+  if (programsInput.n04EducationProfile && !(caseHousehold.n04 || caseHousehold.n04Enabled || programsInput.n04 || programsInput.n04Enabled)) {
+    throw new RangeError("n04EducationProfile requires programs.n04=true; an explicit education expense must not become zero silently");
+  }
 
   const head = {
     age: toNumber(headInput.age, 40),
@@ -30,6 +33,7 @@ export function buildHousehold(caseHousehold = {}) {
     otherIncomeWan: toNumber(headInput.otherIncomeWan, 0),
     widowWan: toNumber(headInput.widowWan, 0),
     singleParentWan: toNumber(headInput.singleParentWan, 0),
+    singleParentTaxRole: headInput.singleParentTaxRole || null,
     workingStudentWan: toNumber(headInput.workingStudentWan, 0),
     otherDedWan: toNumber(headInput.otherDedWan, 0),
   };
@@ -73,6 +77,8 @@ export function buildHousehold(caseHousehold = {}) {
       n04: Boolean(caseHousehold.n04 || caseHousehold.n04Enabled || programsInput.n04 || programsInput.n04Enabled),
       n04Count: Math.max(1, Math.trunc(toNumber(programsInput.n04Count, 1))),
       n04HousingYen: toNumber(programsInput.n04HousingYen, N04_NEED_R7.housingYen),
+      ...(programsInput.n04EducationProfile ? { n04EducationProfile: programsInput.n04EducationProfile } : {}),
+      ...(programsInput.serviceUse ? { serviceUse: programsInput.serviceUse } : {}),
     },
   };
 }
@@ -117,7 +123,7 @@ export function getRequiredTables(tables = {}) {
 
 /**
  * 世帯、入力表、年度キー、勤労学生控除を計算コンテキストへまとめる。
- * @remarks 設定。単位: 金額は万円。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks 設定。単位: 金額は万円。s4は令和8年分所得税・令和9年度住民税。旧設定JSONを変更せず税扶養62万円等を適用。
  * @param {object} options 世帯・年度・入力表
  * @param {object} options.household 正規化済み世帯
  * @param {string} options.scenario 年度キーまたは旧別名
@@ -127,13 +133,46 @@ export function getRequiredTables(tables = {}) {
 export function createContext({ household, scenario, tables }) {
   const configs = getRequiredTables(tables);
   const skey = normalizeScenario(scenario);
+  if (skey === "s4") {
+    // R8年分所得税・R9年度住民税。旧scenarioの設定JSONは上書きしない。
+    configs.dependentDeductionCfg = { ...configs.dependentDeductionCfg, dependent_total_income_max_wan: 62 };
+    for (const key of ["spouseDeductionITCfg", "spouseDeductionLTCfg"]) {
+      const cfg = configs[key];
+      configs[key] = {
+        ...cfg, spouse_total_income_max_wan: 62,
+        head_total_income_bands_wan: (cfg.head_total_income_bands_wan || []).map((b, i, all) => ({
+          ...b, ...(i ? { min_exclusive_wan: all[i - 1].max_wan } : {}),
+        })),
+      };
+    }
+    for (const key of ["spouseSpecialDeductionITCfg", "spouseSpecialDeductionLTCfg"]) {
+      const cfg = configs[key];
+      configs[key] = { ...cfg, head_total_income_bands_wan: (cfg.head_total_income_bands_wan || []).map((b, i, all) => ({
+        ...b,
+        ...(i ? { head_min_exclusive_wan: all[i - 1].head_max_wan } : {}),
+        spouse_bands_wan: (b.spouse_bands_wan || []).map((s, j, bands) => ({
+          ...s, spouse_min_exclusive_wan: j ? bands[j - 1].spouse_max_wan : 62,
+        })),
+      })) };
+    }
+    for (const key of ["specialKinDeductionITCfg", "specialKinDeductionLTCfg"]) {
+      const cfg = configs[key];
+      configs[key] = { ...cfg, child_total_income_bands_wan: (cfg.child_total_income_bands_wan || []).map((b, i, all) => ({
+        ...b, min_exclusive_wan: i ? all[i - 1].max_wan : 62,
+      })) };
+    }
+  }
   return {
     ...configs,
     ...household,
     skey,
-    empKey: `emp_${skey}`,
-    basicITKey: `basicIT_${skey}`,
-    socialKey: `social_${skey}`,
+    empKey: `emp_${skey === "s4" ? "s3" : skey}`,
+    basicITKey: `basicIT_${skey === "s4" ? "s3" : skey}`,
+    socialKey: `social_${skey === "s4" ? "s3" : skey}`,
+    taxDependentIncomeMaxWan: skey === "s4" ? 62 : 58,
+    allowanceDependentIncomeMaxWan: 58,
+    taxYear: skey === "s4" ? 2026 : null,
+    residentTaxAssessmentYear: skey === "s4" ? 2027 : null,
     wsAmtIT: toNumber(configs.workingStudentDeductionCfg?.amount_it_wan, 0),
     wsAmtLT: toNumber(configs.workingStudentDeductionCfg?.amount_lt_wan, 0),
   };
@@ -141,7 +180,7 @@ export function createContext({ household, scenario, tables }) {
 
 /**
  * 個人給与から給与所得控除、社会保険、基礎控除表を適用し個人計算行を作る。
- * @remarks 個人所得。単位: 万円/年。表キーはMath.round。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks 個人所得。単位: 万円/年。旧scenarioの表キーはMath.round、s4はR8給与所得法定表と基礎控除帯を直接算定。
  * @param {object} ctx 世帯・制度設定または計算条件
  * @param {number} age 年齢（歳）
  * @param {number} salaryWan 万円（年額。補助値は呼出側の定義に従う）
@@ -153,7 +192,7 @@ export function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
   const s = Math.max(0, toNumber(salaryWan, 0));
   const o = Math.max(0, toNumber(otherIncomeWan, 0));
   const r = rowAtKeyInt(ctx.empStatic, "x", Math.round(s));
-  const empBaseWan = toNumber(r?.[ctx.empKey], 0);
+  const empBaseWan = ctx.skey === "s4" ? calcEmploymentIncomeDeductionR8FinalWan(s) : toNumber(r?.[ctx.empKey], 0);
   const incomeAdjWan = toNumber(opts?.incomeAdjWan, 0);
   const empWan = empBaseWan + incomeAdjWan;
   const incomeWan = Math.max(0, s - empWan);
@@ -165,8 +204,10 @@ export function calcOne(ctx, age, salaryWan, otherIncomeWan, opts = {}) {
 
   const basicITRow = rowAtKeyInt(ctx.basicITStatic, "income_axis", Math.round(totalIncomeWan));
   const basicLTRow = rowAtKeyInt(ctx.basicLTStatic, "income_axis", Math.round(totalIncomeWan));
-  const basicITWan = toNumber(basicITRow?.[ctx.basicITKey], 0);
-  const basicLTWan = toNumber(basicLTRow?.basicLT_common, 0);
+  const basicITWan = ctx.skey === "s4" ? calcBasicIncomeTaxDeductionR8FinalWan(totalIncomeWan) : toNumber(basicITRow?.[ctx.basicITKey], 0);
+  const basicLTWan = ctx.skey === "s4"
+    ? totalIncomeWan <= 2400 ? 43 : totalIncomeWan <= 2450 ? 29 : totalIncomeWan <= 2500 ? 15 : 0
+    : toNumber(basicLTRow?.basicLT_common, 0);
 
   return {
     salaryWan: s,
@@ -254,7 +295,7 @@ export function buildRows(ctx, headSalaryWan) {
     })
   );
 
-  const childDepMaxWan = 58;
+  const childDepMaxWan = toNumber(ctx.taxDependentIncomeMaxWan, 58);
   const dependentChildren = rows.filter(
     (r) => String(r?.who || "").startsWith("子ども") && toNumber(r?.totalIncomeWan, 0) <= childDepMaxWan
   );
@@ -290,6 +331,11 @@ export function buildRows(ctx, headSalaryWan) {
           incomeAdjWan: spouseAdjWan,
         }),
       };
+    }
+  }
+  if (ctx.skey === "s4") {
+    for (const row of rows) {
+      row.workingStudent = Boolean(row.workingStudent) && row.totalIncomeWan <= 89 && row.otherIncomeWan <= 10;
     }
   }
   return rows;

@@ -183,6 +183,7 @@ function compactBreakdown(breakdown) {
     residentTax: {
       taxableWan: row.residentTax?.taxableWan,
       computedTaxWan: row.residentTax?.computedTaxWan,
+      forestEnvironmentTaxYen: row.residentTax?.forestEnvironmentTaxYen,
       formula: row.residentTax?.formula,
       source: row.residentTax?.source,
     },
@@ -236,6 +237,9 @@ function compactBreakdown(breakdown) {
       service: {
         confidence: service.confidence,
         householdLevySumWan: service.householdLevySumWan,
+        taxCollectionHouseholdLevySumWan: service.taxCollectionHouseholdLevySumWan,
+        assessmentLevyByWho: service.assessmentLevyByWho,
+        use: service.use,
         details: (service.details || []).map((detail) => ({
           who: detail.who,
           monthlyUpperYen: detail.monthlyUpperYen,
@@ -301,6 +305,8 @@ const cases = DISPLAY_CASES.map((displayCase) => {
 
 writeGzipJSON(path.join(OUTPUT_DIR, "summary.json.gz"), {
   schemaVersion: 1,
+  calculationVersion: "2026-11-15-corrected-legacy-inputs",
+  scope: "従来3入力の参考計算。医療旧代表値・旧N04条件を含み、改稿用279条件の結果とは異なる。",
   range: { min: X_MIN, max: X_MAX, step: 1 },
   detailChunkSize: CHUNK_SIZE,
   cases,

@@ -8,12 +8,12 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 const {parse}=require('@babel/parser');
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')).map(f=>'src/calc/'+f),'scripts/generate-appendix-data.mjs'].sort();
-const apiNames=new Set(['buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel']);
+const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')&&!f.endsWith('.test.js')).map(f=>'src/calc/'+f),'scripts/generate-appendix-data.mjs','scripts/generate-revision-scenarios.mjs'].sort();
+const apiNames=new Set(['buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
 
 function category(file){
-  if(file.includes('generate-appendix'))return '表示データ生成';
-  if(file.includes('optimalModel'))return '探索的調整モデル';
+  if(/generate-(appendix|revision)/.test(file))return '表示データ生成';
+  if(/optimalModel|illustrativeAdjustment/.test(file))return '探索的調整モデル';
   if(file.includes('cliffCause'))return '低下・回復の抽出';
   if(/numeric|tableUtils/.test(file))return '数値・表の補助処理';
   if(/household/.test(file))return '世帯・入力条件';
@@ -87,7 +87,7 @@ if(missing.length){console.error('関数のJSDoc概要が未記載:\n'+missing.m
 const revision=crypto.createHash('sha256').update(JSON.stringify(sources)).digest('hex');
 const catalog={
   schemaVersion:1,revision,
-  scope:'src/calcと表示データ生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、検証スクリプトは対象外。',
+  scope:'src/calcと表示データ・条件生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証スクリプトは対象外。',
   unitNote:'金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。',
   functionCount:functions.filter(f=>f.kind==='function').length,
   classCount:functions.filter(f=>f.kind==='class').length,

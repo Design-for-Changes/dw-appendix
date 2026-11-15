@@ -8,7 +8,7 @@ import { toNumber } from "./numeric.js";
  * @returns {*} number。単位: 万円
  */
 export function amountByBands(bands, total) {
-  const b = bands.find((x) => total >= toNumber(x.min_wan, 0) && total <= toNumber(x.max_wan, 0));
+  const b = bands.find((x) => (x.min_exclusive_wan !== undefined ? total > x.min_exclusive_wan : total >= toNumber(x.min_wan, 0)) && total <= toNumber(x.max_wan, 0));
   return toNumber(b?.amount_wan, 0);
 }
 
@@ -88,7 +88,7 @@ export function calcSpouseDeductionFromRows(ctx, cfg, rows) {
   const spouseMax = toNumber(cfg?.spouse_total_income_max_wan, 0);
   if (spouseTotal > spouseMax) return 0;
   const bands = Array.isArray(cfg?.head_total_income_bands_wan) ? cfg.head_total_income_bands_wan : [];
-  const b = bands.find((x) => headTotal >= toNumber(x.min_wan, 0) && headTotal <= toNumber(x.max_wan, 0));
+  const b = bands.find((x) => (x.min_exclusive_wan !== undefined ? headTotal > x.min_exclusive_wan : headTotal >= toNumber(x.min_wan, 0)) && headTotal <= toNumber(x.max_wan, 0));
   return toNumber(b?.amount_wan, 0);
 }
 
@@ -111,12 +111,12 @@ export function calcSpouseSpecialDeductionFromRows(ctx, cfg, spouseDeductionWan,
   const spouseTotal = toNumber(spouseRow?.totalIncomeWan, 0);
   const headBands = Array.isArray(cfg?.head_total_income_bands_wan) ? cfg.head_total_income_bands_wan : [];
   const headBand = headBands.find(
-    (b) => headTotal >= toNumber(b.head_min_wan, 0) && headTotal <= toNumber(b.head_max_wan, 0)
+    (b) => (b.head_min_exclusive_wan !== undefined ? headTotal > b.head_min_exclusive_wan : headTotal >= toNumber(b.head_min_wan, 0)) && headTotal <= toNumber(b.head_max_wan, 0)
   );
   if (!headBand) return 0;
   const spouseBands = Array.isArray(headBand.spouse_bands_wan) ? headBand.spouse_bands_wan : [];
   const sb = spouseBands.find(
-    (b) => spouseTotal >= toNumber(b.spouse_min_wan, 0) && spouseTotal <= toNumber(b.spouse_max_wan, 0)
+    (b) => (b.spouse_min_exclusive_wan !== undefined ? spouseTotal > b.spouse_min_exclusive_wan : spouseTotal >= toNumber(b.spouse_min_wan, 0)) && spouseTotal <= toNumber(b.spouse_max_wan, 0)
   );
   return toNumber(sb?.amount_wan, 0);
 }
@@ -201,7 +201,7 @@ export function getDisabilityDeductionWan(ctx, col, kind) {
 export function getDisabilityDeductionForTaxpayerWan(ctx, col, kind, rows) {
   if (!col) return 0;
   const who = String(col?.who || "");
-  const depMaxWan = 58;
+  const depMaxWan = toNumber(ctx.taxDependentIncomeMaxWan, 58);
 /**
    * 世帯員名に対応する個人計算行を探す。
    * @remarks 税・障害者控除補助。単位: 行の金額は万円。式・境界条件・丸めは移動前の実装を維持。
@@ -234,9 +234,15 @@ export function getDisabilityDeductionForTaxpayerWan(ctx, col, kind, rows) {
   }
   if (who === "配偶者") {
     if (!ctx.spouseEnabled) return 0;
-    return isDep("配偶者") ? 0 : getDisabilityDeductionWan(ctx, col, kind);
+    if (isDep("配偶者") || !ctx.spouse.disabled) return 0;
+    const table = kind === "it" ? ctx.disabilityDeductionCfg?.it_wan : ctx.disabilityDeductionCfg?.lt_wan;
+    return toNumber(table?.[ctx.spouse.disabilityKind === "special" ? "special" : "disabled"], 0);
   }
-  if (who.startsWith("子ども")) return isDep(who) ? 0 : getDisabilityDeductionWan(ctx, col, kind);
+  if (who.startsWith("子ども")) {
+    if (isDep(who) || !col.disabled) return 0;
+    const table = kind === "it" ? ctx.disabilityDeductionCfg?.it_wan : ctx.disabilityDeductionCfg?.lt_wan;
+    return toNumber(table?.[col.tccaSpecial ? "special" : "disabled"], 0);
+  }
   return 0;
 }
 

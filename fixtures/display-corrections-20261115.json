@@ -1,0 +1,235 @@
+{
+  "recorded_on": "2026-11-15",
+  "purpose": "制度式是正後の従来3入力による参考計算の回帰値。未確定N04を含む改稿用279条件の最終値ではない。原典境界テストと原因別旧新対照後に記録。旧fixtures/cases.jsonは保存し、上書きしない。",
+  "changes": {
+    "tax_status": "所得割0と住民税非課税を区別",
+    "service_assessment": "年少扶養等の控除相当税額を判定所得割へ反映"
+  },
+  "cases": [
+    {
+      "id": "case1",
+      "cliffs": [
+        {
+          "salaryManyen": 211,
+          "dropManyen": -5.1749999999999545,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 756,
+          "dropManyen": -2.962199999999825,
+          "causes": [
+            "就学奨励費"
+          ]
+        },
+        {
+          "salaryManyen": 782,
+          "dropManyen": -69.36349999999993,
+          "causes": [
+            "特別児童扶養手当"
+          ]
+        },
+        {
+          "salaryManyen": 846,
+          "dropManyen": -14.286600000000021,
+          "causes": [
+            "重心医療費助成"
+          ]
+        },
+        {
+          "salaryManyen": 928,
+          "dropManyen": -19.205499999999915,
+          "causes": [
+            "障害児福祉手当"
+          ]
+        },
+        {
+          "salaryManyen": 975,
+          "dropManyen": -6.3006999999998925,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 1106,
+          "dropManyen": -2.980799999999931,
+          "causes": [
+            "就学奨励費"
+          ]
+        },
+        {
+          "salaryManyen": 1111,
+          "dropManyen": -2.833499999999958,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1161,
+          "dropManyen": -3.0634999999999764,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1211,
+          "dropManyen": -3.4835000000002765,
+          "causes": [
+            "配偶者控除"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "case2",
+      "cliffs": [
+        {
+          "salaryManyen": 256,
+          "dropManyen": -5.1749999999999545,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 854,
+          "dropManyen": -116.18950000000018,
+          "causes": [
+            "特別児童扶養手当"
+          ]
+        },
+        {
+          "salaryManyen": 869,
+          "dropManyen": -2.9506999999999834,
+          "causes": [
+            "就学奨励費"
+          ]
+        },
+        {
+          "salaryManyen": 877,
+          "dropManyen": -14.256600000000162,
+          "causes": [
+            "重心医療費助成"
+          ]
+        },
+        {
+          "salaryManyen": 950,
+          "dropManyen": -19.20550000000003,
+          "causes": [
+            "障害児福祉手当"
+          ]
+        },
+        {
+          "salaryManyen": 1041,
+          "dropManyen": -6.330699999999979,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 1111,
+          "dropManyen": -2.833499999999958,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1161,
+          "dropManyen": -3.0634999999999764,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1211,
+          "dropManyen": -3.0635000000002037,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1272,
+          "dropManyen": -3.007799999999861,
+          "causes": [
+            "就学奨励費"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "case3",
+      "cliffs": [
+        {
+          "salaryManyen": 256,
+          "dropManyen": -5.175000000000011,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 867,
+          "dropManyen": -139.50350000000003,
+          "causes": [
+            "特別児童扶養手当"
+          ]
+        },
+        {
+          "salaryManyen": 896,
+          "dropManyen": -6.537900000000036,
+          "causes": [
+            "就学奨励費"
+          ]
+        },
+        {
+          "salaryManyen": 909,
+          "dropManyen": -29.149700000000053,
+          "causes": [
+            "重心医療費助成"
+          ]
+        },
+        {
+          "salaryManyen": 990,
+          "dropManyen": -39.04750000000024,
+          "causes": [
+            "障害児福祉手当"
+          ]
+        },
+        {
+          "salaryManyen": 1069,
+          "dropManyen": -6.30070000000012,
+          "causes": [
+            "障害児通所支援"
+          ]
+        },
+        {
+          "salaryManyen": 1111,
+          "dropManyen": -2.833499999999958,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1161,
+          "dropManyen": -3.0634999999999764,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1211,
+          "dropManyen": -3.0635000000002037,
+          "causes": [
+            "配偶者控除"
+          ]
+        },
+        {
+          "salaryManyen": 1311,
+          "dropManyen": -6.655099999999948,
+          "causes": [
+            "就学奨励費"
+          ]
+        }
+      ]
+    }
+  ]
+}

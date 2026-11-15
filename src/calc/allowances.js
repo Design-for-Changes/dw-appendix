@@ -1,8 +1,27 @@
 import { toNumber, roundWan, compactDeductions } from "./numeric.js";
 
 /**
+ * 令和8年4月以降の児童扶養手当月額を、判定済所得と法定扶養人数から求める。
+ * @remarks 所得は円。限度額以上で全部/一部停止。部分支給は児童1人ごとに10円未満四捨五入。
+ */
+export function calcChildSupportMonthlyYen({ incomeYen, fuyoCount, childrenCount, statutoryAddYen = 0 }) {
+  const n = Math.max(0, Math.trunc(toNumber(fuyoCount, 0)));
+  const kids = Math.max(0, Math.trunc(toNumber(childrenCount, 0)));
+  const income = Math.max(0, Math.round(toNumber(incomeYen, 0)));
+  const add = Math.max(0, Math.round(toNumber(statutoryAddYen, 0)));
+  const fullLimitYen = 690000 + n * 380000 + add;
+  const partialLimitYen = 2080000 + n * 380000 + add;
+  if (!kids || income >= partialLimitYen) return 0;
+  if (income < fullLimitYen) return 48050 + (kids - 1) * 11350;
+  const delta = income - fullLimitYen;
+  const first = Math.round((48040 - delta * 0.0264029) / 10) * 10;
+  const next = Math.round((11340 - delta * 0.0040719) / 10) * 10;
+  return Math.max(11340, first) + (kids - 1) * Math.max(5680, next);
+}
+
+/**
  * 本人区分、20歳前所得制限、世帯主の子加算から障害基礎年金を求める。
- * @remarks 障害基礎年金。単位: 円/年。支給係数適用後Math.round。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks 障害基礎年金。単位: 円/年。令和8年度の標準年額・子加算。支給係数適用後Math.round。生年月日別額等は監査記録の未完了事項を参照。
  * @param {object} ctx 世帯・制度設定または計算条件
  * @param {*} who 判定対象・区分または補助値（呼出側の定義に従う）
  * @param {number} totalIncomeWan 万円（年額。補助値は呼出側の定義に従う）
@@ -11,12 +30,12 @@ import { toNumber, roundWan, compactDeductions } from "./numeric.js";
 export function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
   const w = String(who || "");
   const headBase =
-    ctx.head.basicDisabilityPensionGrade === "1" ? 1039625 : ctx.head.basicDisabilityPensionGrade === "2" ? 1036625 : 0;
+    ctx.head.basicDisabilityPensionGrade === "1" ? 1059125 : ctx.head.basicDisabilityPensionGrade === "2" ? 847300 : 0;
   const spouseBase =
     ctx.spouse.basicDisabilityPensionGrade === "1"
-      ? 1039625
+      ? 1059125
       : ctx.spouse.basicDisabilityPensionGrade === "2"
-        ? 1036625
+        ? 847300
         : 0;
 
   const incomeTotalYen = Math.round(toNumber(totalIncomeWan, 0) * 10000);
@@ -31,7 +50,7 @@ export function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
   if (w === "世帯主") {
     if (!ctx.head.disabled || headBase === 0) return 0;
     const n = ctx.children.filter((c) => toNumber(c?.age, 0) < 18).length;
-    const add = 239300 * Math.min(n, 2) + 79800 * Math.max(n - 2, 0);
+    const add = 243800 * Math.min(n, 2) + 81300 * Math.max(n - 2, 0);
     return Math.round((headBase + add) * factor);
   }
   if (w === "配偶者") {
@@ -51,8 +70,8 @@ export function calcBasicDisabilityPensionYenFor(ctx, who, totalIncomeWan) {
 export function calcLimitFuyoInfo(ctx, rows) {
   const cols = Array.isArray(rows) ? rows : [];
   const spouseRow = cols.find((r) => String(r?.who || "") === "配偶者");
-  const maxIncome = toNumber(ctx.dependentDeductionCfg?.dependent_total_income_max_wan, 0);
-  const spouseMax = toNumber(ctx.spouseDeductionITCfg?.spouse_total_income_max_wan, 0);
+  const maxIncome = toNumber(ctx.allowanceDependentIncomeMaxWan ?? ctx.dependentDeductionCfg?.dependent_total_income_max_wan, 0);
+  const spouseMax = toNumber(ctx.allowanceDependentIncomeMaxWan ?? ctx.spouseDeductionITCfg?.spouse_total_income_max_wan, 0);
   const spouseIsTarget = ctx.spouseEnabled && spouseRow ? toNumber(spouseRow?.totalIncomeWan, 0) <= spouseMax : false;
 
   const dependents = [];
@@ -106,7 +125,7 @@ export function calcLegacyDisabilityAddedFuyoCount(ctx, rows) {
 
 /**
  * 受給資格者と家族の判定所得・限度額を計算し特別児童扶養手当の支給額を求める。
- * @remarks N01-1 特別児童扶養手当。単位: 所得=万円/年、限度/調整所得=円/年、支給=円/月。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks N01-1 特別児童扶養手当。単位: 所得=万円/年、限度/調整所得=円/年、支給=円/月。法律第6・7条により限度額以上で停止。金額は令和8年度。
  * @param {object} ctx 世帯・制度設定または計算条件
  * @param {Array} cols 計算行・系列または設定行の配列
  * @param {*} spSpLT 判定対象・区分または補助値（呼出側の定義に従う）
@@ -209,7 +228,7 @@ export function calcTccaComputedLocal(ctx, cols, spSpLT) {
   const singleParentWan = hasDependentChild && singleParentApplied ? 35 : 0;
   const workingStudentWan = Boolean(headRow?.workingStudent) ? 27 : 0;
 
-  const spouseMaxForDep = toNumber(ctx.spouseDeductionITCfg?.spouse_total_income_max_wan, 58);
+  const spouseMaxForDep = toNumber(ctx.allowanceDependentIncomeMaxWan, 58);
   const spouseIsDep = ctx.spouseEnabled && spouseRow ? toNumber(spouseRow?.totalIncomeWan, 0) <= spouseMaxForDep : false;
   let disabilityDedWan = 0;
   disabilityDedWan += tccaDisWan("世帯主");
@@ -319,8 +338,9 @@ export function calcTccaComputedLocal(ctx, cols, spSpLT) {
       return a + gradeToMonthlyYen(g);
     }, 0);
 
-  const headOk = Math.round(headAdjustedWan * 10000) <= headLimitYen;
-  const familyOk = familyMaxAdjustedYen <= familyLimitYen;
+  // 特別児童扶養手当等の支給に関する法律第6・7条: 限度額「以上」で停止。
+  const headOk = Math.round(headAdjustedWan * 10000) < headLimitYen;
+  const familyOk = familyMaxAdjustedYen < familyLimitYen;
   const totalMonthlyYen = headOk && familyOk ? baseMonthlyYen : 0;
 
   return {
@@ -356,13 +376,13 @@ export function calcTccaComputedLocal(ctx, cols, spSpLT) {
 
 /**
  * 障害児福祉手当等の本人所得限度額を扶養人数から求める。
- * @remarks N01-2 所得制限。単位: 円/年。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks N01-2 本人所得制限。単位: 円/年。令和8年度の本人所得限度額。本人は限度額超で停止。
  * @param {*} fuyoCount 判定対象・区分または補助値（呼出側の定義に従う）
  * @returns {*} number。単位: 円/年
  */
 export function calcWelfareAllowanceLimitSelfYen(fuyoCount) {
   const n = Math.max(0, Math.trunc(toNumber(fuyoCount, 0)));
-  const base = [3661000, 4041000, 4421000, 4801000];
+  const base = [3758000, 4138000, 4518000, 4898000];
   if (n <= 3) return base[n];
   return base[3] + 380000 * (n - 3);
 }

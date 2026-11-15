@@ -11,7 +11,8 @@ export function normalizeScenario(scenario) {
   if (s === "S1_R6") return "s1";
   if (s === "S2_R7") return "s2";
   if (s === "S3_R8_R9") return "s3";
-  return ["s1", "s2", "s3"].includes(s) ? s : "s2";
+  if (s === "S4_R8_FINAL") return "s4";
+  return ["s1", "s2", "s3", "s4"].includes(s) ? s : "s2";
 }
 
 /**

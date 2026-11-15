@@ -6,14 +6,16 @@ import MunicipalSourcesAppendix from "./MunicipalSourcesAppendix";
 import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
 import ResearchDataAppendix from "./ResearchDataAppendix";
 import CalculationReferenceAppendix from "./CalculationReferenceAppendix";
+import RevisionScenariosAppendix from "./RevisionScenariosAppendix";
 
 const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
   { mode: "sources", letter: "B", label: "調査対象・参照資料", hash: "#municipal-sources" },
-  { mode: "rules", letter: "C", label: "所得判定・変動方法", hash: "#income-assessment" },
+  { mode: "rules", letter: "C", label: "所得区分・判定方法（船橋市例）", hash: "#income-assessment" },
   { mode: "current", letter: "D", label: "現行制度", hash: "#current" },
-  { mode: "optimal", letter: "E", label: "全体最適モデル", hash: "#optimal" },
+  { mode: "optimal", letter: "E", label: "調整モデル（探索例）", hash: "#optimal" },
   { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
+  { mode: "scenarios", letter: "G", label: "モデル条件・感度分析", hash: "#revision-scenarios" },
 ];
 
 function viewModeForHash(hash) {
@@ -320,7 +322,7 @@ function IncomeComparisonGraph({ caseDef, selectedSalary, onSalaryChange }) {
 
   const lines = [
     { key: "currentDisposableWan", label: "現行制度後の可処分所得", color: "#a35b73", className: "income-line current-disposable" },
-    { key: "optimalDisposableWan", label: "全体最適モデル後の可処分所得", color: "#163f73", className: "income-line optimal-disposable" },
+    { key: "optimalDisposableWan", label: "調整例の可処分所得", color: "#163f73", className: "income-line optimal-disposable" },
   ];
 
   return (
@@ -331,7 +333,7 @@ function IncomeComparisonGraph({ caseDef, selectedSalary, onSalaryChange }) {
           className="appendix-chart income-comparison-chart"
           viewBox={`0 0 ${width} ${height}`}
           role="img"
-          aria-label={`${caseDef.label}の給与収入に対する現行制度と全体最適モデルの可処分所得比較`}
+          aria-label={`${caseDef.label}の給与収入に対する現行制度と調整例の可処分所得比較`}
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
             moveLine(event);
@@ -815,8 +817,8 @@ function BreakdownPanel({ point }) {
   const costBurden = b.costBurden || {};
   const disposable = b.disposable || {};
 
-  const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) <= Number(tcca.headLimitYen);
-  const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) <= Number(tcca.familyLimitYen);
+  const tccaHeadOk = Number(tcca.headAdjustedIncomeYen) < Number(tcca.headLimitYen);
+  const tccaFamilyOk = Number(tcca.familyMaxAdjustedIncomeYen) < Number(tcca.familyLimitYen);
   const headRow = rows.find((r) => r.who === "世帯主") || rows[0] || {};
   const taxHead = (tax.byWho || []).find((t) => t.who === "世帯主") || {};
   const dependent = ded.dependent || {};
@@ -881,13 +883,14 @@ function BreakdownPanel({ point }) {
           { key: "A5", label: "A5 所得税", value: fmtWan(taxHead.incomeTax?.taxWan), formula: taxHead.incomeTax?.formula },
           {
             key: "A6",
-            label: "A6 住民税",
+            label: "A6 住民税・森林環境税",
             value: fmtWan(taxHead.residentTax?.computedTaxWan),
             formula: taxHead.residentTax?.formula,
             sourceUrl: residentTaxSource.url,
             sourceLabel: residentTaxSource.title,
             archivePath: residentTaxSource.archivePath,
           },
+          { key: "A6f", label: "A6f うち森林環境税", value: fmtYen(taxHead.residentTax?.forestEnvironmentTaxYen), formula: "課税時は年1,000円。A6に含み、再加算しない。" },
           { key: "A7", label: "A7 基礎手取額", value: fmtWan(b.takeHome?.takeHomeWan), formula: "A1 − B2 − A5 − A6", tone: "strong" },
         ]}
       />
@@ -1056,10 +1059,10 @@ function BreakdownPanel({ point }) {
           },
           { key: "T3", label: "T3 本人 判定所得", value: fmtYen(tcca.headAdjustedIncomeYen), formula: tcca.formulas?.headJudgmentIncome },
           { key: "T4", label: "T4 本人 限度額", value: fmtYen(tcca.headLimitYen), formula: tcca.formulas?.headLimit },
-          { key: "T5", label: "T5 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T3 ≤ T4" },
+          { key: "T5", label: "T5 本人判定", value: tccaHeadOk ? "通過" : "停止", formula: "T3 < T4" },
           { key: "T6", label: "T6 扶養義務者 判定所得（最大）", value: fmtYen(tcca.familyMaxAdjustedIncomeYen), formula: "各扶養義務者の判定所得の最大" },
           { key: "T7", label: "T7 扶養義務者 限度額", value: fmtYen(tcca.familyLimitYen), formula: tcca.formulas?.familyLimit },
-          { key: "T8", label: "T8 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T6 ≤ T7" },
+          { key: "T8", label: "T8 扶養義務者判定", value: tccaFamilyOk ? "通過" : "停止", formula: "T6 < T7" },
           { key: "T9", label: "T9 支給判定", value: tcca.eligible ? "支給" : "不支給", formula: "T5 ∧ T8" },
           { key: "T10", label: "T10 支給月額", value: fmtYen(tcca.monthlyYen), formula: "T9が支給なら等級別月額合計" },
           { key: "T11", label: "T11 支給年額", value: fmtWan(tcca.annualWan), formula: tcca.formulas?.annual },
@@ -1102,7 +1105,7 @@ function BreakdownPanel({ point }) {
           },
           { key: "W3", label: "W3 扶養義務者 判定所得（最大）", value: fmtYen(welfare.obligorMaxAdjustedIncomeYen), formula: welfare.formulas?.obligorJudgmentIncome },
           { key: "W4", label: "W4 扶養義務者 限度額", value: fmtYen(welfare.obligorLimitYen), formula: welfare.formulas?.obligorLimit },
-          { key: "W5", label: "W5 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W3 ≤ W4" },
+          { key: "W5", label: "W5 扶養義務者判定", value: welfare.obligorOk ? "通過" : "停止", formula: "W3 < W4" },
           {
             key: "W6",
             label: "W6 支給判定",
@@ -1203,14 +1206,16 @@ function BreakdownPanel({ point }) {
         wide
         confidence={service.confidence || "strict"}
         source={CALCULATION_SOURCES.serviceBurden}
-        note="負担上限月額は世帯単位（複数児でも合算せず最も高い1つ。児福法施行令24条・27条の2）。一般2の実負担は上限37,200円ではなく、東京都R6調査の利用者負担平均10,406円を採用（上限は非拘束）。"
+        note="この従来入力は児童別候補の最大値を使う旧条件の参考計算であり、兄弟の実費合算を再現したものではない。改稿用Gの明示利用条件では、児童別R_iを合計してから世帯上限を適用する。一般2の旧10,406円は児童単位の事後負担平均である。判定用所得割は税徴収額に年少扶養控除等相当額を補正する。"
         rows={[
           {
             key: "E1",
-            label: "E1 世帯 所得割合計",
+            label: "E1 世帯の判定用所得割",
             value: fmtWan(service.householdLevySumWan, 2),
-            formula: "A6の市町村分合計",
+            formula: "市町村民税所得割の徴収額から年少扶養控除等相当税額を差し引いた合計",
           },
+          { key: "E1a", label: "E1a 補正前の市町村民税所得割合計", value: fmtWan(service.taxCollectionHouseholdLevySumWan, 2), formula: "税徴収額の市町村所得割。税そのものは補正しない。" },
+          ...(service.assessmentLevyByWho || []).map((row) => ({ key: `assessment-${row.who}`, label: `E1b ${row.who}の控除相当税額`, value: fmtYen(row.abolishedDependentTaxReliefYen), formula: "16歳未満19,800円/人、16～18歳7,200円/人。判定所得割は0円を下限とする。" })),
           ...(service.details || []).map((d, index) => ({
               key: `svc-${d.who}`,
               label: `E2-${index + 1} ${d.who} 月額候補`,
@@ -1354,6 +1359,8 @@ export default function AppendixCliffMap() {
         <a href={activePage.hash}>このページへのリンク</a>
       </header>
 
+      {(viewMode === "current" || viewMode === "optimal") && <p className="research-note">D・Eは従来3ケースの入力条件による参考計算です。医療費の旧代表値と旧就学奨励費条件を含み、改稿用の採用条件とは区別します。改稿用の条件と未確定入力は<a href="#revision-scenarios" onClick={() => selectViewMode("scenarios")}>Web Appendix G</a>に示します。</p>}
+
       {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {
           const caseColor = c.color || "#9aa7ad";
@@ -1372,7 +1379,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}
@@ -1422,10 +1429,11 @@ export default function AppendixCliffMap() {
             <div className="appendix-section-head">
               <div>
                 <p className="appendix-kicker">制度横断の連続算定</p>
-                <h2>全体最適モデル：{selected?.label}</h2>
+                <h2>制度横断的調整の探索例：{selected?.label}</h2>
                 <p>
                   追加需要Hを年間需要額Dへ加算し、共通保障係数2.18で満額Bを算出する。支給前のqGで支給額を決め、支給後のqUで総合負担上限を連続的に決定する。
                 </p>
+                <p>このページは旧設定を再現する参考計算であり、最適な給付水準や実際の障害追加費用を推定したものではない。H_cに手当額を置き、さらにκを乗じるため、満額Bが現行給付を上回る。改稿用の条件別計算と区別する。</p>
               </div>
             </div>
           </section>
@@ -1433,7 +1441,7 @@ export default function AppendixCliffMap() {
             <div className="appendix-section-head">
               <div>
                 <h2>給与収入と可処分所得</h2>
-                <p>現行制度と全体最適モデルの帰結を同じ給与軸で比較する。</p>
+                <p>同じ給与における現行制度と探索例の差を比較する。曲線が滑らかになることと、全世帯の受取額が増えることは異なる。</p>
               </div>
             </div>
             <IncomeComparisonGraph

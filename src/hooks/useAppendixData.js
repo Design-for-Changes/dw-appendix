@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const X_MIN = 200;
 const CHUNK_SIZE = 25;
@@ -26,7 +26,7 @@ async function fetchGzipJson(path, options) {
 export function useAppendixData(selectedId, selectedSalary) {
   const [summary, setSummary] = useState(null);
   const [summaryError, setSummaryError] = useState(null);
-  const [detailVersion, setDetailVersion] = useState(0);
+  const [, setDetailVersion] = useState(0);
   const detailCache = useRef(new Map());
   const chunkStart = chunkStartFor(selectedSalary);
   const detailKey = `${selectedId}-${chunkStart}`;
@@ -62,10 +62,9 @@ export function useAppendixData(selectedId, selectedSalary) {
     return () => controller.abort();
   }, [detailKey, selectedId]);
 
-  const selectedPoint = useMemo(() => {
-    const points = detailCache.current.get(detailKey) || [];
-    return points.find((point) => Number(point.x) === Number(selectedSalary)) || null;
-  }, [detailKey, detailVersion, selectedSalary]);
+  // 各チャンクは最大25点。キャッシュ更新による再描画時にも、現在の選択点を直接求める。
+  const points = detailCache.current.get(detailKey) || [];
+  const selectedPoint = points.find((point) => Number(point.x) === Number(selectedSalary)) || null;
 
   return {
     data: summary?.cases || [],

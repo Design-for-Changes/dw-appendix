@@ -3,7 +3,7 @@ import { toNumber, roundWan, compactDeductions } from "./numeric.js";
 import { buildHousehold, createContext, buildRows } from "./household.js";
 import { calcDependentDeductionFromRows, calcSpecialKinDeductionFromRows, calcSpouseDeductionFromRows, calcSpouseSpecialDeductionFromRows, calcWidowSingleParent, getDisabilityDeductionForTaxpayerWan, getTaxable } from "./deductions.js";
 import { getIncomeTaxParts, getResidentTaxParts } from "./taxes.js";
-import { calcBasicDisabilityPensionYenFor, calcTccaComputedLocal, calcWelfareAllowanceLimitSelfYen, calcWelfareAllowanceLimitObligorYen } from "./allowances.js";
+import { calcBasicDisabilityPensionYenFor, calcTccaComputedLocal, calcWelfareAllowanceLimitSelfYen, calcWelfareAllowanceLimitObligorYen, calcChildSupportMonthlyYen } from "./allowances.js";
 import { calcM01Detail } from "./medicalAid.js";
 import { calcN04Detail } from "./educationAid.js";
 
@@ -15,6 +15,24 @@ export { N04_SHOGAKU_ANNUAL_YEN, N04_INCOME_NEED_SOURCE, N04_LIVELIHOOD_SOURCE, 
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
 export const RAW_TSUSHO_CHILD_MONTHLY_YEN = 10406;
+
+/**
+ * 通所判定用の市町村民税所得割から、旧年少・特定扶養控除相当税額を差し引く。
+ * @remarks 児童福祉法施行規則第18条の3の2。単位: 円/年。16歳未満19,800円、16～18歳7,200円。税の徴収額そのものは変更しない。
+ */
+export function calcServiceAssessmentLevyYen(municipalIncomeLevyYen, dependentAges) {
+  const reliefYen = dependentAges.reduce((sum, age) => sum + (age < 16 ? 19800 : age < 19 ? 7200 : 0), 0);
+  return Math.max(0, Math.round(municipalIncomeLevyYen) - reliefYen);
+}
+
+/**
+ * 障害児通所支援の世帯課税状況と判定用所得割から月額上限を選ぶ。
+ * @remarks 単位: 円/月。28万円未満は一般1、28万円以上は一般2。所得割0円だけでは住民税非課税と判断しない。
+ */
+export function getChildDayServiceCapYen(assessmentLevyYen, householdTaxable) {
+  if (!householdTaxable) return 0;
+  return assessmentLevyYen < 280000 ? 4600 : 37200;
+}
 
 /**
  * 世帯条件を固定し、世帯主の給与収入を指定刻みで変化させて全返値を求める。
@@ -40,7 +58,7 @@ export function computeSeries({ household, scenario = "s2", tables, sweep } = {}
 
 /**
  * 各制度を同じ給与点に適用し、世帯収支と計算過程の詳細を集計する。
- * @remarks 制度横断統合。単位: 原則万円/年。Yen付き詳細は円、支給月額は円/月。式・境界条件・丸めは移動前の実装を維持。
+ * @remarks 制度横断統合。単位: 原則万円/年。Yen付き詳細は円、支給月額は円/月。2026-11-15原典是正とs4・明示利用条件を含む。旧入力と新費用基準はmetadataで区別。
  * @param {object} ctx 世帯・制度設定または計算条件
  * @param {number} x 世帯主の給与収入（万円/年）
  * @returns {*} Pointオブジェクト。単位: 原則万円/年。Yen付き詳細は円、支給月額は円/月
@@ -59,7 +77,6 @@ function computePoint(ctx, x) {
   const headDedCommonIT =
     toNumber(ws.widow.itWan, 0) +
     toNumber(ws.singleParent.itWan, 0) +
-    (Boolean(headRow?.workingStudent) ? ctx.wsAmtIT : 0) +
     toNumber(headRow?.otherDedWan, 0) +
     toNumber(spIT, 0) +
     toNumber(spSpIT, 0) +
@@ -67,7 +84,6 @@ function computePoint(ctx, x) {
   const headDedCommonLT =
     toNumber(ws.widow.ltWan, 0) +
     toNumber(ws.singleParent.ltWan, 0) +
-    (Boolean(headRow?.workingStudent) ? ctx.wsAmtLT : 0) +
     toNumber(headRow?.otherDedWan, 0) +
     toNumber(spLT, 0) +
     toNumber(spSpLT, 0) +
@@ -78,15 +94,45 @@ function computePoint(ctx, x) {
   let socialWanTotal = 0;
   let taxWanTotal = 0;
   const levyByWho = new Map();
+  const serviceLevyByWho = new Map();
   const taxByWho = [];
   const byWho = new Map(rows.map((r) => [String(r.who), r]));
   for (const r of rows) {
     socialWanTotal += toNumber(r.socialWan, 0);
     const taxableIT = getTaxable(ctx, r, "it", rows, headDedCommonITWithKin);
     const taxableLT = getTaxable(ctx, r, "lt", rows, headDedCommonLTWithKin);
-    const incomeTax = getIncomeTaxParts(taxableIT);
+    const incomeTax = getIncomeTaxParts(taxableIT, { includeReconstruction: ctx.skey === "s4" });
     const taxIT = incomeTax.taxWan;
-    const residentTax = getResidentTaxParts(taxableLT);
+    const isHead = String(r.who) === "世帯主";
+    const taxDepMax = toNumber(ctx.taxDependentIncomeMaxWan, 58);
+    const dependentCount = isHead ? rows.filter((person) =>
+      String(person.who) !== "世帯主" && toNumber(person.totalIncomeWan, 0) <= taxDepMax).length : 0;
+    let personalDeductionDifferenceWan;
+    if (ctx.skey === "s4") {
+      personalDeductionDifferenceWan = toNumber(r.totalIncomeWan, 0) <= 2500 ? 5 : 0;
+      personalDeductionDifferenceWan += getDisabilityDeductionForTaxpayerWan(ctx, r, "it", rows) - getDisabilityDeductionForTaxpayerWan(ctx, r, "lt", rows);
+      if (r.workingStudent) personalDeductionDifferenceWan += 1;
+      if (isHead) {
+        personalDeductionDifferenceWan += toNumber(dep.itWan, 0) - toNumber(dep.ltWan, 0);
+        personalDeductionDifferenceWan += toNumber(spIT, 0) - toNumber(spLT, 0);
+        if (ws.widow.ltWan > 0) personalDeductionDifferenceWan += 1;
+        if (ws.singleParent.ltWan > 0) {
+          if (!["mother", "father"].includes(ctx.head.singleParentTaxRole)) {
+            throw new RangeError("S4 single-parent adjustment deduction requires head.singleParentTaxRole=mother or father");
+          }
+          personalDeductionDifferenceWan += ctx.head.singleParentTaxRole === "mother" ? 5 : 1;
+        }
+      }
+    }
+    const residentTax = getResidentTaxParts(taxableLT, {
+      totalIncomeWan: toNumber(r.totalIncomeWan, 0),
+      dependentCount,
+      disabled: Boolean(r.disabled),
+      minor: toNumber(r.age, 0) < 18,
+      widow: isHead && ws.widow.ltWan > 0,
+      singleParent: isHead && ws.singleParent.ltWan > 0,
+      ...(personalDeductionDifferenceWan !== undefined ? { personalDeductionDifferenceWan } : {}),
+    });
     const taxLT = residentTax.totalWan;
     const residentIncomeLevyWan = residentTax.municipalIncomeLevyWan;
     const residentPerCapitaWan = residentTax.perCapitaWan;
@@ -95,6 +141,16 @@ function computePoint(ctx, x) {
       who: String(r.who),
       age: toNumber(r.age, 0),
       levyWan: residentIncomeLevyWan,
+    });
+    const serviceDependentChildren = isHead ? rows.filter((person) =>
+      String(person.who).startsWith("子ども") && toNumber(person.totalIncomeWan, 0) <= taxDepMax) : [];
+    const serviceAssessmentLevyYen = calcServiceAssessmentLevyYen(residentTax.municipalIncomeLevyYen, serviceDependentChildren.map((person) => person.age));
+    serviceLevyByWho.set(String(r.who), {
+      who: String(r.who), age: toNumber(r.age, 0),
+      levyWan: serviceAssessmentLevyYen / 10000,
+      originalMunicipalIncomeLevyYen: residentTax.municipalIncomeLevyYen,
+      abolishedDependentTaxReliefYen: residentTax.municipalIncomeLevyYen - serviceAssessmentLevyYen,
+      taxable: residentTax.incomeLevyYen + residentTax.perCapitaYen > 0,
     });
     taxByWho.push({
       who: String(r.who),
@@ -105,9 +161,12 @@ function computePoint(ctx, x) {
         rate: incomeTax.rate,
         quickDeductionYen: incomeTax.deductionYen,
         rawTaxYen: incomeTax.rawTaxYen,
+        baseTaxYen: incomeTax.baseTaxYen,
+        reconstructionSpecialIncomeTaxYen: incomeTax.reconstructionSpecialIncomeTaxYen,
+        includesReconstruction: incomeTax.includesReconstruction,
         taxYen: incomeTax.taxYen,
         taxWan: toNumber(taxIT, 0),
-        formula: `${incomeTax.taxableYen.toLocaleString("ja-JP")}円 × ${roundWan(incomeTax.rate * 100, 2)}% − ${incomeTax.deductionYen.toLocaleString("ja-JP")}円`,
+        formula: `${incomeTax.taxableYen.toLocaleString("ja-JP")}円 × ${roundWan(incomeTax.rate * 100, 2)}% − ${incomeTax.deductionYen.toLocaleString("ja-JP")}円${incomeTax.includesReconstruction ? " ＋ 復興特別所得税2.1%（年税額100円未満切捨て）" : ""}`,
         source: CALCULATION_SOURCES.incomeTax,
       },
       residentTax: {
@@ -118,6 +177,10 @@ function computePoint(ctx, x) {
         incomeLevyYen: residentTax.incomeLevyYen,
         perCapitaWan: residentPerCapitaWan,
         perCapitaYen: residentTax.perCapitaYen,
+        forestEnvironmentTaxYen: residentTax.forestEnvironmentTaxYen,
+        forestEnvironmentTaxWan: residentTax.forestEnvironmentTaxWan,
+        exemption: residentTax.exemption,
+        personalDeductionDifferenceWan: residentTax.personalDeductionDifferenceWan,
         rate: residentTax.rate,
         rawIncomeLevyYen: residentTax.rawIncomeLevyYen,
         adjustmentDeductionWan: residentTax.adjustmentDeductionWan,
@@ -126,8 +189,9 @@ function computePoint(ctx, x) {
         municipalIncomeLevyYen: residentTax.municipalIncomeLevyYen,
         prefecturalIncomeLevyWan: residentTax.prefecturalIncomeLevyWan,
         prefecturalIncomeLevyYen: residentTax.prefecturalIncomeLevyYen,
-        formula: `${residentTax.taxableYen.toLocaleString("ja-JP")}円 × 10% − ${residentTax.adjustmentDeductionYen.toLocaleString("ja-JP")}円 ＋ ${residentTax.perCapitaYen.toLocaleString("ja-JP")}円`,
+        formula: `市民税所得割${residentTax.municipalIncomeLevyYen.toLocaleString("ja-JP")}円 ＋ 県民税所得割${residentTax.prefecturalIncomeLevyYen.toLocaleString("ja-JP")}円 ＋ 住民税均等割${residentTax.perCapitaYen.toLocaleString("ja-JP")}円 ＋ 森林環境税${residentTax.forestEnvironmentTaxYen.toLocaleString("ja-JP")}円`,
         source: CALCULATION_SOURCES.residentTax,
+        sources: { exemption: CALCULATION_SOURCES.residentTaxExemption, forestEnvironmentTax: CALCULATION_SOURCES.forestEnvironmentTax },
       },
       deductions: {
         basicITWan: toNumber(r.basicITWan, 0),
@@ -146,6 +210,7 @@ function computePoint(ctx, x) {
   }
 
   const householdLevySumWan = Array.from(levyByWho.values()).reduce((a, v) => a + toNumber(v.levyWan, 0), 0);
+  const serviceHouseholdLevySumWan = Array.from(serviceLevyByWho.values()).reduce((a, v) => a + toNumber(v.levyWan, 0), 0);
 /**
    * 利用者の年齢と続柄に応じた所得割の判定範囲を合算する。
    * @remarks 通所・福祉サービス。単位: 万円/年。式・境界条件・丸めは移動前の実装を維持。
@@ -154,22 +219,34 @@ function computePoint(ctx, x) {
    */
   const levySumWanFor = (who) => {
     const w = String(who);
-    const r = levyByWho.get(w);
+    const r = serviceLevyByWho.get(w);
     if (!r) return 0;
     const age = toNumber(r.age, 0);
     if (w.startsWith("子ども") && age >= 18) return toNumber(r.levyWan, 0);
     if (age >= 18) {
       if (w === "世帯主") {
-        const sp = ctx.spouseEnabled ? toNumber(levyByWho.get("配偶者")?.levyWan, 0) : 0;
+        const sp = ctx.spouseEnabled ? toNumber(serviceLevyByWho.get("配偶者")?.levyWan, 0) : 0;
         return toNumber(r.levyWan, 0) + sp;
       }
       if (w === "配偶者") {
-        const hd = toNumber(levyByWho.get("世帯主")?.levyWan, 0);
+        const hd = toNumber(serviceLevyByWho.get("世帯主")?.levyWan, 0);
         return toNumber(r.levyWan, 0) + hd;
       }
       return toNumber(r.levyWan, 0);
     }
-    return householdLevySumWan;
+    return serviceHouseholdLevySumWan;
+  };
+  /**
+   * 利用者の年齢・続柄に対応する世帯範囲に住民税課税者がいるかを調べる。
+   * @remarks 所得割ゼロを非課税と同一視せず、所得割と均等割の課税状況を使う。
+   */
+  const serviceTaxableFor = (who) => {
+    const w = String(who);
+    const person = serviceLevyByWho.get(w);
+    if (!person) return false;
+    if (person.age < 18) return Array.from(serviceLevyByWho.values()).some((value) => value.taxable);
+    if (w.startsWith("子ども")) return Boolean(person.taxable);
+    return Boolean(serviceLevyByWho.get("世帯主")?.taxable || (ctx.spouseEnabled && serviceLevyByWho.get("配偶者")?.taxable));
   };
 /**
    * 年齢と所得区分から採用月額負担を求め、児童では代表利用料と制度上限の小さい方を使う。
@@ -178,10 +255,10 @@ function computePoint(ctx, x) {
    * @param {number} age 年齢（歳）
    * @returns {*} number。単位: 円/月
    */
-  const monthlyFeeYen = (sumLevyWan, age) => {
+  const monthlyFeeYen = (sumLevyWan, age, taxable) => {
     const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
     const a = toNumber(age, 0);
-    if (levyYen <= 0) return 0;
+    if (!taxable) return 0;
     if (a >= 18) return levyYen < 160000 ? 9300 : 37200;
     if (a >= 3 && a <= 5) return 0;
     const upperLimitYen = levyYen < 280000 ? 4600 : 37200;
@@ -194,11 +271,11 @@ function computePoint(ctx, x) {
    * @param {number} age 年齢（歳）
    * @returns {*} string。単位: 所得割は万円/年
    */
-  const serviceType = (sumLevyWan, age) => {
+  const serviceType = (sumLevyWan, age, taxable) => {
     const levyYen = Math.max(0, Math.round(toNumber(sumLevyWan, 0) * 10000));
     const a = toNumber(age, 0);
     if (a >= 3 && a <= 5) return "無償化";
-    if (levyYen <= 0) return "非課税";
+    if (!taxable) return "非課税";
     if (a >= 18) return levyYen < 160000 ? "一般1" : "一般2";
     return levyYen < 280000 ? "一般1" : "一般2";
   };
@@ -220,9 +297,9 @@ function computePoint(ctx, x) {
   for (const r of rows) {
     if (!Boolean(byWho.get(String(r.who))?.disabled)) continue;
     const levyWan = levySumWanFor(r.who);
-    const monthlyYen = monthlyFeeYen(levyWan, r.age);
+    const monthlyYen = monthlyFeeYen(levyWan, r.age, serviceTaxableFor(r.who));
     const age = toNumber(r.age, 0);
-    const type = serviceType(levyWan, age);
+    const type = serviceType(levyWan, age, serviceTaxableFor(r.who));
     const confidence = serviceConfidence(levyWan, age);
     serviceFeeMonthlyYenTotal = Math.max(serviceFeeMonthlyYenTotal, monthlyYen);
     serviceFeeDetails.push({
@@ -245,8 +322,66 @@ function computePoint(ctx, x) {
       },
     });
   }
-  const serviceConfidenceOverall = serviceFeeDetails.some((d) => d.confidence === "representative") ? "representative" : "strict";
-  const serviceFeeWanTotal = (serviceFeeMonthlyYenTotal * 12) / 10000;
+  let serviceMonths = 12;
+  let serviceUseDetail = null;
+  const explicitServiceUse = ctx.programs?.serviceUse;
+  if (explicitServiceUse) {
+    const amounts = explicitServiceUse.monthlyBurdenBeforeCapByChildYen;
+    serviceMonths = explicitServiceUse.months ?? 12;
+    if (explicitServiceUse.schemaVersion !== 1 || !Array.isArray(amounts) || amounts.length !== ctx.children.length) {
+      throw new RangeError("serviceUse requires schemaVersion=1 and one monthly R input per child");
+    }
+    if (!Number.isInteger(serviceMonths) || serviceMonths < 0 || serviceMonths > 12) {
+      throw new RangeError("serviceUse.months must be an integer from 0 to 12");
+    }
+    if (amounts.some((v) => !Number.isFinite(v) || v < 0 || !Number.isInteger(v))) {
+      throw new RangeError("serviceUse R inputs must be nonnegative integer yen amounts");
+    }
+    const childUse = ctx.children.map((child, i) => {
+      if (amounts[i] > 0 && (child.age >= 18 || !child.disabled)) {
+        throw new RangeError("Explicit child-day-service R currently supports disabled children under 18 only");
+      }
+      const free = child.age >= 3 && child.age <= 5;
+      return { who: `子ども${i + 1}`, age: child.age, inputRYen: amounts[i], chargeableRYen: free ? 0 : amounts[i], free };
+    });
+    const householdRYen = childUse.reduce((sum, child) => sum + child.chargeableRYen, 0);
+    const householdLevyYen = Math.max(0, Math.round(serviceHouseholdLevySumWan * 10000));
+    const householdTaxable = taxByWho.some((person) =>
+      toNumber(person.residentTax.incomeLevyYen, 0) + toNumber(person.residentTax.perCapitaYen, 0) > 0);
+    const capYen = getChildDayServiceCapYen(householdLevyYen, householdTaxable);
+    const type = !householdTaxable ? "非課税" : householdLevyYen < 280000 ? "一般1" : "一般2";
+    serviceFeeMonthlyYenTotal = Math.min(householdRYen, capYen);
+    serviceFeeDetails.splice(0, serviceFeeDetails.length, ...childUse.map((child) => ({
+      who: child.who,
+      age: child.age,
+      householdLevyWan: serviceHouseholdLevySumWan,
+      householdLevyYen,
+      type: child.free ? "無償化" : type,
+      monthlyUpperYen: null,
+      annualFeeWan: null,
+      rawMonthlyYen: child.inputRYen,
+      chargeableMonthlyYen: child.chargeableRYen,
+      formula: "児童別Rを世帯合算して月額上限を適用（児童別の最終負担配賦は算出しない）",
+      confidence: "conditional",
+      sources: { statutory: CALCULATION_SOURCES.serviceBurden, householdAggregation: CALCULATION_SOURCES.serviceHouseholdAggregation },
+    })));
+    serviceUseDetail = {
+      schemaVersion: 1,
+      mode: "explicit-constant-monthly-child-use",
+      monthlyBurdenBeforeCapByChildYen: amounts.slice(),
+      householdMonthlyBurdenBeforeCapYen: householdRYen,
+      householdMonthlyCapYen: capYen,
+      householdMonthlyChargeYen: serviceFeeMonthlyYenTotal,
+      months: serviceMonths,
+      formula: "min(ΣR_i（月額無償化対象児を除く）, 世帯の月額負担上限) × 利用月数",
+      assumption: "各利用月のR_iは同一。所得区分の前後でR_iを変更しない。食費等の対象外実費・独自助成・成人サービスとの合算は含まない。",
+      source: CALCULATION_SOURCES.serviceHouseholdAggregation,
+      assessmentLevyByWho: Array.from(serviceLevyByWho.values()),
+      assessmentLevySource: CALCULATION_SOURCES.serviceAssessmentLevy,
+    };
+  }
+  const serviceConfidenceOverall = explicitServiceUse ? "conditional" : serviceFeeDetails.some((d) => d.confidence === "representative") ? "representative" : "strict";
+  const serviceFeeWanTotal = (serviceFeeMonthlyYenTotal * serviceMonths) / 10000;
 
   const basicPensionWan = (() => {
     const headYen = calcBasicDisabilityPensionYenFor(ctx, "世帯主", toNumber(byWho.get("世帯主")?.totalIncomeWan, 0));
@@ -259,7 +394,6 @@ function computePoint(ctx, x) {
   const tcca = calcTccaComputedLocal(ctx, rows, spSpLT);
   const tccaAnnualWan = (toNumber(tcca?.totalMonthlyYen, 0) * 12) / 10000;
   const fuyo = toNumber(tcca?.fuyoCount, 0);
-  const legacyFuyo = toNumber(tcca?.legacyFuyoCount ?? tcca?.fuyoCount, 0);
 
   const WELFARE_CHILD_MONTHLY_YEN = 16560;
   const TOKUBETSU_MONTHLY_YEN = 30450;
@@ -388,7 +522,8 @@ function computePoint(ctx, x) {
   };
   const obligorJudgmentIncomeDetails = obligorCols.map((o) => calcWelfareAdjustedIncomeDetail(o, "obligor"));
   const obligorMaxYen = obligorJudgmentIncomeDetails.length ? Math.max(...obligorJudgmentIncomeDetails.map((o) => o.adjustedYen)) : 0;
-  const obligorOk = obligorMaxYen <= limitObligorYen;
+  // 同法第21条: 配偶者・扶養義務者は限度額「以上」で停止（本人は第20条の「超」）。
+  const obligorOk = obligorMaxYen < limitObligorYen;
 
   const recipients = rows
     .map((c) => {
@@ -438,7 +573,6 @@ function computePoint(ctx, x) {
   const childSupportAnnualWan = (() => {
     const isSingleParent = Boolean(ctx.head.singleParentWan) && !ctx.spouseEnabled;
     if (!isSingleParent) return 0;
-    const idx = Math.min(5, Math.max(0, Math.trunc(toNumber(legacyFuyo, 0))));
     const h = tcca?.head || {};
     const totalWan = toNumber(h.totalWan, 0);
     const dedSumWan = toNumber(h.dedSumWan, 0);
@@ -446,22 +580,12 @@ function computePoint(ctx, x) {
       Math.max(0, dedSumWan - toNumber(h.widowWan, 0) - toNumber(h.singleParentWan, 0) - toNumber(h.spouseSpecialWan, 0) - toNumber(h.specialDependentDedWan, 0));
     const adjustedWan = Math.max(0, totalWan - dedSumNo);
     const incomeYen = Math.round(adjustedWan * 10000);
-    const fullLimitWanByFuyo = [68, 106, 144, 183, 220, 259];
-    const partialLimitWanByFuyo = [208, 246, 284, 322, 260, 398];
-    const fullLimitYen = Math.round((fullLimitWanByFuyo[idx] ?? fullLimitWanByFuyo[5]) * 10000);
-    const partialLimitYen = Math.round((partialLimitWanByFuyo[idx] ?? partialLimitWanByFuyo[5]) * 10000);
-    const status = incomeYen <= fullLimitYen ? "満額" : incomeYen <= partialLimitYen ? "一部" : "対象外";
     const eligibleChildren = ctx.children.filter((c) => {
       const age = toNumber(c?.age, 0);
       return age < 19 || (Boolean(c?.disabled) && age < 20);
     });
     const n = eligibleChildren.length;
-    if (n === 0 || status === "対象外") return 0;
-    if (status === "満額") return (46690 + Math.max(0, n - 1) * 11030) * 12 / 10000;
-    const delta = Math.max(0, incomeYen - fullLimitYen);
-    const first = Math.max(0, 46690 - (delta * 0.0256619 + 10));
-    const add = Math.max(0, 11030 - (delta * 0.0039568 + 10));
-    return Math.round(first + Math.max(0, n - 1) * add) * 12 / 10000;
+    return calcChildSupportMonthlyYen({ incomeYen, fuyoCount: fuyo, childrenCount: n }) * 12 / 10000;
   })();
 
   const childAllowanceAnnualWan = (() => {
@@ -489,10 +613,15 @@ function computePoint(ctx, x) {
   const n04AnnualWan = n04Detail.annualWan;
   const m01FullReliefWan = toNumber(m01Detail.fullReliefWan ?? m01Detail.sensitivityRangeWan?.min, 0);
   const medicalCostBurdenWan = Math.max(0, m01FullReliefWan - toNumber(m01AnnualWan, 0));
-  const educationCostBurdenWan = 0;
+  if (ctx.programs?.n04EducationProfile && !Number.isFinite(n04Detail.grossExpenseAnnualYen)) {
+    throw new RangeError("Explicit N04 profile requires a verified grossExpenseAnnualYen; do not replace a missing expense with zero");
+  }
+  const educationCostBurdenWan = ctx.programs?.n04EducationProfile
+    ? toNumber(n04Detail.grossExpenseAnnualYen, 0) / 10000 : 0;
   const educationCostReliefWan = toNumber(n04AnnualWan, 0);
   const costBurdenWanTotal =
     toNumber(medicalCostBurdenWan, 0) +
+    toNumber(educationCostBurdenWan, 0) +
     toNumber(serviceFeeWanTotal, 0);
 
   const allowanceWanTotal =
@@ -565,8 +694,8 @@ function computePoint(ctx, x) {
     familyLimitYen: toNumber(tcca?.limits?.familyLimitYen, 0),
     familyLimit: tcca?.limits?.family || null,
     eligible:
-      toNumber(tcca?.head?.adjustedYen, 0) <= toNumber(tcca?.limits?.headLimitYen, 0) &&
-      toNumber(tcca?.familyMaxAdjustedYen, 0) <= toNumber(tcca?.limits?.familyLimitYen, 0),
+      toNumber(tcca?.head?.adjustedYen, 0) < toNumber(tcca?.limits?.headLimitYen, 0) &&
+      toNumber(tcca?.familyMaxAdjustedYen, 0) < toNumber(tcca?.limits?.familyLimitYen, 0),
     monthlyYen: toNumber(tcca?.totalMonthlyYen, 0),
     annualWan: toNumber(tccaAnnualWan, 0),
     head: tcca?.head || null,
@@ -602,6 +731,7 @@ function computePoint(ctx, x) {
     incomeTaxWan: taxByWho.reduce((a, r) => a + toNumber(r.incomeTax.taxWan, 0), 0),
     residentTaxWan: taxByWho.reduce((a, r) => a + toNumber(r.residentTax.computedTaxWan, 0), 0),
     residentIncomeLevyWan: householdLevySumWan,
+    forestEnvironmentTaxWan: taxByWho.reduce((a, r) => a + toNumber(r.residentTax.forestEnvironmentTaxWan, 0), 0),
     totalWan: toNumber(taxWanTotal, 0),
   };
   const deductionsDetail = {
@@ -636,6 +766,15 @@ function computePoint(ctx, x) {
     social: toNumber(socialWanTotal, 0),
     totalPlus: totalPlusWan,
     breakdown: {
+      assumptions: {
+        scenario: ctx.skey,
+        incomeTaxYear: ctx.taxYear ?? null,
+        residentTaxAssessmentYear: ctx.residentTaxAssessmentYear ?? null,
+        allowanceFiscalYear: 2026,
+        interpretation: "所得税・翌年度住民税・手当の制度式を同じ給与点へ適用する静的比較。前年所得による実際の給付改定時期や暦年収支は再現しない。",
+        serviceUseMode: explicitServiceUse ? "explicit-child-R-household-cap" : "legacy-representative-household-maximum",
+        educationExpenseBasis: ctx.programs?.n04EducationProfile ? "explicit-gross-expense-minus-aid" : "legacy-zero-expense-reference",
+      },
       salaryWan: grossWan,
       rows: rowsDetail,
       deductions: deductionsDetail,
@@ -659,10 +798,13 @@ function computePoint(ctx, x) {
         welfareAllowance: welfareAllowanceDetail,
         service: {
           confidence: serviceConfidenceOverall,
-          householdLevySumWan,
+          householdLevySumWan: serviceHouseholdLevySumWan,
+          taxCollectionHouseholdLevySumWan: householdLevySumWan,
+          assessmentLevyByWho: Array.from(serviceLevyByWho.values()),
+          use: serviceUseDetail,
           details: serviceFeeDetails,
           calculation: {
-            method: "householdMax",
+            method: explicitServiceUse ? "sumChildRThenHouseholdCap" : "householdMaxLegacy",
             monthlyCandidateYenByChild: serviceFeeDetails.map((d) => ({
               who: d.who,
               type: d.type,
@@ -671,8 +813,8 @@ function computePoint(ctx, x) {
             })),
             monthlyTotalYen: serviceFeeMonthlyYenTotal,
             annualWan: serviceFeeWanTotal,
-            formula: "児童ごとの月額候補の最大値を世帯月額負担として採用",
-            annualFormula: "世帯月額負担 × 12",
+            formula: explicitServiceUse ? serviceUseDetail.formula : "児童ごとの月額候補の最大値を世帯月額負担として採用（旧再現条件）",
+            annualFormula: `世帯月額負担 × ${serviceMonths}`,
           },
           monthlyTotalYen: serviceFeeMonthlyYenTotal,
           annualWan: serviceFeeWanTotal,
@@ -686,6 +828,7 @@ function computePoint(ctx, x) {
       },
       costBurden: costBurdenBreakdown,
       disposable: {
+        educationExpenseBasis: ctx.programs?.n04EducationProfile ? "explicit-gross-expense-minus-aid" : "legacy-zero-expense-reference",
         takeHomeWan,
         allowanceWan: allowanceWanTotal,
         medicalCostBurdenWan,
@@ -694,7 +837,9 @@ function computePoint(ctx, x) {
         costBurdenWan: costBurdenWanTotal,
         educationCostReliefWan,
         disposableWan,
-        formula: "手取り ＋ 現金給付 − 医療費自己負担 − 通所利用者負担 ＋ 教育費負担軽減",
+        formula: ctx.programs?.n04EducationProfile
+          ? "手取り ＋ 現金給付 ＋ 教育費補助 − 医療費自己負担 − 通所利用者負担 − 対象教育費実支出"
+          : "手取り ＋ 現金給付 − 医療費自己負担 − 通所利用者負担 ＋ 教育費負担軽減（教育費0基準の旧相対表示）",
       },
     },
   };

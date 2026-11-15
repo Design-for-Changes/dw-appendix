@@ -14,7 +14,10 @@ import {execFileSync} from 'node:child_process';
 import {computeSeries} from '../src/calc/computePoint.js';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const TARGET=path.join(ROOT,'fixtures/refactor-contract.json');
+const targetIndex=process.argv.indexOf('--target');
+const targetRelative=targetIndex>=0?process.argv[targetIndex+1]:'fixtures/refactor-contract.json';
+if(!targetRelative||path.isAbsolute(targetRelative)||targetRelative.includes('..'))throw new Error('Contract target must be a repository-relative path');
+const TARGET=path.join(ROOT,targetRelative);
 const read=p=>JSON.parse(fs.readFileSync(path.join(ROOT,p),'utf8'));
 const tables={
   emp:read('public/data/emp_deduction.json'),
@@ -53,7 +56,7 @@ function generatedHashes(){
 }
 
 const recording=process.argv.includes('--record');
-const existing=recording?null:read('fixtures/refactor-contract.json');
+const existing=recording?null:read(targetRelative);
 const confirmed=read('fixtures/cases.json').cases.filter(c=>c.status==='baseline_confirmed');
 const base=confirmed.find(c=>c.id==='P1');
 const extras=[
@@ -69,7 +72,7 @@ const generated=generatedHashes();
 if(recording){
   const contract={
     schemaVersion:1,
-    purpose:'数値を変更しないリファクタリングの回帰契約。法令・制度の正しさを保証するものではない。',
+    purpose:targetRelative.includes('20261115')?'2026-11-15の制度式是正後の回帰契約。旧契約は別保存。原典例・境界テストと原因別対照の後に記録した出力であり、制度全体の正しさを保証しない。':'数値を変更しないリファクタリングの回帰契約。法令・制度の正しさを保証するものではない。',
     sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim(),
     cases,generated,
   };

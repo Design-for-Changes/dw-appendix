@@ -1,0 +1,864 @@
+{
+  "schemaVersion": 1,
+  "purpose": "2026-11-15の制度式是正後の回帰契約。旧契約は別保存。原典例・境界テストと原因別対照の後に記録した出力であり、制度全体の正しさを保証しない。",
+  "sourceCommit": "5f3a6c1d2c846c9403837b23dc55210d1d15708f",
+  "cases": [
+    {
+      "id": "A",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "397e8e6925d25cd65be6ed8b47ddddb29ee01a4dd0e45e9390b58b53d3fdf9bd"
+    },
+    {
+      "id": "E",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "8393c42aa5d556f6c66a1a45100b347bd9b53e554330c34fb6fda5c315e4ab99"
+    },
+    {
+      "id": "F",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "f3fde1403167831e0bfa9ba32e228dbe62544ece2725579963c6fec571f8e989"
+    },
+    {
+      "id": "G",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "89df5a61c116778fbe5d362df7d9fdd1ac63afd6bdb1cd194e809c62b39104c8"
+    },
+    {
+      "id": "V0",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "d3626c4ed2a5cd659a39555d77057aed12c8dd747e8ec4c02de367ccfc714de1"
+    },
+    {
+      "id": "V1",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": false,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "961c24fdfe72a6869f5d14cb26e8c6821d5d36c1fe689eb857c97c7e3622b0ae"
+    },
+    {
+      "id": "V2",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "397e8e6925d25cd65be6ed8b47ddddb29ee01a4dd0e45e9390b58b53d3fdf9bd"
+    },
+    {
+      "id": "V3",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "8393c42aa5d556f6c66a1a45100b347bd9b53e554330c34fb6fda5c315e4ab99"
+    },
+    {
+      "id": "V4",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "25f958c55779ed6e24d02dcb1a239f2f71a8538f0b3e26a63d901d3360c5a59c"
+    },
+    {
+      "id": "V5",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "children": [
+          {
+            "age": 16,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "fe8d442a90b86df89046e5ea994a9127c43e1aa004181f2db2bbd95946b3220c"
+    },
+    {
+      "id": "M01_V2",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "m01": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "7a1dc7cf57e5006a5d5670e25bc0b7bd6233ed5e35700d279d07cd466f13ebdd"
+    },
+    {
+      "id": "M01_V3",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "m01": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          },
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "84440681ff68550b0e14b2d915085e1aaa7ba10a79229626c78edf2ebe9f6462"
+    },
+    {
+      "id": "N04_V2",
+      "household": {
+        "spouseEnabled": false,
+        "head": {
+          "age": 40
+        },
+        "programs": {
+          "n04": true
+        },
+        "children": [
+          {
+            "age": 10,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "66706013a5ccdd0fe8a74a7e9ddfeb576058969a78f490a7d389d9638ad5dfb2"
+    },
+    {
+      "id": "P1",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "347b9384ccc827434e92f21e7f47a258c843fea9fa75b02bf4c152bb3d1ec814"
+    },
+    {
+      "id": "P2",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 11,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": false,
+            "cohabit": true,
+            "tccaGrade": "2",
+            "childWelfareAllowance": false
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "a950a910d24f42894614180fd712ec60fb708f34e4998b2b879dea1c489bca53"
+    },
+    {
+      "id": "P3",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 2,
+          "n04": true,
+          "n04Count": 2
+        },
+        "children": [
+          {
+            "age": 11,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          },
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "61ba7d3eec629728b3b3721db58dfaf823ffd6a9141fb04904616c18e38e76ee"
+    },
+    {
+      "id": "P1-S1_R6",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S1_R6",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "69a5672c8f44351f2c46b900d66f895bb19c0f730f4c5cc65d53a0049b430cde"
+    },
+    {
+      "id": "P1-S2_R7",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S2_R7",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "f23e957d99ed3fd3e9cfe35c32963791fb52f8c3b79400db6f8ed50ecb3dc2de"
+    },
+    {
+      "id": "P1-spouse-200",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45,
+          "salaryWan": 200
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "5b028f984c84b99a8db44205698aa65498b4df9d9a8d6c97bc19ddc2d8462c5f"
+    },
+    {
+      "id": "P1-spouse-400",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45,
+          "salaryWan": 400
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "43d65caedf4e934a4f05be84cd76a710103c70070638e700605cea7b4dedc4de"
+    },
+    {
+      "id": "P1-spouse-800",
+      "household": {
+        "spouseEnabled": true,
+        "head": {
+          "age": 45
+        },
+        "spouse": {
+          "age": 45,
+          "salaryWan": 800
+        },
+        "programs": {
+          "m01": true,
+          "m01Count": 1,
+          "n04": true,
+          "n04Count": 1
+        },
+        "children": [
+          {
+            "age": 7,
+            "disabled": true,
+            "specialDisabled": true,
+            "cohabit": true,
+            "tccaGrade": "1",
+            "childWelfareAllowance": true
+          }
+        ]
+      },
+      "scenario": "S3_R8_R9",
+      "sweep": {
+        "min": 200,
+        "max": 1500,
+        "step": 1
+      },
+      "points": 1301,
+      "sha256": "0fcca7ccfd42cb375569cf5cadfc2a6e7143d0ed960fd16a1ddca92387a0b6b2"
+    }
+  ],
+  "generated": {
+    "details/case1-1000.json.gz": "3a79d18bbdaa632fa5400b1b7874ebfcc38bd44d07f91c18cc69729f6d8b8f9b",
+    "details/case1-1025.json.gz": "cb7cc8beea3c38fd06fe945e706aca3658196f0ba6129795c2b255906fb03656",
+    "details/case1-1050.json.gz": "897f91371eff8470d8f10619f4ff8649dbd21ba49bdac93900cd65cfa0c8c2f3",
+    "details/case1-1075.json.gz": "dc4e87a8e781c6533460028ba177bade6c825cc9167d9ea902b5bd37517d1a2c",
+    "details/case1-1100.json.gz": "1a5ce73df9df565000e3adf4e232074bfdfd04da63396e7b3b375dadbdad2e4f",
+    "details/case1-1125.json.gz": "fbe76e0b52ea2a6b5831a72059da39cefd3bad1a55f2a4d4e4a9b85ea354dd82",
+    "details/case1-1150.json.gz": "48ecd215d84a81c9c0aa7e1d3b05c8c15e86397565a61e9108ab01aa417c47d6",
+    "details/case1-1175.json.gz": "a4315f0c95d3d4889e83bcb416326ade0e276c7b63391a347be70705b79a7126",
+    "details/case1-1200.json.gz": "46fb1961ececf74008fef0f70f51877fdc47e4f62fe93878e526ad7fa163b3af",
+    "details/case1-1225.json.gz": "9573ff58bb36318274ec129dc0a2b2b2cee3c54a35161058806b1ecf40fbed6b",
+    "details/case1-1250.json.gz": "3d47567c91b528b4ce4684f41d0539af5feb653bf6343aa08fce7a08085027bf",
+    "details/case1-1275.json.gz": "0a7559a3fb54e1ba422255aed9e5041d84c98faaf4733227ea750120ccaa9494",
+    "details/case1-1300.json.gz": "bd32032a36902890d6ca1643c68e5fcc5b54476a94a21360dff1824201cd990e",
+    "details/case1-1325.json.gz": "ce5a8c37bb73ec4f61860b291b29bf9888ea1cb4e73577c3f4c1fd76863a4c11",
+    "details/case1-1350.json.gz": "513aa91d6d243375c08b730bfc19e9ce3be0d84f2c4c8e534055c4000ad6d535",
+    "details/case1-1375.json.gz": "e514ec83b63aece6409c93cd203ce2dc3b2d7aa45ea1bc5be83981269ce75c4c",
+    "details/case1-1400.json.gz": "e59d8bf588f14a90be4ee2d96a4d0b47f4c338dee318f92c939b7dec665aef6a",
+    "details/case1-1425.json.gz": "988500fa52284c7fc76aa2709b078682e796f73cd48008b40e7cff90fc31e600",
+    "details/case1-1450.json.gz": "c5ddd325d7826462556ec4a798dff4b8f33bc22e58b39543aa61d8f5613734d9",
+    "details/case1-1475.json.gz": "cac7d13154c232382c3521c44483d24168e93e233594244e380678341053d9cf",
+    "details/case1-1500.json.gz": "47d8ae18c18cca40eeb1ec4881d7a91d88dd90c8b44bbb8b06f809427bbd4ec2",
+    "details/case1-200.json.gz": "7975ba1ccf585dccb362beb9dc1009c51ad1d86fdb2474d9f6a50f1797d90354",
+    "details/case1-225.json.gz": "c43734e1c2b936323337ad76dcab10bf72051c740f779c04f3bb86961cbb75fa",
+    "details/case1-250.json.gz": "4d85ae01db6d3768171a8b81b79cabdfbf0d416d6bad05853ead165a98fecd09",
+    "details/case1-275.json.gz": "bb8466133b21bb312fabde487befa79e0d3bf806046650930b47d3c37ddfd3b2",
+    "details/case1-300.json.gz": "e4bcb2fd45c1ca02c23897a8cb171ea3d6d84d97c422da17e87ed5acfe530b5d",
+    "details/case1-325.json.gz": "06cf29e29731f6ad9533dde27550694f14bcd4188688c16ae4b7e592a57f9cb1",
+    "details/case1-350.json.gz": "e1018a77e92b5f0ec5373d6c8a7e8180b477c78174d112c0d827f686271ec5b8",
+    "details/case1-375.json.gz": "8776044ccbb526416a5860604a611b5606db81fb81c685858307566360b6886a",
+    "details/case1-400.json.gz": "9552416eec7f0fa2ef93b918b75c322592d3e26992b1f6d4e2ea72c62d18e398",
+    "details/case1-425.json.gz": "3eaf7d6165270417bb4f715fc24eefc84761a0eec9a3f166007403d53196df63",
+    "details/case1-450.json.gz": "6b15f694dfb909cbd137f047278ed5f666a3b8219150251069ac8509febc8768",
+    "details/case1-475.json.gz": "f9a062722494902ceea87e57c7b80ba53f822a784ebbcbf70ecd48b9ecee1d39",
+    "details/case1-500.json.gz": "844d1e881d8636553fbcec695cbfa030c884a2b58a08877a3a78ca480823be84",
+    "details/case1-525.json.gz": "9b9d5c184d8f93c27162b3a5638db43c1bc0cc6ba8730479cde5fe631a308cd0",
+    "details/case1-550.json.gz": "668ce40e729b1e7256b5a72f589d44e64871bd372750186953948528b1e0151b",
+    "details/case1-575.json.gz": "a66a7f03ca1b8f275e3b98210c63784117efd480d37857113cf081d519935857",
+    "details/case1-600.json.gz": "6f3aeccf00f78d60218afb93a6448b5ab8be857a0a033ce071c0436e335dd0ec",
+    "details/case1-625.json.gz": "6dcf91024a722a2b43e5c5fa04b862a5b0bdc41fcc0fa35edafd70e29d963126",
+    "details/case1-650.json.gz": "14f880c4754365f9bce7dad371f5d98e8c0bc3bec21808a67c27de56cc20ef47",
+    "details/case1-675.json.gz": "f47c6c5b3d4d8bb4d052a7536be1dbddf1a0aa76ce566e74d07f0110f7502f65",
+    "details/case1-700.json.gz": "d749b8b387043ceabbccb20ea9b2f9d285ff564f834c4271f591f419f7b5de53",
+    "details/case1-725.json.gz": "6dc831c4be1ecf9806316a52aebfe511010d435235801a4e291600fd51e4b519",
+    "details/case1-750.json.gz": "69117cbca893da927880ef78f6ec84ad144bf3a7bc7dce93912e73d26b7c5fe8",
+    "details/case1-775.json.gz": "cd54c7df163a7539ea0b5f23ced01e85ca24ed82d9a76effbfcd92020068b667",
+    "details/case1-800.json.gz": "4a6ca22f9baa892a75fdddc2b2d9478dc02faafd6a450d5144ae2b1bdfab263c",
+    "details/case1-825.json.gz": "fbfbacfe6a3d0e580c99a23fb667ba90182d7582dd15d48d40a2e6c2ee1862e0",
+    "details/case1-850.json.gz": "8840d3249235d8d7ea6961cc0b9d49fde57493e1642cc8ace1ebaf182dff7129",
+    "details/case1-875.json.gz": "30066ce14ea51834dc3950a5503bfa700cf134110199c50015b70bebd408477b",
+    "details/case1-900.json.gz": "c16c0cad89743eb706c9b7b90a3dabda00c5068970402f361c21ec743b9f4796",
+    "details/case1-925.json.gz": "4f28b18eebf2c07eb014731d007487638f9c3a3d71f8aa290465095a40157b66",
+    "details/case1-950.json.gz": "5c9cf222b061adec94adaa7425644819c714d03c6c3305e32496fe2142289600",
+    "details/case1-975.json.gz": "88b52e764d7675c295770205724136357d7d5974d8fa69456b3e610138dfee9c",
+    "details/case2-1000.json.gz": "9e329173ac3b5ec21af2ffcba84dddb704dcdb9f7bfde24f53a709876ba643ef",
+    "details/case2-1025.json.gz": "9ea6af2f1c2eb9d589f378c9b69377063a5f592917ed5b14a520ac5adb9a095d",
+    "details/case2-1050.json.gz": "04d163e7a187230326a921aff780a8446ff62b7efc17fac56e3feb8a6fbc10dd",
+    "details/case2-1075.json.gz": "b15de11737d34dc1b0b6847cba438ad9f64fd66d767964580b96318a91bdcc27",
+    "details/case2-1100.json.gz": "e601040b43b8d785fb9de4492435918ac5ad27efc06f86beee7a05909866514e",
+    "details/case2-1125.json.gz": "756ce269eb5c73e5b6373df77e623726a84d46c1d9ebf602e4fd4a201afe96b5",
+    "details/case2-1150.json.gz": "26653c260ae8037e3233d65146dc64f767041966b7a966426c21268374510826",
+    "details/case2-1175.json.gz": "65104975e13e195aa9abab18a1587e690dd9c271ae28ba2daff342dc51d43197",
+    "details/case2-1200.json.gz": "d6fce7aa148cb647d2e61c5003e316baf7f4e504770259b5f52a8cc5fe68ec55",
+    "details/case2-1225.json.gz": "fdaca223e5754ee146d3aa22f5bcc544c120e573f2e93d2bc2a6a05e6443b255",
+    "details/case2-1250.json.gz": "d687266733ff4f24891b6774d4ea7d16d4836f8dbc3ba63d62652d60932a71cc",
+    "details/case2-1275.json.gz": "fc19323df34e55b0d7c90953a65b1002d75502c6227631d3ef3a41f826d47846",
+    "details/case2-1300.json.gz": "643bc2cbcc2dcf945f13b1db241195e554d23a76fa46a1c83adcf3b3df1f6e4d",
+    "details/case2-1325.json.gz": "11541ab63a04b86bdb0235a9d587d6eb73a166dfb67c3fccface97509d4d3e32",
+    "details/case2-1350.json.gz": "afeba317ddc27f9d83bbc6a1073820532e8c4b0188928bfe335c67f6e462a19b",
+    "details/case2-1375.json.gz": "19f1414e34426827eea36ef6a9156ce7e7bc31040fd619b0406b0306c64f2d53",
+    "details/case2-1400.json.gz": "0fc3410ec943013fbfea73693b4ddcd7b686fff0e6efa1079407ef4283525904",
+    "details/case2-1425.json.gz": "02377607df966b901b5ebbf111e2795e70e96e28e17ccc9c868888821fe8db96",
+    "details/case2-1450.json.gz": "f4b5eb9e60e2e07cfc084925bc0784b29ac1033cf1f9efbe4673a5ccdb1abf3c",
+    "details/case2-1475.json.gz": "4d06758f274639923d6300bf81595b699776c26e491aefbcd3ac3320861fc3d9",
+    "details/case2-1500.json.gz": "2ab0d11719f68d807d29c552fc4b1af2a86e6d53008c94b84f705156f4eba412",
+    "details/case2-200.json.gz": "78c6c710e7ccae0ae6b514cec770639593e8671d83bef2e67cda4c0f7663bba5",
+    "details/case2-225.json.gz": "83a0973c4ca5fc6a0718835b33c0ccd8ed5bd05f80bda6215a216b4b0a7a6efc",
+    "details/case2-250.json.gz": "0b8bbd6705fda0c5cdb09a2cc97b892a3e13f3d5630f463fbe95c923bf2f2488",
+    "details/case2-275.json.gz": "a7e75a40b1d254606940b879711ea0711ca441e30d9234f4c960c91255d6173d",
+    "details/case2-300.json.gz": "dbbc7e90c6c1e0a1d7817309b005964b851a68ef26b00d10cdb7742a9c269fd2",
+    "details/case2-325.json.gz": "23a1a1dfe7e1dfa657fc8b8bfb0633b0fa53b52302f67dd034531b6ebb3f2d86",
+    "details/case2-350.json.gz": "9f4bda52836066b1456fdce3c6576410a00726e95826e93aacb5c0f893118c1b",
+    "details/case2-375.json.gz": "271dab0ce67449e9080d91386c2d003f74a890cb76c4e93a3f1d05228e374289",
+    "details/case2-400.json.gz": "56544ab0aa111ea131f55e2f9389b5be8d68a8cfdf65c04bbd9b772d5d5fb36d",
+    "details/case2-425.json.gz": "0f3590685243dccf43f3e4e8c3a3fbc96f8c29aa53df5b81e9aab3064c359a25",
+    "details/case2-450.json.gz": "09cc03dded730cb44b8c36623a63bd726c23774a0c6b027956782b6f3e93d38d",
+    "details/case2-475.json.gz": "22fa2fc554a42eabc14809e326dcc4c3173003855e2dce8df121a2c80d1eaf97",
+    "details/case2-500.json.gz": "49b9cf772be60ee32a3d73ab5e83e764d90c7a1569b6f2572a84bfa954a1397a",
+    "details/case2-525.json.gz": "f2f9e772df00792ade90f1c314f7d611fbd058984834b0601bf7cdf1bcb96e2a",
+    "details/case2-550.json.gz": "8bd1bdb9291bb9070ebe1fb3e726910d13c980b807084a1057014f921610f8db",
+    "details/case2-575.json.gz": "e220d00e42f335a6583a21f071e94755010e03f49d64755c415af50715ac760d",
+    "details/case2-600.json.gz": "7ef1c218f8d76a5c7d85d4b6c3a81b0e99abeee06d6eb06e0548d5a3e53c61ec",
+    "details/case2-625.json.gz": "7e05a1089556a028a42080dd4ffed8da91ddb493a7b4c7eb21b6c53042d97761",
+    "details/case2-650.json.gz": "ccaf45b79fa16897472cba920fa855e36fce7167a511beebf0764c96434c7f36",
+    "details/case2-675.json.gz": "d2f041f451e3f21e8ce8d3762bbb7578c90d78108f14d7bbc327eed2152e00d1",
+    "details/case2-700.json.gz": "2369d7c003e1b78a146f168881466a10fd928b4e0c01b2bb8ac2b054871ed52a",
+    "details/case2-725.json.gz": "7c5cc2ec5834aa91d3d4bbc8e8ccf5ef49833abb62f9cfec7c97a964f2fef191",
+    "details/case2-750.json.gz": "2b9adeb0be30df238e187f3cf1739edc1854be3754552bd6c5a34f10a8974665",
+    "details/case2-775.json.gz": "b587d852c54929da582e2a80f2bfded8771bc7548fcfb220283a839155ceca56",
+    "details/case2-800.json.gz": "92898d2e32f396be261be9c046a67b9ebac66408b01a6bbcd2f0ca6800035a41",
+    "details/case2-825.json.gz": "4fe7c9a28b5cf3177ab9cb88570da7ba457bd76a0bf941373e3c6ca1d1e196ac",
+    "details/case2-850.json.gz": "86e97d3f8e0892ea4bd408bd4fb895b4a9d3beed41f8ffe79d00f732d89a616a",
+    "details/case2-875.json.gz": "a736950183deacf10dd84ccf00e0857d5257405a4166c1c111b06cc03e6e9a05",
+    "details/case2-900.json.gz": "0480aaeedff2abb44dbf7647e1a55cde297c6721b1f5b5ace5d3cb8837cbc9f6",
+    "details/case2-925.json.gz": "00f9fec48f38e1f0b25070bf1a4866554f46194f4d485306717d908ba9dac5ec",
+    "details/case2-950.json.gz": "c58cc04dd1c763245abecb943b063650d01e837cb87a9249bf83b8b2b141c846",
+    "details/case2-975.json.gz": "ce0403d4b34ad374540b8a1ac88ebc410ed36ec0228d488293dd422f38cd3818",
+    "details/case3-1000.json.gz": "d286b11c2a494770710e50673953b792bc755931375c8ae49cc3226306641420",
+    "details/case3-1025.json.gz": "b5a6231c45a404bc0e466b15f81be6045dfa7fcb0d969a0e972658a94ba6fdf2",
+    "details/case3-1050.json.gz": "6ed9fbb2823d4d0ea1eefee4f6f81179a8abc4856c295b983208cef88a9cae7c",
+    "details/case3-1075.json.gz": "36ec11f78fd140a5bd58a7e8bebb265341f047c024511bb9368022addc1f4275",
+    "details/case3-1100.json.gz": "1b2b860dc8620068ef70c5e3a18becb9324a34d549189470a25c593b9d5716fe",
+    "details/case3-1125.json.gz": "98e308b4c3c37a5abd12e273abc3eedcdd0e56ed581238115145df644605364b",
+    "details/case3-1150.json.gz": "78bbc5eea6323471e967219a2dadece0cb2c06a1455e5758c60c60b371887014",
+    "details/case3-1175.json.gz": "83b694338446bc878583cb39eb9d9c3fe14b927b2925f1f22de57ae26b2e1d94",
+    "details/case3-1200.json.gz": "55909e313bd5706ccc8ba20412b6b669edc9e87ab28d60c4e58392baffa96eb7",
+    "details/case3-1225.json.gz": "96d06a7d825222cef7e40368d6ad2135e17fcfa357ae96b4b40c643bf68629cc",
+    "details/case3-1250.json.gz": "952d54a7b8e41986aaa6838b35877b5dd8863cd26aa6ed3b6effd17710bb99e2",
+    "details/case3-1275.json.gz": "f1d813c0f786460047bd9433b95a6f9898a91c2dc94c937c389afeddb3c395c7",
+    "details/case3-1300.json.gz": "05f5dab00514a10377b72d558af2a6d6a2a6c6141a552de95359140a19017534",
+    "details/case3-1325.json.gz": "61fb1ab1c8ac234ec8e34c4fea52b6bd4653e184ba402fcba5445885b3e90973",
+    "details/case3-1350.json.gz": "063d0b35b417bbef98570aee9173ca6c0c52b7937926e5baca40d4144b8888b1",
+    "details/case3-1375.json.gz": "5c3a856a80de7833dc866f2e3ee35ede42d760f8de9b1e32e9224d24238f21bf",
+    "details/case3-1400.json.gz": "f4a2f7d9034539ff97a4a635e73745de35233cd920177007ae5373bec73937e5",
+    "details/case3-1425.json.gz": "8f8279c8576023655d4f5db2d5392328a86cc64a37572cbec655991c179f7d5f",
+    "details/case3-1450.json.gz": "ded9810da2b314f51d84a71168732ed6b60b62b8e340c0f7894798b08f4a03d9",
+    "details/case3-1475.json.gz": "95a882bf46e1d15f3c380d8408f5e78161228ee6d9683dd9ea49157f7583c1eb",
+    "details/case3-1500.json.gz": "cf1d11706f17ec0b62bc1dd0725af48e28b99f04042a0b6c4ce9d887f0d0583f",
+    "details/case3-200.json.gz": "a97193a973e7cfaeb4a96ecf0e338867ac71bafbae7f7d84af61bc9ad4ad84b0",
+    "details/case3-225.json.gz": "d5f1f6dbba3efe7ced9d561c185706ac671520574de65ff3ca7cca68b9ddaf0d",
+    "details/case3-250.json.gz": "700b340c99f5a715babe86d1ee12ebb24a6a0ca50b4caf74c546e5f759f16525",
+    "details/case3-275.json.gz": "61f1db4749d2c6e1034b97f57c338d2f3c7d2e159a1764e3330c7622c6c3e8f7",
+    "details/case3-300.json.gz": "15357596e207501e88d111ec00b56045c2fcd42b4b5e94aa4c0290933bf8ce60",
+    "details/case3-325.json.gz": "345316174ff1a1becb22105f0fab9a2312f231c2757d18ecf132370660185d7f",
+    "details/case3-350.json.gz": "c560245bc19ca4c8e78bf1501042c0169fa6129c78bf54f2bb641ff5d0d91a6b",
+    "details/case3-375.json.gz": "b0f64c5c3976966d965d50899ed1cd65a21156903970f986b159563f1c1f2044",
+    "details/case3-400.json.gz": "5c2b773cf6bcfefb8f805c82637848af8ab3445c464f9cef578aa4698463f523",
+    "details/case3-425.json.gz": "f0f930fd3303dc4d0a234638eced4c3e42f7f68f781d7138ebb1c8206ae343f6",
+    "details/case3-450.json.gz": "5fffa24a0863566429467ba8eb84e0fccc27d38a3cde82dca1e8437d81227684",
+    "details/case3-475.json.gz": "770de56c43314b2569cfc4c59669082f39d4f8cc01630cd18ec71fdd86253934",
+    "details/case3-500.json.gz": "2cd3d7d62e924dfc80e7e51abbbfaf859dd8225cb45e11c381d8ea516cf378be",
+    "details/case3-525.json.gz": "f7be2112582ab2a8eef47e2e563196e8102d6cd1d65f631d065c41ba48acbfab",
+    "details/case3-550.json.gz": "fc6278f157aa49a139e1cc8a9174a4ac9dbedd7fd875e2195c88244c710a4710",
+    "details/case3-575.json.gz": "69ae820c96a835a75d051d1cd35374b0d2231d9d3bae1a1e1a899475c033911f",
+    "details/case3-600.json.gz": "85d9ead100a035ce82a2a03431ba481182c5b1e84a09b957964189541d18541e",
+    "details/case3-625.json.gz": "5d04cb6b91ff0280d7fb41b8f3d8be5ac352ae9c3c7131ec6eeb939ff5209b31",
+    "details/case3-650.json.gz": "2fe4a2992838aacfd3112f6bba227c9e00c8c1d8314d8faf118a0b8e61d9032e",
+    "details/case3-675.json.gz": "24747c6fb631c3bbdefe7a663866b7578695fd32a4055d0705ea199e6f5f8b27",
+    "details/case3-700.json.gz": "f2527b3225efb2ee7e34cda43e769843e41133b6456a0abb633205c9853531e2",
+    "details/case3-725.json.gz": "d571a107969ca6367fb6cae03170574b1d8e3bbb780d85334503b550fb69c15a",
+    "details/case3-750.json.gz": "2c0e994660c077967ce9560c65656ba6338112c5586c43c3a96080aa90efcd73",
+    "details/case3-775.json.gz": "887a36ae0cb6efa9021dbe437591131dd59f25ad89488791d28247138f0832d7",
+    "details/case3-800.json.gz": "2ce645ec1d88ea264493ea1f04a5e0a64336ff0a826b47727a6d9420babd7ae7",
+    "details/case3-825.json.gz": "be136405d0cc184c899beb0ac9cec8d0270f908c355c184f1d468032954d33fc",
+    "details/case3-850.json.gz": "c726aa8a5344d8d6524492045086e557103e542e1db650678bcafae273b53876",
+    "details/case3-875.json.gz": "65b5b9cf24a242de1b56b4be2eaab174ba39f30ea482c7bc9c074063d96df1a9",
+    "details/case3-900.json.gz": "53798cd6cd56fd9f6fd73cb497502e363881aeb81c215504e4b39d94b5c26acb",
+    "details/case3-925.json.gz": "ca28219825ea125a796df4383f46940f4673b621d917682ed5ede2ac73ae2f03",
+    "details/case3-950.json.gz": "0924dd44e4c04352e33c7b8004659aa07e80f4144160e18d9507c420d6ecd372",
+    "details/case3-975.json.gz": "76b5f222a5e1b4576cd2f63d8252f59b5ec332202e3ede609183a0cef8a88bd8",
+    "summary.json.gz": "fc7845979602dd974f84561022034672d9e07c11d5b1425f006a7eca98393b99"
+  }
+}

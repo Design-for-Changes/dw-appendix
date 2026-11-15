@@ -11,7 +11,8 @@ assert.equal(data.classCount,data.functions.filter(f=>f.kind==='class').length);
 assert.ok(data.functionCount>40);
 const sources=new Map();
 for(const item of data.sources){
-  assert.ok(/^src\/calc\/[^/]+\.js$|^scripts\/generate-appendix-data\.mjs$/.test(item.file));
+  assert.ok(/^src\/calc\/[^/]+\.js$|^scripts\/generate-(appendix-data|revision-scenarios)\.mjs$/.test(item.file));
+  assert.ok(!item.file.endsWith('.test.js'));
   const text=fs.readFileSync(item.file,'utf8');
   assert.equal(crypto.createHash('sha256').update(text).digest('hex'),item.sha256,item.file);
   sources.set(item.file,text.split('\n'));

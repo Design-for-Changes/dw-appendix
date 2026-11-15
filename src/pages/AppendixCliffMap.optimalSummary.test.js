@@ -78,7 +78,7 @@ test("Eの3比較カードは選択給与の年額を表示し、差額の符号
   expect(cardValue("現行との差（調整後 − 現行）")).toBe(formatWan(first.optimalDisposableWan - first.currentDisposableWan));
   expect(first.optimalDisposableWan - first.currentDisposableWan).toBeLessThan(0);
 
-  const chart = screen.getByRole("img", { name: "ケース1の給与収入に対する現行制度と全体最適モデルの可処分所得比較" });
+  const chart = screen.getByRole("img", { name: "ケース1の給与収入に対する現行制度と調整例の可処分所得比較" });
   chart.getBoundingClientRect = () => ({ left: 0, width: 1040 });
   chart.setPointerCapture = jest.fn();
   const clientX = Math.ceil(72 + (901 - 200) / (1500 - 200) * (1040 - 72 - 28));

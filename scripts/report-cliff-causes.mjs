@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(ROOT, "public", "data");
 const CONFIG_DIR = path.join(ROOT, "src", "config");
 const DISPLAY_X_MIN = 200;
-const DISPLAY_X_MAX = 1400;
+const DISPLAY_X_MAX = 1500;
 
 function loadJSON(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -58,6 +58,7 @@ function fmt(n, digits = 1) {
 }
 
 function confidenceLabel(kind) {
+  if (kind === "conditional") return "条件付き";
   if (kind === "representative") return "代表値";
   if (kind === "provisional") return "暫定";
   return "厳密";

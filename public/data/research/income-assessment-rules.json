@@ -1,11 +1,101 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "table_label": "表A1",
-  "title": "主な制度の所得判定・変動方法（自治体制度は船橋市を例示）",
-  "checked_on": "2026-11-13",
+  "title": "給付・負担関連制度の所得区分・判定方法―船橋市をサンプルとした確認",
+  "checked_on": "2026-11-15",
   "scope": {
     "municipal_example": "船橋市",
-    "description": "全国制度と自治体制度の所得判定を、判定単位・対象、所得指標及び変動方法に分けて整理する。"
+    "description": "本文で抽出した国の法律に基づく家計関連制度と、自治体制度19類型について、所得区分・制限、判定対象及び変動方法を確認する。自治体の具体的な基準は船橋市をサンプルとして示す。",
+    "national_law_ids": [
+      "N01",
+      "N02",
+      "N03",
+      "N04",
+      "N05",
+      "N06",
+      "N07",
+      "N08",
+      "N09"
+    ],
+    "municipal_categories": [
+      {
+        "id": "M01",
+        "name": "重度心身障害者(児)医療費助成"
+      },
+      {
+        "id": "M02",
+        "name": "住宅改修費助成"
+      },
+      {
+        "id": "M03",
+        "name": "日常生活用具・福祉機器購入費助成"
+      },
+      {
+        "id": "M04",
+        "name": "福祉タクシー券・燃料費助成"
+      },
+      {
+        "id": "M05",
+        "name": "公営住宅の優先入居・家賃減免"
+      },
+      {
+        "id": "M06",
+        "name": "公共料金・公共施設利用料等の減免"
+      },
+      {
+        "id": "M07",
+        "name": "自動車税・軽自動車税の減免"
+      },
+      {
+        "id": "M08",
+        "name": "自動車改造費助成"
+      },
+      {
+        "id": "M09",
+        "name": "在宅医療機器・非常用電源・電気料金助成"
+      },
+      {
+        "id": "M10",
+        "name": "自治体独自の障害者（児）手当"
+      },
+      {
+        "id": "M11",
+        "name": "医療的ケア児レスパイト等助成"
+      },
+      {
+        "id": "M12",
+        "name": "障害児保育・加配・保育料減免"
+      },
+      {
+        "id": "M13",
+        "name": "小児慢性特定疾病・難病医療費の自治体独自助成"
+      },
+      {
+        "id": "M14",
+        "name": "通学通所交通費助成・支援"
+      },
+      {
+        "id": "M15",
+        "name": "精神障害者の入院医療費助成・援護金"
+      },
+      {
+        "id": "M16",
+        "name": "補装具費自己負担助成・差額助成"
+      },
+      {
+        "id": "M17",
+        "name": "就学援助・就学奨励費の自治体上乗せ"
+      },
+      {
+        "id": "M18",
+        "name": "自立支援医療・育成医療の自治体上乗せ助成"
+      },
+      {
+        "id": "M19",
+        "name": "医療的ケア児支援手当・家族支援給付"
+      }
+    ],
+    "coverage_note": "9法律は9制度を意味しないため、同じ法律・類型に複数の個別制度を記載する。表は26市の全基準を横断確認したものではなく、船橋市で確認できない類型も未確認として残す。児童手当等の障害を要件としない制度、成人専用・入所の国制度はこの確認表の対象外。国の小児慢性特定疾病医療は疾病要件の制度として抽出対象外とし、市独自制度M13との関係を参照する。"
   },
   "columns": [
     {
@@ -15,6 +105,10 @@
     {
       "key": "program",
       "label": "制度・手当名"
+    },
+    {
+      "key": "income_condition",
+      "label": "所得による区分・制限の有無"
     },
     {
       "key": "assessment_unit",
@@ -38,163 +132,1276 @@
     }
   ],
   "notes": [
-    "IDのNは本文表1の法律、Mは本文表2の制度類型に対応する。同じ法律に基づく複数の制度には、同じ法律IDを付す場合がある。",
-    "障害福祉サービス、障害児通所支援及び日常生活用具については、障害児の場合の判定を示す。",
-    "自治体制度は船橋市の例であり、他の自治体にも同じ基準が適用されることを意味しない。詳細な適用条件や例外は各制度の原典を参照されたい。",
-    "本表に整理した制度と、シミュレーションに組み込む制度の範囲は同一ではない。計算対象・採用値・除外条件は各モデル条件に従う。"
+    "Nは本文表1の法律、Mは本文表2の制度類型に対応する。同じIDの行数は、法律数・類型数・受給件数を表さない。",
+    "『あり』は所得による支給対象の制限だけでなく、負担上限・補助割合・免除等の区分を含む。『なし』も障害・年齢・利用目的等の適用要件がないことを意味しない。未確認は不実施・所得条件なしのいずれも意味しない。",
+    "税の定額控除では、控除額、対象親族の所得要件、通常の税率による控除効果を区別する。所得控除額を現金給付額として加算しない。",
+    "制度類型としての存在、障害児への適用、所得条件の確認状況を区別する。船橋市の成人向け手当等を児童モデルへ自動的に算入しない。",
+    "全国共通の制度であっても、税年度・年齢・世帯範囲・特例等により判定が異なる。ここでの確認結果を他自治体の独自基準に一般化しない。",
+    "本表の確認対象とシミュレーションの採用対象は同一ではない。本表の更新だけでは、計算プログラム・代表値・計算結果を変更したことにならない。"
   ],
   "rows": [
     {
+      "rule_id": "n01-special-child-allowance",
       "id": "N01-1",
+      "scope_group": "national",
       "program": "特別児童扶養手当",
+      "income_status": "yes",
+      "income_condition": "あり（受給資格者等の所得制限）",
+      "presence_status": "confirmed",
       "assessment_unit": "個人所得",
       "primary_target": "受給資格者（父母・養育者）",
-      "other_targets": "配偶者・扶養義務者",
-      "income_measure": "課税所得に近似した独自の所得計算",
-      "change_rule": "受給資格者等の判定所得が限度額以上の場合、全部不支給",
+      "other_targets": "配偶者・生計を維持する扶養義務者",
+      "income_measure": "制度所定の所得額。各人を個別に判定し、扶養親族等の数に応じた限度額と比較",
+      "change_rule": "受給資格者又は配偶者・扶養義務者の判定所得が限度額以上の場合、その期間は全部不支給",
+      "child_application": "20歳未満の対象障害児を監護・養育する者への給付",
+      "coordination": "障害児福祉手当及び市の心身障害児福祉手当との併給は可能。障害を事由とする公的年金等の除外は別途判定",
+      "verification_note": "限度額の『以上』は法律第6・7条に基づく。収入額の目安と制度所定の所得額を区別する",
+      "checked_on": "2026-11-15",
       "sources": [
         {
           "title": "特別児童扶養手当",
-          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/03/p042515.html"
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/03/p042515.html",
+          "section": "所得制限限度額・備考"
         },
         {
           "title": "特別児童扶養手当等の支給に関する法律",
-          "url": "https://www.mhlw.go.jp/web/t_doc?dataId=82090000"
+          "url": "https://laws.e-gov.go.jp/law/339AC0000000134",
+          "section": "第3・6～8条、第17・19～21条"
         }
       ]
     },
     {
+      "rule_id": "n01-child-disability-allowance",
       "id": "N01-2",
+      "scope_group": "national",
       "program": "障害児福祉手当",
+      "income_status": "yes",
+      "income_condition": "あり（本人・配偶者・扶養義務者の所得制限）",
+      "presence_status": "confirmed",
       "assessment_unit": "個人所得",
-      "primary_target": "障害児本人",
-      "other_targets": "配偶者・扶養義務者",
-      "income_measure": "課税所得に近似した独自の所得計算",
-      "change_rule": "本人は限度額超、配偶者・扶養義務者は限度額以上の場合、全部不支給",
+      "primary_target": "重度障害児本人",
+      "other_targets": "配偶者・生計を維持する扶養義務者",
+      "income_measure": "制度所定の所得額。本人と配偶者・扶養義務者をそれぞれ判定",
+      "change_rule": "本人の所得は限度額を超える場合、配偶者・扶養義務者は限度額以上の場合、その期間は全部不支給",
+      "child_application": "20歳未満で常時の介護を要する等の支給要件を満たす児童",
+      "coordination": "特別児童扶養手当との併給は可能。市の心身障害児福祉手当は、市規則第11条で国の受給資格者を適用除外とする",
+      "verification_note": "本人の『超える』と扶養義務者等の『以上』を法律第20・21条で区別した。手帳所持だけで受給資格を確定しない",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "障害児福祉手当",
-          "url": "https://laws.e-gov.go.jp/law/339AC0000000134"
+          "title": "特別児童扶養手当等の支給に関する法律",
+          "url": "https://laws.e-gov.go.jp/law/339AC0000000134",
+          "section": "第3・6～8条、第17・19～21条"
+        },
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷47頁・障害児福祉手当"
         }
       ]
     },
     {
+      "rule_id": "n02-welfare-services",
       "id": "N02",
-      "program": "障害福祉サービス利用者負担（障害児）",
+      "scope_group": "national",
+      "program": "障害福祉サービス利用者負担（障害児の在宅サービス等）",
+      "income_status": "yes",
+      "income_condition": "あり（課税状況・所得割額による負担上限）",
+      "presence_status": "confirmed",
       "assessment_unit": "世帯所得",
-      "primary_target": "世帯全員（保護者の属する世帯）",
+      "primary_target": "保護者の属する住民基本台帳上の世帯",
       "other_targets": "―",
       "income_measure": "市町村民税の課税状況・所得割額",
-      "change_rule": "所得区分に応じて負担上限月額が変動",
+      "change_rule": "原則1割負担。生活保護・非課税は月0円、一般1（所得割28万円未満）は月4,600円、一般2は月37,200円を上限とする",
+      "child_application": "ホームヘルプ等を利用する障害児。成人の一般1基準16万円・9,300円とは区別する",
+      "coordination": "複数サービスや兄弟の負担は上限管理・高額給付で調整する。食費等の実費は定率負担と区別",
+      "verification_note": "入所の基準は本表の対象外。児童の上限はこども家庭庁の児童用表で確認した",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "障害福祉サービス利用者負担（障害児）",
-          "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/hukushi_kaigo/shougaishahukushi/service/hutan1.html"
+          "title": "利用者負担の仕組み（障害児）",
+          "url": "https://www.cfa.go.jp/policies/shougaijishien/shisaku/futan/",
+          "section": "1 月ごとの利用者負担、世帯の範囲"
+        },
+        {
+          "title": "障害者総合支援法",
+          "url": "https://laws.e-gov.go.jp/law/417AC0000000123",
+          "section": "第29条"
         }
       ]
     },
     {
+      "rule_id": "n02-developmental-medical",
       "id": "N02",
+      "scope_group": "national",
       "program": "自立支援医療（育成医療）",
+      "income_status": "yes",
+      "income_condition": "あり（所得区分・対象外基準・負担上限）",
+      "presence_status": "confirmed",
       "assessment_unit": "世帯所得",
-      "primary_target": "世帯全員（医療保険単位）",
-      "other_targets": "―",
-      "income_measure": "市町村民税所得割額等",
-      "change_rule": "所得区分に応じて負担上限月額が変動。一定所得以上は原則対象外",
+      "primary_target": "受診児と同じ医療保険に加入する者",
+      "other_targets": "低所得区分等では本人の収入も用いる",
+      "income_measure": "市町村民税所得割額、課税状況等",
+      "change_rule": "原則1割負担。所得区分等に応じた月額上限を適用。所得割23万5千円以上は原則対象外だが、『重度かつ継続』に係る特例がある",
+      "child_application": "18歳未満で、治療により障害の除去・軽減が見込まれる等の要件を満たす児童",
+      "coordination": "健康保険の給付を前提とする公費負担。重度医療等との二重補填は行わない",
+      "verification_note": "所得制限の存在と対象内の上限区分を分けて記載。高所得の特例には期限があり、利用時の現行条件を要確認",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "自立支援医療（育成医療）",
-          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p002399.html"
+          "title": "自立支援医療（育成医療）の給付",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p002399.html",
+          "section": "給付の要件・留意点・同一保険加入者の書類"
+        },
+        {
+          "title": "自立支援医療",
+          "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/hukushi_kaigo/shougaishahukushi/jiritsu/",
+          "section": "制度概要・利用者負担"
         }
       ]
     },
     {
-      "id": "N03",
-      "program": "障害児通所支援の利用者負担",
+      "rule_id": "n02-psychiatric-outpatient",
+      "id": "N02",
+      "scope_group": "national",
+      "program": "自立支援医療（精神通院医療）",
+      "income_status": "yes",
+      "income_condition": "あり（所得区分・対象外基準・負担上限）",
+      "presence_status": "confirmed",
       "assessment_unit": "世帯所得",
-      "primary_target": "世帯全員（保護者の属する世帯）",
+      "primary_target": "受診者と同じ医療保険に加入する者",
+      "other_targets": "非課税世帯の区分では本人収入",
+      "income_measure": "市町村民税の課税状況・所得割額、本人収入",
+      "change_rule": "原則1割負担。所得と『重度かつ継続』の該当状況で月額上限等が異なる。所得割23万5千円以上は原則対象外だが、重度かつ継続の特例は2027年3月31日まで延長されている",
+      "child_application": "継続的な精神科通院治療を要する者。案内の対象者に年齢下限の記載はない",
+      "coordination": "精神科入院医療費助成（M15）とは別制度。健康保険適用分を対象とし、指定医療機関等の要件がある",
+      "verification_note": "市案内には非課税区分の収入境界80万円と記載されている。年度改正の反映状況を確認せず、全国の現行境界をこの値で確定しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "自立支援医療費（精神通院）支給認定",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009693.html",
+          "section": "自己負担額・注1～3"
+        }
+      ]
+    },
+    {
+      "rule_id": "n02-prosthetic-costs",
+      "id": "N02",
+      "scope_group": "national",
+      "program": "補装具費の支給（障害児）",
+      "income_status": "yes",
+      "income_condition": "あり（負担上限の区分）。児童の所得による支給対象外基準は撤廃",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "児童の場合は世帯の収入を確認",
+      "other_targets": "―",
+      "income_measure": "市町村民税の課税状況・所得割の有無",
+      "change_rule": "基準額内は原則1割。市民税所得割課税世帯は月37,200円、均等割のみ・非課税・生活保護世帯は月0円が上限。基準額超過分は別に自己負担",
+      "child_application": "18歳未満の所得による支給制限は2024年4月から撤廃。所得による月額負担区分は残る",
+      "coordination": "介護保険の給付が優先される場合がある。同月の合算では補装具の取扱いに固有の条件がある",
+      "verification_note": "『児童の所得制限撤廃』を『所得による負担差なし』と読み替えない。自治体独自上乗せM16とは区別",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "補装具費の支給",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/002/p009667.html",
+          "section": "対象者・負担額・注意事項"
+        },
+        {
+          "title": "高額障害福祉サービス等給付費・高額障害児給付費のご案内",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/003/01/p082486_d/fil/kougakuannai.pdf",
+          "section": "1～2頁・世帯の範囲、合算対象、基準額"
+        }
+      ]
+    },
+    {
+      "rule_id": "n02-high-cost-adjustment",
+      "id": "N02",
+      "scope_group": "national",
+      "program": "高額障害福祉サービス等給付費（障害児に関する合算）",
+      "income_status": "yes",
+      "income_condition": "あり（所得等により設定される基準額に連動）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "18歳未満は住民票上の世帯",
+      "other_targets": "―",
+      "income_measure": "各サービス受給者証の負担上限月額等",
+      "change_rule": "合算対象の利用者負担が基準額を超えた分を償還。一般の基準額37,200円のほか、児童・兄弟等には受給者証の高い上限額を用いる特例がある",
+      "child_application": "同一児童の複数制度利用又は兄弟の利用等",
+      "coordination": "N03の高額障害児通所給付費と関係する。同一支出を二重に還付しない。補装具等の合算には別条件がある",
+      "verification_note": "合算は全支出の無条件な合計ではない。対象サービス・年齢・受給者証の組合せを原典で確認する",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "高額障害福祉サービス等給付費・高額障害児給付費のご案内",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/003/01/p082486_d/fil/kougakuannai.pdf",
+          "section": "1～2頁・世帯の範囲、合算対象、基準額"
+        },
+        {
+          "title": "障害者総合支援法",
+          "url": "https://laws.e-gov.go.jp/law/417AC0000000123",
+          "section": "第76条の2"
+        }
+      ]
+    },
+    {
+      "rule_id": "n02-community-services",
+      "id": "N02",
+      "scope_group": "national",
+      "program": "地域生活支援事業の利用者負担（船橋市の移動支援・日中一時支援）",
+      "income_status": "yes",
+      "income_condition": "あり（船橋市の所得区分別上限）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "障害児は保護者の属する世帯",
       "other_targets": "―",
       "income_measure": "市町村民税の課税状況・所得割額",
-      "change_rule": "所得区分に応じて負担上限月額が変動",
+      "change_rule": "船橋市案内は、障害児の所得割28万円未満を月4,600円、以上を月37,200円、生活保護・非課税を0円とする",
+      "child_application": "障害児に適用される区分を案内表で確認",
+      "coordination": "国法を根拠とする市町村事業。国の介護給付等と同一制度又は全国共通の利用料とは扱わない",
+      "verification_note": "実施内容・負担は自治体で異なる。ここは国法の事業枠組みの下での船橋市の例示",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "障害児通所支援の利用者負担",
-          "url": "https://www.cao.go.jp/bunken-suishin/teianbosyu/doc/r07/tb_r7fu_12mhlw_164_c.pdf"
+          "title": "市民のためのこころの健康 No.38（2026年）",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/kokoro/001/p145545_d/fil/siminnotamenokokoro.pdf",
+          "section": "印刷89頁（PDF90頁）・障害福祉サービス等の負担上限月額"
+        },
+        {
+          "title": "障害者総合支援法",
+          "url": "https://laws.e-gov.go.jp/law/417AC0000000123",
+          "section": "第77条"
         }
       ]
     },
     {
+      "rule_id": "n03-child-day-services",
+      "id": "N03",
+      "scope_group": "national",
+      "program": "障害児通所支援の利用者負担",
+      "income_status": "yes",
+      "income_condition": "あり（所得区分別の負担上限）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "保護者の属する住民基本台帳上の世帯",
+      "other_targets": "―",
+      "income_measure": "市町村民税の課税状況・所得割額",
+      "change_rule": "原則1割負担。生活保護・非課税は月0円、一般1（所得割28万円未満）は月4,600円、一般2は月37,200円が上限",
+      "child_application": "18歳未満等の対象児童。満3歳後最初の4月から3年間の無償化と、多子軽減の対象条件は別途判定",
+      "coordination": "高額障害児通所給付費や兄弟の上限調整を適用。おやつ・教材等の実費を利用料と混同しない",
+      "verification_note": "所得区分だけで実際の負担が決まるわけではなく、利用量・無償化・多子軽減も作用する",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "障害児通所支援",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/hattatsu/002/p036766.html",
+          "section": "費用について・無償化・多子軽減"
+        },
+        {
+          "title": "利用者負担の仕組み（障害児）",
+          "url": "https://www.cfa.go.jp/policies/shougaijishien/shisaku/futan/",
+          "section": "1 月ごとの利用者負担、世帯の範囲"
+        },
+        {
+          "title": "児童福祉法",
+          "url": "https://laws.e-gov.go.jp/law/322AC0000000164",
+          "section": "第21条の5の3"
+        }
+      ]
+    },
+    {
+      "rule_id": "n03-high-cost-adjustment",
+      "id": "N03",
+      "scope_group": "national",
+      "program": "高額障害児通所給付費",
+      "income_status": "yes",
+      "income_condition": "あり（所得等により設定される上限に連動）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "障害児の保護者の属する世帯",
+      "other_targets": "―",
+      "income_measure": "受給者証の負担上限月額等",
+      "change_rule": "対象となる同月の利用者負担の合計が基準額を超える場合、超過額を償還",
+      "child_application": "児童の複数サービス利用、兄弟の利用等を対象とする",
+      "coordination": "N02の高額障害福祉サービス等給付費と調整。制度名を別行にしても同じ費用を二重計上しない",
+      "verification_note": "通所と入所を含む市案内のうち、ここでは通所・在宅の組合せを整理した",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "高額障害福祉サービス等給付費・高額障害児給付費のご案内",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/003/01/p082486_d/fil/kougakuannai.pdf",
+          "section": "1～2頁・世帯の範囲、合算対象、基準額"
+        },
+        {
+          "title": "児童福祉法",
+          "url": "https://laws.e-gov.go.jp/law/322AC0000000164",
+          "section": "第21条の5の12"
+        }
+      ]
+    },
+    {
+      "rule_id": "n04-school-expense-aid",
       "id": "N04",
+      "scope_group": "national",
       "program": "特別支援教育就学奨励費",
+      "income_status": "yes",
+      "income_condition": "あり（収入額と需要額の比率による支弁区分）",
+      "presence_status": "confirmed",
       "assessment_unit": "世帯所得",
       "primary_target": "保護者等の属する世帯全員",
       "other_targets": "―",
-      "income_measure": "生活保護基準による需要額に対する世帯収入額（制度所定の計算）の比率",
-      "change_rule": "支弁区分に応じて補助割合が変動",
+      "income_measure": "測定要領による収入額÷生活保護基準等による需要額",
+      "change_rule": "収入額が需要額の1.5倍未満、1.5倍以上2.5倍未満、2.5倍以上等の区分により費目ごとの支弁内容・割合が変わる",
+      "child_application": "特別支援学校等に就学する対象児童。学校種・部・費目で対象範囲が異なる",
+      "coordination": "同一費用への他給付や無償措置との調整を費目ごとに確認する",
+      "verification_note": "支弁区分の枠組みと測定方式は共通だが、需要額は世帯・年齢・地域条件等で変わる。自治体ごとの恣意的な別計算とは区別する",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "特別支援教育就学奨励費",
-          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf"
+          "title": "特別支援学校への就学奨励に関する法律施行令",
+          "url": "https://laws.e-gov.go.jp/law/329CO0000000157",
+          "section": "第2条"
+        },
+        {
+          "title": "特別支援教育就学奨励費補助金交付要綱等",
+          "url": "https://www.mext.go.jp/content/20250401-mxt_shuugaku-100001985_002.pdf",
+          "section": "支弁区分・収入額及び需要額の測定要領への参照"
         }
       ]
     },
     {
+      "rule_id": "n05-disability-deduction",
+      "id": "N05",
+      "scope_group": "national",
+      "program": "所得税の障害者控除",
+      "income_status": "yes",
+      "income_condition": "あり（対象配偶者・扶養親族の所得要件）。本人控除額自体に所得区分なし",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得",
+      "primary_target": "控除を受ける納税者",
+      "other_targets": "障害者である同一生計配偶者・扶養親族の所得要件",
+      "income_measure": "納税者の課税所得。親族の適格性は合計所得金額等",
+      "change_rule": "障害者27万円、特別障害者40万円、同居特別障害者75万円の定額所得控除。税負担の減少額は控除額そのものではない",
+      "child_application": "16歳未満の扶養親族も対象となりうる",
+      "coordination": "扶養親族等の範囲・重複適用の取扱いを確認する。税法上の区分を特児等級だけで自動判定しない",
+      "verification_note": "本人の所得増で控除額が逓減する制度ではない。親族の所得要件と、通常税率による控除効果の違いを分ける",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.1160 障害者控除",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1160.htm",
+          "section": "対象者・控除額・根拠法令"
+        },
+        {
+          "title": "所得税法",
+          "url": "https://laws.e-gov.go.jp/law/340AC0000000033",
+          "section": "第2条・第79条"
+        }
+      ]
+    },
+    {
+      "rule_id": "n05-small-savings-exemption",
+      "id": "N05",
+      "scope_group": "national",
+      "program": "障害者等の少額預金の利子所得等の非課税（マル優）",
+      "income_status": "no",
+      "income_condition": "なし（年収による区分・制限）。非課税元本の限度あり",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人",
+      "primary_target": "国内居住の対象障害者等本人",
+      "other_targets": "―",
+      "income_measure": "給与・世帯所得による判定ではない",
+      "change_rule": "所定の手続により元本合計350万円までの対象貯蓄の利子を非課税とする",
+      "child_application": "対象障害者等の資格を満たす本人について、年齢による児童除外は案内にない",
+      "coordination": "特別マル優の350万円とは別枠。保護者自身の貯蓄へ児童の枠を付け替える制度ではない",
+      "verification_note": "年収限度と元本限度を区別。対象者・対象貯蓄・事前申告等の条件は残る",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.1313 障害者等のマル優",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1313.htm",
+          "section": "対象となる人・利子・手続き"
+        },
+        {
+          "title": "所得税法",
+          "url": "https://laws.e-gov.go.jp/law/340AC0000000033",
+          "section": "第10条"
+        }
+      ]
+    },
+    {
+      "rule_id": "n06-disability-deduction",
+      "id": "N06-1",
+      "scope_group": "national",
+      "program": "個人住民税の障害者控除",
+      "income_status": "yes",
+      "income_condition": "あり（対象配偶者・扶養親族の所得要件）。本人控除額自体に所得区分なし",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得",
+      "primary_target": "控除を受ける納税者",
+      "other_targets": "障害者である同一生計配偶者・扶養親族の所得要件",
+      "income_measure": "前年の所得・課税所得",
+      "change_rule": "障害者26万円、特別障害者30万円、同居特別障害者53万円の所得控除",
+      "child_application": "16歳未満の扶養親族についても障害者控除は対象となりうる",
+      "coordination": "所得税の控除額とは異なる。本人の非課税特例N06-2とも別の規定",
+      "verification_note": "所得税と同様、納税者本人の所得に応じて控除額を逓減させる区分ではない。親族の資格要件と分けて読む",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "地方税法",
+          "url": "https://laws.e-gov.go.jp/law/325AC0000000226",
+          "section": "第314条の2第1項第6号・同居特別障害者の規定"
+        },
+        {
+          "title": "国税庁 No.1160 障害者控除",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1160.htm",
+          "section": "対象者・控除額・根拠法令"
+        }
+      ]
+    },
+    {
+      "rule_id": "n06-personal-nontaxable",
       "id": "N06-2",
-      "program": "住民税の非課税限度額の特例（障害者）",
+      "scope_group": "national",
+      "program": "個人住民税の非課税限度額の特例（障害者本人）",
+      "income_status": "yes",
+      "income_condition": "あり（本人の合計所得金額135万円以下）",
+      "presence_status": "confirmed",
       "assessment_unit": "個人所得",
       "primary_target": "障害者本人",
       "other_targets": "―",
       "income_measure": "前年の合計所得金額",
-      "change_rule": "合計所得金額が基準以下の場合、住民税が非課税",
+      "change_rule": "本人が障害者で、前年の合計所得金額135万円以下の場合に非課税となる",
+      "child_application": "所得を得る障害児本人にも適用されうる。児童を扶養する親へ本人特例を移すものではない",
+      "coordination": "一般の扶養人数別非課税限度額・障害者控除とは別に判定する",
+      "verification_note": "『障害児がいる世帯は全員非課税』とはならない",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "住民税の非課税限度額の特例（障害者）",
-          "url": "https://laws.e-gov.go.jp/law/325AC0000000226"
+          "title": "地方税法",
+          "url": "https://laws.e-gov.go.jp/law/325AC0000000226",
+          "section": "第295条第1項第2号"
         }
       ]
     },
     {
-      "id": "M01",
-      "program": "重度心身障害者（児）医療費助成",
-      "assessment_unit": "世帯所得",
-      "primary_target": "世帯全員（医療保険単位）",
+      "rule_id": "n07-public-bond-exemption",
+      "id": "N07",
+      "scope_group": "national",
+      "program": "障害者等の少額公債の利子の非課税（特別マル優）",
+      "income_status": "no",
+      "income_condition": "なし（年収による区分・制限）。非課税額面の限度あり",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人",
+      "primary_target": "国内居住の対象障害者等本人",
       "other_targets": "―",
-      "income_measure": "市町村民税所得割額",
-      "change_rule": "所得割額が基準額以上の場合は原則対象外。対象内でも課税・非課税により自己負担額が異なる",
+      "income_measure": "給与・世帯所得による判定ではない",
+      "change_rule": "国債・地方債の額面合計350万円までの利子を、所定の手続により非課税とする",
+      "child_application": "対象者要件を満たす障害児本人の保有公債について適用されうる",
+      "coordination": "マル優とは別枠。対象本人の非課税制度であり、世帯全員の利子を免税するものではない",
+      "verification_note": "元本・額面の上限は所得上限ではない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.1313 障害者等のマル優",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1313.htm",
+          "section": "対象となる人・利子・手続き"
+        },
+        {
+          "title": "租税特別措置法",
+          "url": "https://laws.e-gov.go.jp/law/332AC0000000026",
+          "section": "第4条"
+        }
+      ]
+    },
+    {
+      "rule_id": "n07-income-adjustment-deduction",
+      "id": "N07",
+      "scope_group": "national",
+      "program": "所得金額調整控除（特別障害者に係る要件）",
+      "income_status": "yes",
+      "income_condition": "あり（給与収入850万円超。計算上の収入上限1,000万円）",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得",
+      "primary_target": "給与所得者本人",
+      "other_targets": "特別障害者である同一生計配偶者・扶養親族",
+      "income_measure": "その年の給与等の収入金額",
+      "change_rule": "要件を満たす場合、（給与収入〈1,000万円を上限〉−850万円）×10％を給与所得から控除する",
+      "child_application": "本人又は対象親族が特別障害者である場合を確認。23歳未満扶養親族による別要件も同制度にある",
+      "coordination": "扶養控除と異なり、同一親族について夫婦の一方だけに限定される制度ではない",
+      "verification_note": "『利子関係の税制を試算しない』ことと、本控除を除外することは別。障害を要件とする枝と一般の子育て要件を混同しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.1411 所得金額調整控除",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1411.htm",
+          "section": "子ども・特別障害者等を有する者等の控除"
+        },
+        {
+          "title": "租税特別措置法",
+          "url": "https://laws.e-gov.go.jp/law/332AC0000000026",
+          "section": "第41条の3の11"
+        }
+      ]
+    },
+    {
+      "rule_id": "n08-inheritance-disability-credit",
+      "id": "N08",
+      "scope_group": "national",
+      "program": "相続税の障害者控除",
+      "income_status": "no",
+      "income_condition": "なし（給与・世帯所得による区分・制限）",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人",
+      "primary_target": "財産を取得した85歳未満の対象障害者である法定相続人",
+      "other_targets": "控除しきれない場合の扶養義務者",
+      "income_measure": "年収ではなく年齢・障害区分等",
+      "change_rule": "85歳までの年数に一般障害者は年10万円、特別障害者は年20万円を乗じて相続税から控除する",
+      "child_application": "障害児も法定相続人等の要件を満たせば対象",
+      "coordination": "本人から引ききれない控除額は所定の扶養義務者の相続税から控除する取扱いがある",
+      "verification_note": "所得制限なしでも、住所・相続人資格・年齢等の適用条件を満たす必要がある。年間の恒常的収支とは別",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.4167 障害者の税額控除",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/sozoku/4167.htm",
+          "section": "控除が受けられる人・控除額"
+        },
+        {
+          "title": "相続税法",
+          "url": "https://laws.e-gov.go.jp/law/325AC0000000073",
+          "section": "第19条の4"
+        }
+      ]
+    },
+    {
+      "rule_id": "n08-disability-trust-exemption",
+      "id": "N08",
+      "scope_group": "national",
+      "program": "特定障害者扶養信託の贈与税非課税",
+      "income_status": "no",
+      "income_condition": "なし（給与・世帯所得による区分・制限）。信託受益権額の限度あり",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人",
+      "primary_target": "信託受益者となる特定障害者",
+      "other_targets": "―",
+      "income_measure": "給与・世帯所得ではなく対象障害区分・信託額等",
+      "change_rule": "所定の信託・申告要件の下、特別障害者は6,000万円、それ以外の特定障害者は3,000万円までの信託受益権を非課税とする",
+      "child_application": "対象となる障害区分等を満たす児童も対象となりうる",
+      "coordination": "通常の贈与全般を無条件に非課税とする制度ではない",
+      "verification_note": "限度額は年収上限ではない。特定の信託契約等による措置で、恒常的な現金給付と区別する",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "国税庁 No.4405 贈与税がかからない場合",
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/zoyo/4405.htm",
+          "section": "7 特定障害者扶養信託"
+        },
+        {
+          "title": "相続税法",
+          "url": "https://laws.e-gov.go.jp/law/325AC0000000073",
+          "section": "第21条の4"
+        }
+      ]
+    },
+    {
+      "rule_id": "n09-forest-tax-exemption",
+      "id": "N09",
+      "scope_group": "national",
+      "program": "森林環境税の非課税（障害者本人）",
+      "income_status": "yes",
+      "income_condition": "あり（本人の合計所得金額135万円以下）",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得",
+      "primary_target": "障害者本人",
+      "other_targets": "―",
+      "income_measure": "前年の合計所得金額",
+      "change_rule": "前年の合計所得金額135万円以下の障害者等は森林環境税が非課税となる",
+      "child_application": "対象障害児本人について適用されうる。保護者への自動的な免税ではない",
+      "coordination": "個人住民税の非課税規定と関連するが、税目は別。森林環境税は年額1,000円",
+      "verification_note": "一般の非課税基準と障害者本人の特例を区別した",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "森林環境税について",
+          "url": "https://www.city.funabashi.lg.jp/kurashi/zei/007/005/p118529.html",
+          "section": "課税されない方"
+        },
+        {
+          "title": "森林環境税及び森林環境譲与税に関する法律",
+          "url": "https://laws.e-gov.go.jp/law/431AC0000000003",
+          "section": "第4条"
+        }
+      ]
+    },
+    {
+      "rule_id": "m01-severe-disability-medical",
+      "id": "M01",
+      "scope_group": "funabashi",
+      "program": "重度心身障害者（児）医療費助成",
+      "income_status": "yes",
+      "income_condition": "あり（所得による対象外基準・対象内の負担差）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "受診者と同じ医療保険に加入する世帯",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割額・課税状況",
+      "change_rule": "所得割23万5千円以上は原則対象外（高額治療継続者等の例外あり）。対象内でも課税世帯は通院1回・入院1日300円、調剤0円、非課税世帯は0円",
+      "child_application": "対象手帳等の要件を満たす児童を含む",
+      "coordination": "健康保険の高額療養費・付加給付、他の公費等との調整を伴う。子ども医療との重複を単純加算しない",
+      "verification_note": "所得超過による対象外化と、対象内の一部負担金の差を分ける。助成対象は保険診療の自己負担等であり医療費総額ではない",
+      "checked_on": "2026-11-15",
       "sources": [
         {
           "title": "重度心身障害者（児）医療費助成",
-          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html"
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html",
+          "section": "対象者・所得制限・一部負担金"
+        },
+        {
+          "title": "子ども医療費助成",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p004273a.html",
+          "section": "他の公費負担・助成対象"
         }
       ]
     },
     {
+      "rule_id": "m02-housing-renovation",
       "id": "M02",
-      "program": "住宅改修費助成",
-      "assessment_unit": "個人所得",
+      "scope_group": "funabashi",
+      "program": "重度障害者等住宅改造費助成",
+      "income_status": "yes",
+      "income_condition": "あり（最多納税者の課税額上限・補助割合）",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得を中心に判定",
       "primary_target": "世帯の最多納税者",
-      "other_targets": "―",
-      "income_measure": "住民税課税額（同一家屋での世帯分離は同居とみなす）",
-      "change_rule": "所得限度額を超える場合は対象外。課税・非課税に応じて補助割合が変動",
+      "other_targets": "課税・非課税による補助割合の判定",
+      "income_measure": "住民税課税額。同一家屋の世帯分離は同居とみなす",
+      "change_rule": "最多納税者の住民税課税額32万円以下。非課税は対象費用の全額、課税は2分の1（助成上限50万円）",
+      "child_application": "現行案内は65歳以上かつ介護認定非該当等を条件とし、40～64歳の特定疾病に例外がある。障害児への適用は確認できない",
+      "coordination": "日常生活用具の居宅生活動作補助用具（住宅改修）とは適用要件・経路が異なる",
+      "verification_note": "制度類型が26市で存在することと、船橋市のこの個別制度が児童に適用されることは別。児童適用を推測しない",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "住宅改修費助成",
-          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/01/p000767.html"
+          "title": "重度障害者等住宅改造費助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/01/p000767.html",
+          "section": "対象者の要件・助成額"
         }
       ]
     },
     {
+      "rule_id": "m03-daily-living-equipment",
       "id": "M03",
-      "program": "日常生活用具・福祉機器購入費助成（障害児）",
+      "scope_group": "funabashi",
+      "program": "障害児・者への日常生活用具費の支給",
+      "income_status": "yes",
+      "income_condition": "あり（課税状況別の負担上限）",
+      "presence_status": "confirmed",
       "assessment_unit": "世帯所得",
-      "primary_target": "世帯全員",
+      "primary_target": "障害児の場合は世帯全員（18歳以上は本人・配偶者）",
       "other_targets": "―",
-      "income_measure": "市町村民税の課税区分",
-      "change_rule": "課税区分に応じて負担上限月額が変動",
+      "income_measure": "市町村民税の所得割課税・均等割のみ・非課税等",
+      "change_rule": "基準額内は原則1割。所得割課税は月37,200円、均等割のみ・非課税・生活保護は月0円が上限。基準額超過分は自己負担",
+      "child_application": "品目別の年齢・障害要件を満たす児童が対象",
+      "coordination": "介護保険と重複する場合は原則介護保険優先。非常用電源M09と対象経路を区別",
+      "verification_note": "品目ごとの基準額・対象者等は別表で確認する必要がある。住宅改修を含む用具給付とM02の住宅助成を同一とはしない",
+      "checked_on": "2026-11-15",
       "sources": [
         {
-          "title": "日常生活用具・福祉機器購入費助成（障害児）",
-          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/002/p124977.html"
+          "title": "障害児・者への日常生活用具費の支給",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/002/p124977.html",
+          "section": "支給対象・費用・負担上限・品目表"
+        }
+      ]
+    },
+    {
+      "rule_id": "m03-hearing-aid",
+      "id": "M03",
+      "scope_group": "funabashi",
+      "program": "軽度・中等度難聴児補聴器購入費助成",
+      "income_status": "yes",
+      "income_condition": "あり（世帯員それぞれの所得割額の上限）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯員の個人税額",
+      "primary_target": "対象児童の属する世帯の各世帯員",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割額",
+      "change_rule": "世帯に所得割46万円以上の者がいる場合は対象外。対象費用の3分の2を助成し、基準額等を適用",
+      "child_application": "原則両耳の聴力30dB以上70dB未満等で身体障害者手帳の対象とならない18歳未満の児童",
+      "coordination": "補装具費支給等の対象と重ねて同じ購入費を補填しない",
+      "verification_note": "所得割を世帯合計して46万円と比較するのではなく、各世帯員の基準該当を確認する",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "軽度・中等度難聴児補聴器購入費助成",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/hattatsu/002/p022920.html",
+          "section": "対象者・助成額"
+        }
+      ]
+    },
+    {
+      "rule_id": "m03-chronic-disease-equipment",
+      "id": "M03",
+      "scope_group": "funabashi",
+      "program": "小児慢性特定疾病児童等の日常生活用具給付",
+      "income_status": "yes",
+      "income_condition": "あり（所得に応じた自己負担）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "対象児童の属する世帯",
+      "other_targets": "―",
+      "income_measure": "世帯の市民税等（詳細な階層表は未確認）",
+      "change_rule": "世帯所得に応じて国が定める自己負担額を適用。品目別の上限額がある",
+      "child_application": "小児慢性特定疾病医療受給者証を持つ20歳未満の在宅児童等",
+      "coordination": "障害者総合支援法の施策の対象となる場合は対象外",
+      "verification_note": "しおりで所得負担があることを確認。個別の現行階層表・全品目の年齢条件は確認未了であり、ここから負担額を実装できる状態ではない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷44頁（PDF50頁）・小児慢性特定疾病児童等日常生活用具給付"
+        }
+      ]
+    },
+    {
+      "rule_id": "m04-welfare-taxi",
+      "id": "M04",
+      "scope_group": "funabashi",
+      "program": "福祉タクシー乗車券の交付",
+      "income_status": "no",
+      "income_condition": "なし（現行の利用規則で所得区分・制限を設けない）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "対象の重度心身障害者等",
+      "other_targets": "―",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "障害等の要件に応じて乗車券を交付し、運賃等の2分の1・1回上限1,200円を補助。重度心身障害者は原則年120枚、人工透析の腎臓機能障害者は年312枚等",
+      "child_application": "手帳の種類・等級等による対象要件を確認。児童を一律除外する年齢条件は個別案内にない",
+      "coordination": "介護タクシー券等の優先取扱いがある。選択や併用の制約は制度の存在を否定するものではない",
+      "verification_note": "市例規集の現行『船橋市福祉タクシーの利用に関する規則』全10条を確認。利用要件・補助額・枚数を定める第2・3・5・8条に所得判定はない。燃料費助成の独立制度の確認とは別",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "福祉タクシー乗車券の交付",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/02/p009707.html",
+          "section": "対象者・交付内容・券の種類"
+        },
+        {
+          "title": "船橋市例規集（条例・規則）",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p026897.html",
+          "section": "船橋市福祉タクシーの利用に関する規則 第2・3・5・8条（本文全10条を確認）"
+        }
+      ]
+    },
+    {
+      "rule_id": "m05-municipal-housing",
+      "id": "M05",
+      "scope_group": "funabashi",
+      "program": "市営住宅の収入基準緩和・家賃算定",
+      "income_status": "yes",
+      "income_condition": "あり（世帯月収の入居基準・家賃算定）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "入居世帯全員",
+      "other_targets": "―",
+      "income_measure": "年間所得から所定の控除を行い12で除した政令月収",
+      "change_rule": "原則月15万8千円以下、対象障害者等を含む裁量階層は月21万4千円以下。家賃も収入・住宅条件等により算定",
+      "child_application": "世帯員に対象障害者がいる場合の基準緩和を確認。児童だけを対象とする住宅給付ではない",
+      "coordination": "障害による裁量階層の扱いと、一般の公営住宅所得要件を区別する",
+      "verification_note": "優先入居・家賃減免という類型全体の全制度をこの1行で網羅したものではなく、船橋市の確認できた収入基準・家賃規則を示す",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "市営住宅について",
+          "url": "https://www.city.funabashi.lg.jp/machi/juutaku/003/p004005.html",
+          "section": "入居資格・裁量階層・家賃"
+        }
+      ]
+    },
+    {
+      "rule_id": "m06-public-facilities",
+      "id": "M06",
+      "scope_group": "funabashi",
+      "program": "公園施設の使用料・利用料の減免（公共施設の確認例）",
+      "income_status": "no",
+      "income_condition": "なし（確認した公園施設の障害者減免）。他施設は個別確認が必要",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "身体・療育・精神の対象手帳所持者",
+      "other_targets": "介護人等",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "対象手帳等の要件により公園施設の使用料・利用料を減額又は免除。減免範囲は施設・利用態様等による",
+      "child_application": "条例・規則の障害者減免に年齢下限はなく、対象手帳を持つ児童を含む",
+      "coordination": "施設利用の態様や介護人の取扱いを個別に確認する。船橋アリーナ等の専用利用には免除対象外の取扱いがある",
+      "verification_note": "都市公園条例第26条と同施行規則第13条を確認した公園施設の例。しおり掲載の全公共施設について、すべて同じ基準又は所得条件なしと確認したものではない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "体育施設の利用料金",
+          "url": "https://www.city.funabashi.lg.jp/gakushu/006/p000312.html",
+          "section": "使用料の免除について・対象外となる利用"
+        },
+        {
+          "title": "船橋市例規集（条例・規則）",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p026897.html",
+          "section": "船橋市都市公園条例 第26条、同施行規則 第13条"
+        },
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷73～74頁（PDF79～80頁）・公共施設利用料金の減免"
+        }
+      ]
+    },
+    {
+      "rule_id": "m06-night-soil-fee",
+      "id": "M06",
+      "scope_group": "funabashi",
+      "program": "し尿処理手数料の減免",
+      "income_status": "yes",
+      "income_condition": "あり（生活保護区分による免除等）。税額による追加条件は未確認",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯の区分",
+      "primary_target": "汲み取り式便槽を利用する対象世帯",
+      "other_targets": "―",
+      "income_measure": "生活保護受給状況等",
+      "change_rule": "生活保護世帯は免除、所定の重度障害者等のいる世帯は減額",
+      "child_application": "身体障害者手帳1・2級又は重度・最重度知的障害者のいる世帯を対象として案内",
+      "coordination": "浄化槽清掃料とは異なる。障害による減額と生活保護による免除を区別",
+      "verification_note": "財政状況の区分が確認できるため『なし』としない。ただし全減免要件を規則まで照合したものではない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷74頁（PDF80頁）・し尿処理手数料の減免"
+        }
+      ]
+    },
+    {
+      "rule_id": "m07-car-tax-reduction",
+      "id": "M07",
+      "scope_group": "funabashi",
+      "program": "自動車税の減免（千葉県）",
+      "income_status": "no",
+      "income_condition": "なし（障害者等の減免規定に所得区分・制限なし）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "対象障害者と車両所有者",
+      "other_targets": "運転者・生計同一関係等",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "障害・所有者・運転者・専用目的等の要件を満たす1台を減免。申請時期等により当年度全額又は月割等の取扱いがある",
+      "child_application": "対象障害児の移動のため、同居家族等が所有・運転する場合を案内表で確認",
+      "coordination": "軽自動車税の減免と合わせて障害者1人につき1台の取扱い",
+      "verification_note": "県の現行例規集で県税条例第80条と施行規則第59・61・62条を確認。所得ではなく障害・利用・所有等を要件とする。県税であり市独自税ではない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "千葉県 障害者等の方のための減免について",
+          "url": "https://www.pref.chiba.lg.jp/zeimu/aramashi/jidousha/index.html",
+          "section": "2～5：対象者・対象車両・申請・減免額"
+        },
+        {
+          "title": "千葉県例規集",
+          "url": "https://www.pref.chiba.lg.jp/seihou/chibareiki/reiki.html",
+          "section": "千葉県県税条例 第80条、千葉県県税条例施行規則 第59・61・62条（2026年11月15日時点の現行表示）"
+        },
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷68～70頁（PDF74～76頁）・対象障害、所有者・運転者、生計同一証明"
+        }
+      ]
+    },
+    {
+      "rule_id": "m07-light-car-tax-reduction",
+      "id": "M07",
+      "scope_group": "funabashi",
+      "program": "軽自動車税の減免",
+      "income_status": "no",
+      "income_condition": "なし（障害者等の減免規定・取扱基準に所得区分・制限なし）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "対象障害者と車両所有者",
+      "other_targets": "同一生計家族・運転者等",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "障害・所有者・運転者又は車両構造等の要件を満たす軽自動車税を全額減免。原則1人1台で事業用車両を除く",
+      "child_application": "対象障害児と同一生計の家族等が所有する車両も案内に記載",
+      "coordination": "自動車税との重複減免に制約がある。車いす昇降装置等の構造による減免は別の適用条件",
+      "verification_note": "現行市税条例第90条と、2026年4月施行の減免取扱基準全12条・別表を照合。所得を基準とする区分・制限を設けていない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "軽自動車税の減免について",
+          "url": "https://www.city.funabashi.lg.jp/kurashi/zei/004/p088635.html",
+          "section": "障害のある方などの減免・対象車両・減免額"
+        },
+        {
+          "title": "船橋市軽自動車税の減免に関する事務取扱基準",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p043408_d/fil/keijidousyazeigennmenn.pdf",
+          "section": "第3～4条・第6条・第9条、全12条・別表（2026年4月1日施行）"
+        },
+        {
+          "title": "船橋市例規集（条例・規則）",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p026897.html",
+          "section": "船橋市市税条例 第90条"
+        }
+      ]
+    },
+    {
+      "rule_id": "m08-car-modification",
+      "id": "M08",
+      "scope_group": "funabashi",
+      "program": "身体障害者自動車改造費助成",
+      "income_status": "yes",
+      "income_condition": "あり（本人・配偶者・扶養義務者それぞれの所得制限）",
+      "presence_status": "confirmed",
+      "assessment_unit": "個人所得",
+      "primary_target": "改造対象車を自ら運転する身体障害者本人",
+      "other_targets": "配偶者・生計を維持する扶養義務者",
+      "income_measure": "制度所定の前年所得。扶養親族等の数に応じた表を適用",
+      "change_rule": "所得要件等を満たす場合、必要な自動車改造費を10万円以内で助成",
+      "child_application": "自ら運転することが要件。児童の送迎用改造一般の助成としては確認できない",
+      "coordination": "M02住宅改造の最多納税者の住民税判定とは異なる",
+      "verification_note": "運転免許取得・所有関係等の条件がある。障害児がいる世帯なら保護者の改造費が当然に対象となるとは扱わない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "身体障害者自動車改造費助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/005/02/p042505.html",
+          "section": "対象者・所得制限限度額・助成額"
+        }
+      ]
+    },
+    {
+      "rule_id": "m09-emergency-power",
+      "id": "M09",
+      "scope_group": "funabashi",
+      "program": "非常用電源購入費助成",
+      "income_status": "yes",
+      "income_condition": "あり（市民税の課税区分別負担）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "児童等の対象者が属する世帯",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割課税・均等割のみ・非課税等",
+      "change_rule": "基準額10万円以内は所得割課税世帯1割負担、均等割のみ・非課税・生活保護は0円。基準額超過分は本人負担",
+      "child_application": "人工呼吸器・在宅酸素療法を利用する小児慢性特定疾病等の対象者を含む",
+      "coordination": "手帳所持者又は総合支援法対象疾患の場合は日常生活用具M03の経路を確認。同じ電源費を二重助成しない",
+      "verification_note": "この個別制度は電気料金全般への定額助成ではない。難病・小慢等の資格条件を要する",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "非常用電源購入費助成事業",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/kansenshou/003/p125194.html",
+          "section": "対象者・補助対象・申請"
+        },
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷46頁（PDF52頁）・負担額"
+        }
+      ]
+    },
+    {
+      "rule_id": "m10-child-welfare-allowance",
+      "id": "M10",
+      "scope_group": "funabashi",
+      "program": "船橋市心身障害児福祉手当",
+      "income_status": "no",
+      "income_condition": "なし（市公式の手当一覧で明示）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "在宅の対象障害児を監護する保護者",
+      "other_targets": "―",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "対象児童1人につき月額8,000円。市独自の所得限度額は設けない",
+      "child_application": "20歳未満で身体障害者手帳1～3級又は療育手帳等の要件を満たす児童",
+      "coordination": "市規則第11条は国の障害児福祉手当の『支給を受ける資格を有する』児童を適用除外。国手当の所得停止により自動的に市手当へ切り替わるとは確認できない",
+      "verification_note": "所得制限なしは市広報と規則で確認。個別案内の『受給している』と規則の資格要件を区別する。個別運用の市への照会は未実施",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "船橋市心身障害児福祉手当",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/03/p042517.html",
+          "section": "該当者・金額・備考"
+        },
+        {
+          "title": "広報ふなばし 令和8年2月15日号",
+          "url": "https://www.city.funabashi.lg.jp/shisei/kouhou/001/p144595.html",
+          "section": "5面・福祉の手当一覧：所得制限なし"
+        },
+        {
+          "title": "船橋市例規集",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p026897.html",
+          "section": "船橋市心身障害児福祉手当の支給に関する規則 第2～4条・第11条"
+        }
+      ]
+    },
+    {
+      "rule_id": "m10-adult-care-allowance",
+      "id": "M10",
+      "scope_group": "funabashi",
+      "program": "ねたきり身体障害者及び重度知的障害者介護手当",
+      "income_status": "no",
+      "income_condition": "なし（市公式の手当一覧で明示）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "対象障害者と同居して介護する者",
+      "other_targets": "―",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "案内の支給月額は12,650円。所得制限なし",
+      "child_application": "対象障害者は20歳以上。障害児本人への給付ではない",
+      "coordination": "特別障害者手当、介護保険認定、入院・入所等による適用除外がある",
+      "verification_note": "自治体制度類型としての存在と、障害児への適用を分けて記載。成人向けの手当額を児童モデルへ加算しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷48頁（PDF54頁）・介護手当"
+        },
+        {
+          "title": "広報ふなばし 令和8年2月15日号",
+          "url": "https://www.city.funabashi.lg.jp/shisei/kouhou/001/p144595.html",
+          "section": "5面・福祉の手当一覧：20歳以上、所得制限なし"
+        }
+      ]
+    },
+    {
+      "rule_id": "m11-medical-care-respite",
+      "id": "M11",
+      "scope_group": "funabashi",
+      "program": "医療的ケア児レスパイト支援事業",
+      "income_status": "yes",
+      "income_condition": "あり（非課税等の利用料免除）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "対象児童の属する世帯",
+      "other_targets": "―",
+      "income_measure": "市町村民税所得割の課税状況・生活保護受給状況",
+      "change_rule": "訪問看護の対象外利用について、年48時間を上限に1時間300円等の利用料。生活保護・市町村民税所得割非課税世帯は免除",
+      "child_application": "在宅の医療的ケア児（0歳～18歳到達後最初の年度末）等",
+      "coordination": "医療保険適用時間と同じ費用を重ねて助成しない。医師の指示等の条件がある",
+      "verification_note": "7月までと8月以降で用いる税年度が異なる。所得による対象除外だけでなく利用料免除の差を確認",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "船橋市医療的ケア児レスパイト支援事業",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/support/002/p144719.html",
+          "section": "対象者・利用時間・利用者負担・利用料免除"
+        }
+      ]
+    },
+    {
+      "rule_id": "m12-childcare-fee-reduction",
+      "id": "M12",
+      "scope_group": "funabashi",
+      "program": "障害者（児）がいる世帯等の保育料軽減",
+      "income_status": "yes",
+      "income_condition": "あり（市民税所得割額別の保育料・軽減区分）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "原則として児童の父母の税額",
+      "other_targets": "生計維持状況により祖父母等を含める場合がある",
+      "income_measure": "市町村民税所得割額等",
+      "change_rule": "3歳未満の保育料を所得階層別に設定。障害者（児）がいる世帯等は所定の所得階層で軽減する",
+      "child_application": "対象児童本人の障害又は世帯員の障害が軽減要件に含まれる。保育の加配と金銭負担軽減は別",
+      "coordination": "3歳以上の保育料無償化等の普遍的措置と、障害要件による軽減を区別",
+      "verification_note": "リンク先料金表は『令和6年9月更新』。所得による区分の存在は確認済みだが、令和8年度の全金額への適用を確認しないまま数値利用しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "保育料徴収額表（標準時間）",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/hoiku/002/hoikuryouhyou_d/fil/hyoujunhoikuryou.pdf",
+          "section": "1～3頁・保育料表、注記『ひとり親世帯等』及び所得算定"
+        }
+      ]
+    },
+    {
+      "rule_id": "m13-child-specified-disease-medical",
+      "id": "M13",
+      "scope_group": "funabashi",
+      "program": "船橋市小児指定疾病医療費助成事業",
+      "income_status": "yes",
+      "income_condition": "あり（保護者等の所得に応じた自己負担）",
+      "presence_status": "confirmed",
+      "assessment_unit": "世帯所得",
+      "primary_target": "保護者等（詳細な市事業の判定範囲は未確認）",
+      "other_targets": "―",
+      "income_measure": "保護者等の所得（詳細指標・現行限度額表は確認未了）",
+      "change_rule": "所得に応じた自己負担限度額を超えた対象費用を助成。新規・更新申請は2026年9月30日で終了",
+      "child_application": "国の小児慢性特定疾病医療の疾病対象で、程度基準に該当しない児童等についての市独自制度。受付終了後も過去の対象支出に関する償還申請が案内されている",
+      "coordination": "国の小児慢性特定疾病医療費支給事業とは別。国制度を市独自上乗せの実施として二重に数えない",
+      "verification_note": "申請受付終了と過去支出の償還を付記し、新規申請できる現行制度として一律に扱わない。所得連動の存在と現行全階層の確定は分ける",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "小児指定疾病医療費助成事業について",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p033677.html",
+          "section": "事業終了・助成対象・自己負担"
+        },
+        {
+          "title": "小児慢性特定疾病医療費支給事業について",
+          "url": "https://www.city.funabashi.lg.jp/kodomo/teate/002/p002406.html",
+          "section": "国事業の概要・市事業との区別"
+        }
+      ]
+    },
+    {
+      "rule_id": "m14-commuting-transport",
+      "id": "M14",
+      "scope_group": "funabashi",
+      "program": "障害者施設等通所交通費の助成",
+      "income_status": "yes",
+      "income_condition": "あり（生活保護受給者を対象から除外）。その他の所得上限は未確認",
+      "presence_status": "confirmed",
+      "assessment_unit": "対象者の受給状況",
+      "primary_target": "対象の障害児・者",
+      "other_targets": "付添者の交通費等",
+      "income_measure": "生活保護受給状況（その他の所得指標は確認未了）",
+      "change_rule": "対象施設への交通費を所定の方法で補助。公共交通機関は原則運賃の2分の1・月5,000円上限等",
+      "child_application": "児童発達支援・放課後等デイサービス等の対象施設へ通う障害児及び付添者を含む",
+      "coordination": "他制度による交通費補助等を控除する取扱いがある",
+      "verification_note": "生活保護の除外条件は確認済み。しおりだけから課税所得による追加制限が一切ないと断定しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "印刷60頁（PDF66頁）・10－8 障害者施設等通所交通費の助成"
+        }
+      ]
+    },
+    {
+      "rule_id": "m15-psychiatric-hospital-medical",
+      "id": "M15",
+      "scope_group": "funabashi",
+      "program": "精神障害者入院医療費助成",
+      "income_status": "no",
+      "income_condition": "なし（現行条例・施行規則に所得区分・制限なし）",
+      "presence_status": "confirmed",
+      "assessment_unit": "所得判定なし",
+      "primary_target": "対象精神障害者本人",
+      "other_targets": "―",
+      "income_measure": "所得指標を用いない",
+      "change_rule": "健康保険等の給付後に残る対象自己負担額を月16,000円以内で助成。所得による上限額の区分を設けない",
+      "child_application": "条例・規則に年齢下限の定めはなく、住民登録・医療保険・精神障害者保健福祉手帳等の要件を満たす児童を含む",
+      "coordination": "保険者の高額療養費・附加給付等を控除。国・自治体による他助成で自己負担相当額が給付される場合は条例第9条の適用除外",
+      "verification_note": "条例全10条と施行規則全5条を確認。対象者・助成範囲に所得条件を設けない。精神通院N02、重度医療M01とは別の入院助成",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "精神障害者入院医療費助成",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009692.html",
+          "section": "助成の対象者・助成額・他助成の優先"
+        },
+        {
+          "title": "船橋市例規集（条例・規則）",
+          "url": "https://www.city.funabashi.lg.jp/shisei/jouhoukoukai/005/p026897.html",
+          "section": "船橋市精神障害者入院医療費の助成に関する条例 第3～4・9条、同施行規則 第1～5条（本文全条を確認）"
+        }
+      ]
+    },
+    {
+      "rule_id": "m16-unconfirmed",
+      "id": "M16",
+      "scope_group": "funabashi",
+      "program": "補装具費自己負担助成・差額助成（船橋市の個別制度は未確認）",
+      "income_status": "pending",
+      "income_condition": "未確認",
+      "presence_status": "unconfirmed",
+      "assessment_unit": "未確認",
+      "primary_target": "未確認",
+      "other_targets": "未確認",
+      "income_measure": "未確認",
+      "change_rule": "未確認",
+      "child_application": "船橋市の個別制度と児童への適用は未確認",
+      "coordination": "国制度の実施だけでは、自治体独自の上乗せ・対象拡張があると判断しない",
+      "verification_note": "船橋市の総合案内等を確認したが、本類型に対応する個別の独自制度・所得要件を確定していない。不実施を意味しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "総合案内の確認範囲。所得要件なし又は不実施の根拠ではない"
+        }
+      ]
+    },
+    {
+      "rule_id": "m17-unconfirmed",
+      "id": "M17",
+      "scope_group": "funabashi",
+      "program": "就学援助・就学奨励費の自治体上乗せ（船橋市の個別制度は未確認）",
+      "income_status": "pending",
+      "income_condition": "未確認",
+      "presence_status": "unconfirmed",
+      "assessment_unit": "未確認",
+      "primary_target": "未確認",
+      "other_targets": "未確認",
+      "income_measure": "未確認",
+      "change_rule": "未確認",
+      "child_application": "船橋市の個別制度と児童への適用は未確認",
+      "coordination": "国制度の実施だけでは、自治体独自の上乗せ・対象拡張があると判断しない",
+      "verification_note": "船橋市の総合案内等を確認したが、本類型に対応する個別の独自制度・所得要件を確定していない。不実施を意味しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "総合案内の確認範囲。所得要件なし又は不実施の根拠ではない"
+        }
+      ]
+    },
+    {
+      "rule_id": "m18-unconfirmed",
+      "id": "M18",
+      "scope_group": "funabashi",
+      "program": "自立支援医療・育成医療の自治体上乗せ助成（船橋市の個別制度は未確認）",
+      "income_status": "pending",
+      "income_condition": "未確認",
+      "presence_status": "unconfirmed",
+      "assessment_unit": "未確認",
+      "primary_target": "未確認",
+      "other_targets": "未確認",
+      "income_measure": "未確認",
+      "change_rule": "未確認",
+      "child_application": "船橋市の個別制度と児童への適用は未確認",
+      "coordination": "国制度の実施だけでは、自治体独自の上乗せ・対象拡張があると判断しない",
+      "verification_note": "船橋市の総合案内等を確認したが、本類型に対応する個別の独自制度・所得要件を確定していない。不実施を意味しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "総合案内の確認範囲。所得要件なし又は不実施の根拠ではない"
+        }
+      ]
+    },
+    {
+      "rule_id": "m19-unconfirmed",
+      "id": "M19",
+      "scope_group": "funabashi",
+      "program": "医療的ケア児支援手当・家族支援給付（船橋市の個別制度は未確認）",
+      "income_status": "pending",
+      "income_condition": "未確認",
+      "presence_status": "unconfirmed",
+      "assessment_unit": "未確認",
+      "primary_target": "未確認",
+      "other_targets": "未確認",
+      "income_measure": "未確認",
+      "change_rule": "未確認",
+      "child_application": "船橋市の個別制度と児童への適用は未確認",
+      "coordination": "国制度の実施だけでは、自治体独自の上乗せ・対象拡張があると判断しない",
+      "verification_note": "船橋市の総合案内等を確認したが、本類型に対応する個別の独自制度・所得要件を確定していない。不実施を意味しない",
+      "checked_on": "2026-11-15",
+      "sources": [
+        {
+          "title": "令和8年度 船橋市障害福祉のしおり",
+          "url": "https://www.city.funabashi.lg.jp/kenkou/shougaisha/009/p096845_d/fil/R8shogaifukushinoshiori.pdf",
+          "section": "総合案内の確認範囲。所得要件なし又は不実施の根拠ではない"
         }
       ]
     }

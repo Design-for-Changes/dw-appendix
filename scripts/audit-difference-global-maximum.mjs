@@ -1,4 +1,4 @@
-// Verify the upper bounds in Appendix D. Run: node --experimental-default-type=module scripts/audit-difference-global-maximum.mjs
+// Verify the upper bounds in Appendix E. Run: node --experimental-default-type=module scripts/audit-difference-global-maximum.mjs
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {createRevisionCalculator, REVISION_SPOUSE_DEDUCTION_TABLE} from "../src/calc/revisionEngine.js";

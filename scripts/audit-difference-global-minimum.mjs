@@ -1,4 +1,4 @@
-// Reproduce the lower bound for Appendix D from the current model (not an observed population).
+// Reproduce the lower bound for Appendix E from the current model (not an observed population).
 // Run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/audit-difference-global-minimum.mjs
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
@@ -104,5 +104,5 @@ assert.deepEqual(counts,[1,2,3].map(n=>profiles.length**n));
 // Given the nonnegative savings checked above, negative iff charge > savings + extra benefits;
 // charge=0 cannot produce a negative value. The cap, not the number of children, bounds the annual loss.
 const tax=taxAudit();
-console.log(JSON.stringify({scope:"Appendix D paper-2029; salary grid, not population",floorYen,
+console.log(JSON.stringify({scope:"Appendix E paper-2029; salary grid, not population",floorYen,
   perChildProfiles:profiles.length,orderedFamilyCounts:counts,witness,negativeAtPoint,atFloorAtPoint,tax},null,2));

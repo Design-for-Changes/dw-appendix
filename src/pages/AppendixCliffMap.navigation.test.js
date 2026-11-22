@@ -21,11 +21,11 @@ const pages = [
   { letter: "A", title: "法令検索・採否", hash: "#law-screening", region: "法令検索" },
   { letter: "B", title: "調査対象・参照資料", hash: "#municipal-sources", region: "参照資料" },
   { letter: "C", title: "所得区分・判定方法（船橋市例）", hash: "#income-assessment", region: "所得判定詳細" },
-  { letter: "D", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
-  { letter: "E", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
+  { letter: "D", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
+  { letter: "E", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
 ];
 const F={letter:"F",title:"関数資料",hash:"#calculation-functions"};
-const simulator=pages.find(p=>p.letter==="D");
+const simulator=pages.find(p=>p.hash==="#revision-scenarios");
 
 beforeEach(() => {
   mockReferencePagesLoading = false;
@@ -91,7 +91,7 @@ test.each(pages)("$hashの直接リンクで$letterの見出し・番号・押�
   }
 });
 
-test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Dを開く", hash => {
+test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Eを開く", hash => {
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap />);
   expectSelectedPage(simulator);
@@ -99,7 +99,7 @@ test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Dを開
   expect(screen.queryByRole("region",{name:"表示ケース"})).toBeNull();
 });
 
-test("メニューはA・B・C・D・Eのみで、各グラフはDに属する", () => {
+test("メニューはA・B・C・D・Eのみで、各グラフはEに属する", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(
@@ -107,7 +107,7 @@ test("メニューはA・B・C・D・Eのみで、各グラフはDに属する",
   );
 });
 
-test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをD内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
+test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをE内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap/>);
   expect(pageButton(simulator)).toHaveAttribute("aria-pressed","true");

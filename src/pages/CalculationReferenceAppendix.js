@@ -101,7 +101,7 @@ export default function CalculationReferenceAppendix({ catalog = functionCatalog
       {internalLink("calculation-flow", "計算処理との対応")}
       {internalLink("calculation-function-list", `関数・クラス一覧（${catalog.functionCount}関数・${catalog.classCount}クラス）`)}
     </nav>
-    <h3 id="calculation-flow-current" tabIndex={-1}><a href="#revision-scenarios">Appendix Dの給与2軸シミュレーター</a>の計算式</h3>
+    <h3 id="calculation-flow-current" tabIndex={-1}><a href="#revision-scenarios">Appendix Eの給与2軸シミュレーター</a>の計算式</h3>
     <div className="appendix-table-wrap"><table className="appendix-table"><caption>入力から年額への計算表（現行制度のみ）</caption>
     <thead><tr><th scope="col">入力 → 出力</th><th scope="col">計算内容</th><th scope="col">担当する関数</th></tr></thead>
     <tbody>{currentFlow.map(([id,values,rule,...functions])=><tr key={id}><th scope="row">{values}</th><td data-label="計算内容">{rule}</td><td data-label="関数">{functions.map(name=>{

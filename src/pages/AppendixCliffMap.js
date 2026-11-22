@@ -14,8 +14,8 @@ const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
   { mode: "sources", letter: "B", label: "調査対象・参照資料", hash: "#municipal-sources" },
   { mode: "rules", letter: "C", label: "所得区分・判定方法（船橋市例）", hash: "#income-assessment" },
-  { mode: "scenarios", letter: "D", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
-  { mode: "eligibility", letter: "E", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
+  { mode: "eligibility", letter: "D", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
+  { mode: "scenarios", letter: "E", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
 ];
 const FUNCTION_REFERENCE={mode:"functions",letter:"F",label:"関数資料",hash:"#calculation-functions"};
 

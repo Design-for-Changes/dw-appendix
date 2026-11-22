@@ -91,9 +91,7 @@ export default function TraceParentTaxes({point, inputs}) {
     <p>金額は年額・円。⌊ ⌋は切捨て、⌈ ⌉は切上げです。親は45歳、給与以外の所得はなく、子は全員同居・23歳未満として、税の扶養申告先とは別に両親の所得金額調整控除を判定します。表示するのは本稿の2029年末想定の計算で、将来の実税額ではありません。</p>
     {["head","spouse"].map((id) => {
       const name = id === "head" ? "世帯主" : "配偶者";
-      return <details key={id}><summary>{name}の給与所得・所得税・住民税の計算式</summary>
-        <TraceTable caption={name+"の税額計算（円／年）"} rows={parentRows({point, inputs, id})} />
-      </details>;
+      return <TraceTable key={id} caption={name+"の税額計算（円／年）"} rows={parentRows({point, inputs, id})} />;
     })}
     <p>参照：<a href={PAPER_SALARY_POLICY_2029.salarySource}>給与所得の法定表</a>、<a href={PAPER_SALARY_POLICY_2029.adjustmentSource}>所得金額調整控除</a>、<a href={PAPER_SALARY_POLICY_2029.basicSource}>基礎控除（令和10年分以後）</a>、<a href="https://www.nta.go.jp/publication/pamph/pdf/0026005-024_03.pdf">国税庁・防衛／復興特別所得税Q8</a>、<a href={CALCULATION_SOURCES.residentTax.url}>船橋市・所得割と税額控除</a>、<a href="https://laws.e-gov.go.jp/law/325AC0000000226">地方税法附則第3条の3</a>。</p>
   </section>;

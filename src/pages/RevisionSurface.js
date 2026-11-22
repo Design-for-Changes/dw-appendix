@@ -14,33 +14,38 @@ const outcomeLabel = design.outcome.axis;
 const valueOf = (point) => point?.studyDisposableWan ?? null;
 
 /** 同一の世帯条件では給与カーソルを移動しても格子を再計算しない。 */
-export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null, comparison=false }) {
+export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null, comparison=false, datasetState }) {
   const [result, setResult] = useState(null);
   const [extraView,setExtraView]=useState("bars");
+  const shared=datasetState!==undefined;
   useEffect(() => {
+    // nullも親が管理する「未描画」。タブの初回表示・再表示・進捗通知で二重計算しない。
+    if(shared)return undefined;
     let active = true, worker;
-    function fail() { if (active) setResult({inputs, error:"3Dグラフの計算を開始できませんでした。"}); }
+    function fail() { if (active) setResult({inputs, comparison, error:"3Dグラフの計算を開始できませんでした。"}); }
     if (typeof Worker === "undefined") { fail(); return undefined; }
     import("./createSalarySurfaceWorker").then(({default: createWorker}) => {
       if (!active) return;
       worker = createWorker();
       worker.onmessage = ({data}) => {
         if (!active) return;
-        if (data.type === "progress") setResult({inputs, percent:Math.floor(data.done * 100 / data.total)});
-        if (data.type === "complete") { setResult({inputs, surface:data}); worker.terminate(); }
+        if (data.type === "progress") setResult({inputs, comparison, percent:Math.floor(data.done * 100 / data.total)});
+        if (data.type === "complete") { setResult({inputs, comparison, surface:data}); worker.terminate(); }
         if (data.type === "error") { fail(); worker.terminate(); }
       };
       worker.onerror = () => { fail(); worker.terminate(); };
       worker.postMessage(comparison ? {type:"start",inputs,comparison:true} : {type:"start",inputs});
     }).catch(fail);
     return () => { active=false; worker?.terminate(); };
-  }, [inputs,comparison]);
-  const state = result?.inputs === inputs ? result : null;
+  }, [inputs,comparison,shared]);
+  const local=result && result.inputs===inputs && result.comparison===comparison ? result : null;
+  const state=shared ? (datasetState?.type==="complete" ? {surface:comparison?datasetState.comparison:datasetState.income}
+    : datasetState?.type==="error" ? {error:datasetState.message,retry:datasetState.retry} : datasetState) : local;
   return <><figure id={comparison?"income-difference-plot":"salary-surface-plot"} className="revision-surface" aria-label={comparison?"夫婦の給与収入と障害の有無による可処分所得差の3Dグラフ":"夫婦の給与収入と世帯の可処分所得の3Dグラフ"}>
     {state?.surface ? <>{comparison && <DifferenceExtrema surface={state.surface} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal}/>}
       <SalarySurfaceMesh surface={state.surface} calculator={comparison?null:calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={comparison?(point?.status==="calculated"?point.differenceYen/10000:null):valueOf(point)} /></>
-      : state?.error ? <p role="status">{state.error}</p>
-      : <p className="revision-surface-loading" role="status">1万円刻みで計算中：{state?.percent ?? 0}%</p>}
+      : state?.error ? <p role="status">{state.error}{typeof state.retry==="function" && <button type="button" onClick={state.retry}>再計算</button>}</p>
+      : shared && !datasetState ? null : <p className="revision-surface-loading" role="status">1万円刻みで計算中：{state?.percent ?? 0}%</p>}
   </figure>
     {comparison&&state?.surface&&<section className="difference-extra" aria-label="可処分所得差の分布">
       <h3>可処分所得差の分布</h3>

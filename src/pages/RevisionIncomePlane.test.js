@@ -1,10 +1,73 @@
+import { useEffect } from "react";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import { REVISION_INCOME_DESIGN, salaryGridSize, readSalaryWan, salaryBounds } from "../data/revisionIncomeDesign";
 import RevisionIncomePlane from "./RevisionIncomePlane";
 import * as surfaceModule from "./RevisionSurface";
+import * as boundaryModule from "./SalaryDecisionMapPage";
+import * as graphDataset from "./salaryGraphDataset";
+
+// The shell controls when to subscribe; the worker protocol/grid values are tested independently.
+jest.mock("./salaryGraphDataset",()=>({__esModule:true,useSalaryGraphDataset:(_inputs,drawn)=>drawn?{type:"progress",percent:0}:null}));
 
 beforeEach(()=>window.sessionStorage.clear());
+
+test("Gの3図は一つの世帯格子・描画操作・点Pを共用し、再訪は描画済みコンポーネントを再利用する",()=>{
+  const subscribe=jest.fn(),unsubscribe=jest.fn(),state={type:"progress",percent:37};
+  const dataset=jest.spyOn(graphDataset,"useSalaryGraphDataset").mockImplementation(function useTestDataset(inputs,drawn){
+    useEffect(()=>{if(drawn){subscribe(inputs);return unsubscribe;}},[inputs,drawn]);
+    return drawn?state:null;
+  });
+  const surface=jest.spyOn(surfaceModule,"RevisionSurface").mockImplementation(({comparison,head,spouse})=>
+    <div data-testid={comparison?"difference-plot":"income-plot"}>{head},{spouse}</div>);
+  const boundaries=jest.spyOn(boundaryModule,"default").mockImplementation(({head,spouse,onSelectSalary})=>
+    <button data-testid="boundary-plot" onClick={()=>onSelectSalary(906,600)}>{head},{spouse}</button>);
+  const tab=name=>screen.getByRole("tab",{name});
+  try{
+    renderWithPoint();
+    expect(screen.getAllByRole("region",{name:"点P"})).toHaveLength(1);
+    expect(screen.getAllByRole("button",{name:"グラフを描画"})).toHaveLength(1);
+    expect(surface).not.toHaveBeenCalled();expect(boundaries).not.toHaveBeenCalled();
+    drawGraph();
+    const initial=screen.getByTestId("income-plot");expect(initial).toBeVisible();
+    expect(subscribe).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("boundary-plot")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("difference-plot")).not.toBeInTheDocument();
+    fireEvent.click(tab(/制度境界/));
+    const boundary=screen.getByTestId("boundary-plot");expect(boundary).toBeVisible();
+    expect(initial).not.toBeVisible();
+    fireEvent.click(boundary);
+    expect(salaryNumber("世帯主")).toHaveValue(906);expect(salaryNumber("配偶者")).toHaveValue(600);
+    fireEvent.click(tab("可処分所得差"));
+    const difference=screen.getByTestId("difference-plot");
+    expect(difference).toBeVisible();expect(difference).toHaveTextContent("906,600");
+    expect(screen.getByText("可処分所得差（年額）")).toBeVisible();
+    fireEvent.click(tab("可処分所得（3D）"));
+    expect(screen.getByTestId("income-plot")).toBe(initial);expect(initial).toBeVisible();
+    expect(screen.getByTestId("difference-plot")).toBe(difference);
+    expect(screen.getByTestId("boundary-plot")).toBe(boundary);
+    for(const spy of [surface,boundaries])for(const [props] of spy.mock.calls)expect(props.datasetState).toBe(state);
+    expect(subscribe).toHaveBeenCalledTimes(1);expect(unsubscribe).not.toHaveBeenCalled();
+    expect(savedPoint()).toMatchObject({headSalaryWan:906,spouseSalaryWan:600});
+    openConditions();change(serviceSlider(1),"1500");
+    for(const id of ["income-plot","difference-plot","boundary-plot"])expect(screen.queryByTestId(id)).not.toBeInTheDocument();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button",{name:"グラフを描画"})).toBeEnabled();
+  }finally{surface.mockRestore();boundaries.mockRestore();dataset.mockRestore();}
+});
+
+test("外部ナビからの表示指定とタブの選択要求を区別し、給与入力を保持する",()=>{
+  const changeView=jest.fn();
+  const {rerender}=render(<RevisionIncomePlane graphView="difference" onGraphViewChange={changeView}/>);
+  expect(screen.getByRole("tab",{name:"可処分所得差"})).toHaveAttribute("aria-selected","true");
+  change(salaryNumber("配偶者"),"600");
+  fireEvent.keyDown(screen.getByRole("tab",{name:"可処分所得差"}),{key:"Home"});
+  expect(changeView).toHaveBeenCalledWith("income");
+  rerender(<RevisionIncomePlane graphView="income" onGraphViewChange={changeView}/>);
+  expect(screen.getByRole("tab",{name:"可処分所得（3D）"})).toHaveAttribute("aria-selected","true");
+  expect(salaryNumber("配偶者")).toHaveValue(600);
+  expect(screen.queryByText("可処分所得差（年額）")).not.toBeInTheDocument();
+});
 
 const change = (el, value) => fireEvent.change(el, { target: { value } });
 const child = (i) => within(screen.getByRole("group", { name: "子ども" + i }));

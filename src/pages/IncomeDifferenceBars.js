@@ -36,7 +36,7 @@ export default function IncomeDifferenceBars({surface,head,spouse,selectedZ,onSe
   const [size,setSize]=useState([920,560]),[view,setView]=useSessionParameter("differenceCamera",INITIAL_VIEW);
   const [error,setError]=useState(false);
   const ok=surface?.validCount>0&&surface.width>1&&surface.heights?.length===surface.width**2;
-  const data=useMemo(()=>ok?binIncomeDifferences(surface):null,[surface,ok]);
+  const data=useMemo(()=>ok?(surface.barBins??binIncomeDifferences(surface)):null,[surface,ok]);
   const scene=useMemo(()=>ok?makeScene(size,view,surface):null,[size,view,surface,ok]);
   useEffect(()=>{
     const e=frame.current;if(!e)return undefined;

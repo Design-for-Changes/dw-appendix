@@ -8,7 +8,7 @@ const inputs={protocol:"paper-2029",serviceAmountYen:0,children:[
 ]};
 const calc=createRevisionCalculator(inputs);
 const draw=(a,b)=><HouseholdCalculationTrace point={calc.evaluate(a,b)} inputs={inputs}/>;
-const row=(caption,name)=>Array.from(screen.getByRole("table",{name:caption,hidden:true}).rows)
+const row=(caption,name)=>Array.from(screen.getByRole("table",{name:caption}).rows)
   .find(tr=>tr.cells[0].textContent===name);
 
 test("社保の月額の端数処理、年換算、世帯合算までを円単位で追え、給与変更・対象外で前の式を残さない",()=>{
@@ -28,7 +28,7 @@ test("社保の月額の端数処理、年換算、世帯合算までを円単�
   expect(row(spouse,"本人保険料（年額）").cells[3]).toHaveTextContent("0円");
   expect(row(total,"世帯の可処分所得（試算対象分）").cells[3]).toHaveTextContent("2,705,348円");
   rerender(draw(0,0));
-  expect(screen.queryByText("選択した給与点の計算過程",{exact:false})).toBeNull();
+  expect(screen.queryByRole("region",{name:"計算式と内訳"})).toBeNull();
 });
 
 test("等級表の表示区間はすべての下限と上限直前で計算器の等級と一致する",()=>{
@@ -39,13 +39,23 @@ test("等級表の表示区間はすべての下限と上限直前で計算器�
   }
 });
 
-test("手当の内訳は折りたたんだまま、サービスの課税区分と月額負担を表示する。所得割0円でも均等割が課税なら上限0円にしない",()=>{
+test("収支合計を最初に示し、社保、税、各手当、サービス負担の順に全表を折りたたみなしで表示する",()=>{
+  render(draw(360,120));
+  const trace=screen.getByRole("region",{name:"計算式と内訳"});
+  expect(trace.querySelector("details,summary")).toBeNull();
+  expect(screen.getAllByRole("table").map(t=>t.caption.textContent)).toEqual([
+    "世帯の可処分所得（円／年）","世帯主の社会保険料（本人負担）","配偶者の社会保険料（本人負担）",
+    "世帯主の税額計算（円／年）","配偶者の税額計算（円／年）",
+    "特別児童扶養手当","障害児福祉手当","児童手当","サービス利用者負担",
+  ]);
+  expect(trace.querySelector("tbody tr th")).toHaveTextContent("世帯の可処分所得（試算対象分）");
+});
+
+test("サービスの課税区分と月額負担：所得割0円でも均等割が課税なら上限0円にしない",()=>{
   const both={...inputs,children:[8,12].map(age=>({...inputs.children[0],age,serviceAmountYen:37200}))};
   const engine=createRevisionCalculator(both), renderAt=head=><HouseholdCalculationTrace point={engine.evaluate(head,0)} inputs={both}/>;
   const {rerender}=render(renderAt(255));
   const caption="サービス利用者負担";
-  expect(screen.getByRole("table",{name:caption}).closest("details")).toBeNull();
-  expect(screen.getByRole("table",{name:"特別児童扶養手当",hidden:true}).closest("details")).not.toHaveAttribute("open");
   expect(row(caption,"世帯の判定用所得割").cells[3]).toHaveTextContent(/^0円$/);
   expect(row(caption,"世帯の月額上限").cells[2]).toHaveTextContent("世帯主：非課税、配偶者：非課税 → 非課税世帯");
   expect(row(caption,"合算対象の月額（上限前）").cells[2]).toHaveTextContent(/^37,200 ＋ 37,200$/);

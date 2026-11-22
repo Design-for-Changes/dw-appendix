@@ -15,8 +15,7 @@ jest.mock("./MunicipalSourcesAppendix", () => () => mockReferencePagesLoading
 jest.mock("./ResearchDataAppendix", () => () => mockReferencePagesLoading
   ? <p role="status">法令資料を読み込んでいます。</p>
   : <section aria-label="法令検索">表A2</section>);
-jest.mock("./RevisionScenariosAppendix", () => () => <section aria-label="モデル条件">条件表</section>);
-jest.mock("./SalaryDecisionMapPage", () => () => <section aria-label="制度の変更点">2D</section>);
+jest.mock("./RevisionScenariosAppendix", () => ({graphView,onGraphViewChange}) => <section aria-label="モデル条件">{graphView}<button onClick={()=>onGraphViewChange("boundaries")}>2Dへ</button></section>);
 
 const pages = [
   { letter: "A", title: "法令検索・採否", hash: "#law-screening", region: "法令検索" },
@@ -27,12 +26,11 @@ const pages = [
   { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
   { letter: "G", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
   { letter: "H", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
-  { letter: "I", title: "制度境界と可処分所得の断面（2次元）", hash: "#salary-decision-map", region: "制度の変更点" },
-  { letter: "J", title: "障害の有無による可処分所得差（3D）", hash: "#disability-income-difference", region: "障害の有無による可処分所得差" },
 ];
 
 beforeEach(() => {
   mockReferencePagesLoading = false;
+  window.sessionStorage.clear();
   window.history.replaceState(null, "", "/");
 });
 afterEach(() => { window.history.replaceState(null, "", "/"); });
@@ -96,12 +94,25 @@ test("空hashは従来の現行制度を表示し、ページ番号はDになる
   expect(window.location.hash).toBe("");
 });
 
-test("メニューはAからJに並ぶ", () => {
+test("メニューはAからHに並び、各グラフはGに属する", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(
     pages.map((page) => page.letter + "　" + page.title)
   );
+});
+
+test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをG内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
+  window.history.replaceState(null,"","/"+hash);
+  render(<AppendixCliffMap/>);
+  expect(pageButton(pages[6])).toHaveAttribute("aria-pressed","true");
+  expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent(view);
+  fireEvent.click(pageButton(pages[5]));
+  fireEvent.click(pageButton(pages[6]));
+  expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent(view);
+  expect(window.location.hash).toBe(hash);
+  fireEvent.click(screen.getByRole("button",{name:"2Dへ"}));
+  expect(window.location.hash).toBe("#salary-decision-map");
 });
 
 test("タブ切替でURL・共通見出し・押下状態が同時に更新される", () => {

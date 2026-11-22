@@ -3,7 +3,7 @@ import { RevisionSurface } from "./RevisionSurface";
 import createWorker from "./createSalarySurfaceWorker";
 
 jest.mock("./createSalarySurfaceWorker", () => ({ __esModule:true, default:jest.fn() }));
-jest.mock("./SalarySurfaceMesh", () => ({head, spouse, selectedZ}) => <output>{head}/{spouse}/{selectedZ}</output>);
+jest.mock("./SalarySurfaceMesh", () => ({head, spouse, selectedZ,surface}) => <output data-testid="mesh" data-width={surface.width}>{head}/{spouse}/{selectedZ}</output>);
 jest.mock("./IncomeDifferenceBars",()=>({surface})=><div>追加柱状図 {surface.validCount}点</div>);
 jest.mock("./IncomeDifferenceHeatmap",()=>({surface})=><div>追加平面図 {surface.validCount}点</div>);
 
@@ -53,4 +53,37 @@ test("Jでは旧3D図を残し、同じ計算結果で追加の柱状図と平�
     expect(screen.getByText("追加平面図 3点")).toBeVisible();
     expect(worker.postMessage).toHaveBeenCalledTimes(1);
   }finally{if(original===undefined)delete global.Worker;else global.Worker=original;}
+});
+
+test("共有計算では未描画・進捗・失敗でも個別ワーカーを作らず、別タブでの完了後も同じ面を使える",async()=>{
+  const previous=global.Worker;global.Worker=jest.fn();
+  createWorker.mockReset();
+  const inputs={children:[{age:8}]},retry=jest.fn();
+  const e={headWan:1,spouseWan:0,differenceYen:50000,count:1};
+  const complete={type:"complete",income:{width:2,validCount:3},comparison:{width:3,validCount:8,
+    negativeCount:0,minimum:e,maximum:e}};
+  const view=(datasetState,comparison=false)=><RevisionSurface inputs={inputs} datasetState={datasetState}
+    comparison={comparison} head={1} spouse={0} point={{status:"calculated",studyDisposableWan:105,differenceYen:50000}}/>;
+  try{
+    const first=render(view(null));
+    expect(screen.queryByText(/計算中|計算を開始できません/)).toBeNull();
+    first.rerender(view({type:"progress",percent:38}));
+    expect(screen.getByText(/計算中：38%/)).toBeVisible();
+    first.rerender(view({type:"error",message:"共有計算に失敗",retry}));
+    expect(screen.getByText(/共有計算に失敗/)).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:"再計算"}));
+    expect(retry).toHaveBeenCalledTimes(1);
+    first.unmount(); // 別タブへ。完了後に再マウントする。
+    const second=render(view(complete,true));
+    expect(screen.getByTestId("mesh")).toHaveAttribute("data-width","3");
+    expect(screen.getByText("1/0/5")).toBeVisible();
+    expect(screen.getByText("追加柱状図 8点")).toBeVisible();
+    second.rerender(view(complete));
+    expect(screen.getByTestId("mesh")).toHaveAttribute("data-width","2");
+    expect(screen.getByText("1/0/105")).toBeVisible();
+    second.rerender(view(null)); // 世帯変更直後に直前の面を残さない。
+    expect(screen.queryByTestId("mesh")).toBeNull();
+    await act(async()=>{}); // 遅延importが存在する場合も検知する。
+    expect(createWorker).not.toHaveBeenCalled();
+  }finally{if(previous===undefined)delete global.Worker;else global.Worker=previous;}
 });

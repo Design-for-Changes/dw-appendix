@@ -2,6 +2,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import RevisionScenariosAppendix, { LegacyRevisionMaterials } from "./RevisionScenariosAppendix";
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import { paperCases } from "./revisionPaperCases";
+jest.mock("./salaryGraphDataset",()=>({useSalaryGraphDataset:()=>({type:"progress",percent:0})}));
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -20,11 +21,13 @@ test("Gはシミュレーター単独の入口とし、研究資料・旧UIを�
   fireEvent.click(draw);
   const figure=within(simulator).getByRole("figure",{name:/3Dグラフ/});
   expect(conditions).not.toHaveAttribute("open");
-  expect(conditions.nextElementSibling).toBe(figure);
+  const tabs=within(simulator).getByRole("tablist",{name:"グラフの切り替え"});
+  expect(conditions.nextElementSibling).toBe(tabs);
+  expect(within(simulator).getByRole("tabpanel")).toContainElement(figure);
   expect(figure.querySelector("figcaption")).toBeNull();
   expect(figure).not.toHaveTextContent(/現金給付|表示範囲/);
   const point=within(simulator).getByRole("region",{name:"点P"});
-  expect(figure.nextElementSibling).toBe(point);
+  expect(figure.compareDocumentPosition(point)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(point.closest("details")).toBeNull();
   expect(within(point).getByRole("heading",{name:"点P"})).toBeVisible();
   expect(within(simulator).queryByText(/通りが試算対象です|組み合わせを選んでください|実際の認定を再現/)).not.toBeInTheDocument();

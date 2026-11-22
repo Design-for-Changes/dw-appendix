@@ -222,8 +222,8 @@ function DayServiceControl({ amount, onChange, profile }) {
   </section>;
 }
 
-export default function RevisionScenariosAppendix() {
-  return <div id="revision-scenarios" className="appendix-panel"><RevisionIncomePlane /></div>;
+export default function RevisionScenariosAppendix({graphView,onGraphViewChange}) {
+  return <div id="revision-scenarios" className="appendix-panel"><RevisionIncomePlane graphView={graphView} onGraphViewChange={onGraphViewChange}/></div>;
 }
 
 // 旧試算の資料と照合用の表示。現在のGの画面には載せない。

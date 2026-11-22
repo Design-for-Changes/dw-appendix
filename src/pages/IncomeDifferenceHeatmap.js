@@ -1,31 +1,22 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import "./IncomeDifferenceHeatmap.css";
+import {DIFFERENCE_PALETTE,differenceHeatmapPixels} from "./prepareSalaryGraphDrawing.js";
 
 const W=1000,H=625,L=99,R=974,T=20,B=554;
 const format=new Intl.NumberFormat("ja-JP",{maximumFractionDigits:4});
 const fmt=v=>Number.isFinite(v)?format.format(v):"—";
 const signed=v=>(v>0?"＋":v<0?"−":"")+fmt(Math.abs(v));
-const MISS=[110,121,128],ZERO=[251,250,246],MINUS=[[251,221,228],[174,52,84]],PLUS=[[215,237,235],[19,127,131]];
-
-// 1 = zero, 0 = not calculated. Any nonzero amount, including ±1 yen, gets a
-// sign-specific colour before magnitude is encoded. Zero is not a band.
-const LUT=[MISS,ZERO,...[MINUS,PLUS].flatMap(([a,b])=>Array.from({length:256},(_,i)=>
-  a.map((v,c)=>Math.round(v+(b[c]-v)*i/255))))];
+const {missing:MISS,zero:ZERO,negative:MINUS,positive:PLUS}=DIFFERENCE_PALETTE;
 const boundOf=s=>Math.max(Math.abs(s.min??0),Math.abs(s.max??0));
 const rgb=(c)=>"rgb("+c.join(",")+")";
 
 /** 1整数給与点＝1画素。入力は横軸（世帯主）が内側、縦軸（配偶者）が外側で下から上に増加。 */
 function paint(ctx,surface){
-  const {width,heights}=surface,bound=boundOf(surface),img=ctx.createImageData(width,width),data=img.data;
-  for(let y=0;y<width;y++){
-    let dst=(width-1-y)*width*4;
-    for(let x=0;x<width;x++,dst+=4){
-      const v=heights[y*width+x],code= !Number.isFinite(v)||(x===0&&y===0)?0:v===0?1:
-        (v<0?2:258)+Math.min(255,Math.round(255*Math.abs(v)/(bound||1)));
-      const c=LUT[code];data[dst]=c[0];data[dst+1]=c[1];data[dst+2]=c[2];data[dst+3]=255;
-    }
+  const {width}=surface,pixels=surface.heatmapPixels??differenceHeatmapPixels(surface);
+  if(typeof ImageData==="function")ctx.putImageData(new ImageData(pixels,width,width),0,0);
+  else{
+    const img=ctx.createImageData(width,width);img.data.set(pixels);ctx.putImageData(img,0,0);
   }
-  ctx.putImageData(img,0,0);
 }
 
 function ticks(n){

@@ -13,9 +13,9 @@ function uncalculated(status,reasons) {
  * @param {object} inputs Gのモデル世帯条件（子ども1～3人、各人の税扶養・利用額等）。
  * @returns {object} 比較用の evaluate(世帯主給与万円,配偶者給与万円) と対照世帯の設定。
  */
-export function createDisabilityIncomeComparison(inputs) {
+export function createDisabilityIncomeComparison(inputs,{createCalculator=createRevisionCalculator}={}) {
   const observedInputs={...inputs,protocol:inputs?.protocol??"paper-2029"};
-  const observed=createRevisionCalculator(observedInputs);
+  const observed=createCalculator(observedInputs);
   const baselineInputs={...observedInputs,serviceAmountYen:0,otherServiceMonthlyYen:0,
     children:observedInputs.children.map(c=>({...c,tccaGrade:"not",welfareEligible:false,taxStatus:"none",
       serviceUser:false,serviceAmountYen:0}))};
@@ -23,11 +23,9 @@ export function createDisabilityIncomeComparison(inputs) {
   // 利用していない子の入力額（スライダーの残り値）や属する年齢帯は収支を変えない。
   const identical=!observedInputs.otherServiceMonthlyYen && observedInputs.children.every(c=>
     c.tccaGrade==="not" && !c.welfareEligible && c.taxStatus==="none" && !c.serviceUser);
-  const baseline=identical?observed:createRevisionCalculator(baselineInputs);
+  const baseline=identical?observed:createCalculator(baselineInputs);
   /** 指定した二給与を両世帯に適用し、年間収支の差と、給付・税・保険・負担の寄与を円で返す。 */
-  function evaluate(headWan,spouseWan) {
-    if(headWan===0 && spouseWan===0)return uncalculated("excluded",["夫婦とも給与0円の原点は試算対象外です。"]);
-    const a=observed.evaluate(headWan,spouseWan), b=identical?a:baseline.evaluate(headWan,spouseWan);
+  function comparePoints(a,b) {
     if(a.status!=="calculated" || b.status!=="calculated"){
       const status=a.status==="excluded" || b.status==="excluded"?"excluded":"insufficient";
       return uncalculated(status,[...new Set([...(a.reasons??[]),...(b.reasons??[])])]);
@@ -46,7 +44,17 @@ export function createDisabilityIncomeComparison(inputs) {
     return {status:"calculated",reasons:[],allowanceRecipient:da.roles.allowanceRecipient,differenceYen,withYen,withoutYen,taxSavingYen,extraBenefitsYen,
       extraServiceYen,insuranceSavingYen};
   }
-  return {evaluate,baselineInputs};
+  /** Gの世帯収支・制度判定と、対照世帯との差を、同じ二給与の評価結果から返す。 */
+  function evaluatePair(headWan,spouseWan) {
+    if(headWan===0 && spouseWan===0) {
+      const reasons=["夫婦とも給与0円の原点は試算対象外です。"];
+      return {observedPoint:{status:"excluded",reasons},comparisonPoint:uncalculated("excluded",reasons)};
+    }
+    const observedPoint=observed.evaluate(headWan,spouseWan);
+    const baselinePoint=identical?observedPoint:baseline.evaluate(headWan,spouseWan);
+    return {observedPoint,comparisonPoint:comparePoints(observedPoint,baselinePoint)};
+  }
+  return {evaluate:(head,spouse)=>evaluatePair(head,spouse).comparisonPoint,evaluatePair,baselineInputs};
 }
 
 /**

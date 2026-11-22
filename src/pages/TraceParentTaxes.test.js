@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import TraceParentTaxes from "./TraceParentTaxes";
 
@@ -9,9 +9,6 @@ const inputs = {protocol:"paper-2029", serviceAmountYen:0, children:[
 function select(head, spouse, settings=inputs) {
   const point = createRevisionCalculator(settings).evaluate(head,spouse);
   render(<TraceParentTaxes point={point} inputs={settings}/>);
-  for (const name of ["世帯主","配偶者"]) {
-    fireEvent.click(screen.getByText(name+"の給与所得・所得税・住民税の計算式"));
-  }
   return point;
 }
 function cells(parent, item) {

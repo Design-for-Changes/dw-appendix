@@ -1,11 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { createRevisionCalculator } from "../calc/revisionEngine";
-import { buildSalaryIncomeSection } from "../calc/salaryIncomeSection";
-import { readSalaryWan } from "../data/revisionIncomeDesign";
+import { useMemo, useState } from "react";
 import { useSessionParameter } from "./salarySimulatorSession";
-import IncomeSectionChart from "./IncomeSectionChart";
-import { ChildFields } from "./RevisionIncomePlane";
-import { blankChild,usePaperHousehold } from "./paperHouseholdSession";
 import "./salary-decision-map.css";
 
 const SYSTEMS=[
@@ -36,9 +30,38 @@ function describeBoundary(calculator,from,to) {
     [{...s,before:before[i],after:after[i]}]:[]);
 }
 
-function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) {
+const OUTCOMES=[{id:"drop",label:"可処分所得の下落",color:"#302339"}, {id:"recovery",label:"下落前の水準への回復",color:"#b75b00"}];
+// Adjacent scan lines may share a threshold. Merge only collinear, touching edges:
+// do not draw a diagonal through points where no transition was observed.
+function outcomePath(segs,max) {
+  const groups=new Map();
+  for(const [a,b,c,d] of segs){
+    const vert=a===c,k=(vert?"x":"y")+(vert?a:b);
+    if(!groups.has(k))groups.set(k,{vert,pos:vert?a:b,spans:[]});
+    groups.get(k).spans.push(vert?[b,d]:[a,c]);
+  }
+  const x=v=>(LEFT+v/max*(RIGHT-LEFT)).toFixed(3),y=v=>(BOTTOM-v/max*(BOTTOM-TOP)).toFixed(3);
+  const parts=[];
+  for(const {vert,pos,spans} of groups.values()){
+    spans.sort((a,b)=>a[0]-b[0]);
+    function append(a,b){parts.push(vert?`M${x(pos)} ${y(a)}L${x(pos)} ${y(b)}`:`M${x(a)} ${y(pos)}L${x(b)} ${y(pos)}`);}
+    let [lo,hi]=spans[0];
+    for(let i=1;i<spans.length;i++){
+      if(spans[i][0]<=hi)hi=Math.max(hi,spans[i][1]);
+      else{append(lo,hi);[lo,hi]=spans[i];}
+    }
+    append(lo,hi);
+  }
+  return parts.join("");
+}
+function DecisionFigure({map,calculator,head,spouse,onSelectSalary}) {
   const [selection,setSelection]=useState(null);
+  const [direction,setDirection]=useSessionParameter("boundaryDirection","head");
   const max=map.maxSalaryWan;
+  const outcomes=useMemo(()=>{
+    const traces=map.outcomeLines?.[direction];
+    return OUTCOMES.map(o=>({...o,path:outcomePath(traces?.[o.id]||[],max)}));
+  },[map,direction,max]);
   const sx=(x)=>LEFT+x/max*(RIGHT-LEFT),sy=(y)=>BOTTOM-y/max*(BOTTOM-TOP);
   const geometry=useMemo(()=>map.layers.map(layer=>{
     const x=v=>LEFT+v/map.maxSalaryWan*(RIGHT-LEFT),y=v=>BOTTOM-v/map.maxSalaryWan*(BOTTOM-TOP);
@@ -50,7 +73,7 @@ function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) 
     const [from,to]=endpointsForBoundary(lines[i].seg,x,y);
     setSelection(old=>old && old.i===i && old.from[0]===from[0] && old.from[1]===from[1] ? old : {i,from,to});
   }
-  function pointer(e,commit=false) {
+  function pointer(e) {
     const bounds=e.currentTarget.getBoundingClientRect(); if(!bounds.width || !bounds.height) return;
     const x=(e.clientX-bounds.left)*WIDTH/bounds.width,y=(e.clientY-bounds.top)*HEIGHT/bounds.height;
     let best=-1,dist=(10*WIDTH/bounds.width)**2;
@@ -58,21 +81,10 @@ function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) 
       const px=clamp(x,Math.min(a,c),Math.max(a,c)),py=clamp(y,Math.min(b,d),Math.max(b,d));
       const v=(x-px)**2+(y-py)**2; if(v<dist){best=i;dist=v;}
     });
-    const u=(x-LEFT)/(RIGHT-LEFT)*max, v=(BOTTOM-y)/(BOTTOM-TOP)*max;
-    if(best!==-1) {
-      selectAt(best,u,v);
-      if(commit) pickSegment(endpointsForBoundary(lines[best].seg,u,v));
-    } else if(commit && u>=0 && u<=max && v>=0 && v<=max) {
-      setSelection(null);
-      onPick(axis,Math.round(axis==="head"?v:u),null);
-    }
-  }
-  function pickSegment([from,to]) {
-    const horizontal=from[0]!==to[0];
-    onPick(horizontal?"head":"spouse", horizontal?from[1]:from[0], horizontal?to[0]:to[1]);
+    if(best!==-1) selectAt(best,(x-LEFT)/(RIGHT-LEFT)*max,(BOTTOM-y)/(BOTTOM-TOP)*max);
+    else setSelection(null);
   }
   function keyboard(e) {
-    if(e.key==="Enter" && selection){e.preventDefault();pickSegment([selection.from,selection.to]);return;}
     if(!lines.length || !["ArrowLeft","ArrowRight","ArrowDown","ArrowUp"].includes(e.key)) return;
     e.preventDefault();
     const forward=e.key==="ArrowRight"||e.key==="ArrowDown";
@@ -87,10 +99,16 @@ function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) 
     `世帯主 ${yen(selection.from[0])} → ${yen(selection.to[0])}／配偶者 ${yen(selection.from[1])} 万円`:
     `世帯主 ${yen(selection.from[0])}／配偶者 ${yen(selection.from[1])} → ${yen(selection.to[1])} 万円`);
   return <figure className="decision-figure" aria-label="夫婦の給与収入と制度の変更点">
-    <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}{fixedWan!==null&&<li><i className="decision-slice-key"/>断面：{axis==="head"?"配偶者":"世帯主"} {yen(fixedWan)}万円固定</li>}</ul>
+    <div role="radiogroup" aria-label="下落と回復を追う方向" className="decision-direction">{[["head","世帯主の給与を増やす"],["spouse","配偶者の給与を増やす"]].map(([id,label])=><label key={id}><input type="radio" name="salary-boundary-direction" checked={direction===id} onChange={()=>setDirection(id)}/>{label}</label>)}</div>
+    <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}{outcomes.map(o=><li key={o.id}><i style={{height:0,borderTop:"3px "+(o.id==="drop"?"solid ":"dashed ")+o.color}}/>{o.label}</li>)}</ul>
     <svg viewBox={"0 0 "+WIDTH+" "+HEIGHT} preserveAspectRatio="none" role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）"
-      tabIndex={lines.length?0:undefined} onPointerMove={pointer} onPointerLeave={()=>setSelection(null)} onClick={e=>pointer(e,true)} onKeyDown={keyboard}>
-      <desc>制度境界をクリックすると、その境界を横切る断面を表示します。矢印キーで境界を選び、Enterでも確定できます。</desc>
+      tabIndex={lines.length?0:undefined} onPointerMove={pointer} onPointerLeave={()=>setSelection(null)} onClick={e=>{
+        const r=e.currentTarget.getBoundingClientRect(); if(!r.width||!r.height)return;
+        const x=Math.round((((e.clientX-r.left)*WIDTH/r.width)-LEFT)*max/(RIGHT-LEFT));
+        const y=Math.round((BOTTOM-(e.clientY-r.top)*HEIGHT/r.height)*max/(BOTTOM-TOP));
+        if(x>=0 && x<=max && y>=0 && y<=max)onSelectSalary?.(x,y);
+      }} onKeyDown={keyboard}>
+      <desc>給与を1万円動かしたときの制度変更点。線を指すか、矢印キーで境界を選択できます。</desc>
       <rect x={LEFT} y={TOP} width={RIGHT-LEFT} height={BOTTOM-TOP} fill="white"/>
       {ticks.map(t=><g key={t}><line x1={sx(t)} x2={sx(t)} y1={TOP} y2={BOTTOM} className="decision-grid"/><line x1={LEFT} x2={RIGHT} y1={sy(t)} y2={sy(t)} className="decision-grid"/>
         <text x={sx(t)} y={BOTTOM+29} textAnchor="middle">{yen(t)}</text><text x={LEFT-12} y={sy(t)+5} textAnchor="end">{yen(t)}</text></g>)}
@@ -98,10 +116,8 @@ function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) 
       <text className="decision-axis" x={(LEFT+RIGHT)/2} y={HEIGHT-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
       <text className="decision-axis" transform={`translate(21 ${(TOP+BOTTOM)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
       {geometry.map(s=><path key={s.id} data-system={s.id} d={s.path} fill="none" stroke={s.color} strokeWidth={s.weight} strokeLinecap="butt" vectorEffect="non-scaling-stroke"/>)}
-      {fixedWan!==null&&<g fill="none" pointerEvents="none">
-        <line data-testid="income-section-guide" x1={axis==="head"?LEFT:sx(fixedWan)} x2={axis==="head"?RIGHT:sx(fixedWan)} y1={axis==="head"?sy(fixedWan):TOP} y2={axis==="head"?sy(fixedWan):BOTTOM} stroke="#3e4147" strokeDasharray="8 6" strokeWidth="1.6" vectorEffect="non-scaling-stroke"/>
-        {selectedAfterWan!=null&&<circle cx={sx(axis==="head"?selectedAfterWan-.5:fixedWan)} cy={sy(axis==="head"?fixedWan:selectedAfterWan-.5)} r="7" stroke="#23232a" strokeWidth="2.5"/>}
-      </g>}
+      {outcomes.map(o=><path key={o.id} data-outcome={o.id} d={o.path} fill="none" stroke={o.color} strokeWidth={o.id==="drop"?1.2:2.4} strokeDasharray={o.id==="recovery"?"5 2":undefined} vectorEffect="non-scaling-stroke"/>)}
+      {Number.isFinite(head)&&Number.isFinite(spouse)&&<g aria-label="点P" pointerEvents="none"><circle cx={sx(head)} cy={sy(spouse)} r="4" fill="#142c33" stroke="white"/><text x={sx(head)+(head>max*.95?-13:8)} y={sy(spouse)-7}>P</text></g>}
       {marker&&<g aria-hidden="true" pointerEvents="none">
         <circle cx={marker.x} cy={marker.y} r="5" fill="white" stroke="#1d3038" strokeWidth="2"/>
         <g transform={`translate(${marker.x+boxWidth+12<=RIGHT?marker.x+12:marker.x-boxWidth-12} ${clamp(marker.y-boxHeight-10,TOP,BOTTOM-boxHeight)})`}>
@@ -114,74 +130,14 @@ function DecisionFigure({map,calculator,axis,fixedWan,selectedAfterWan,onPick}) 
     <figcaption className={selection?"decision-caption-selected":undefined}>{!lines.length?"この条件では対象制度の切り替わりはありません。":selection?
       <><strong>（世帯主, 配偶者）</strong>（{selection.from.map(yen).join(", ")}）→（{selection.to.map(yen).join(", ")}）万円
         {detail.map(s=><span key={s.id}><i style={{background:s.color}}/>{s.label}：{s.before} → {s.after}</span>)}</>:
-      "境界線をクリックすると、その境界を横切る断面を表示します。"}</figcaption>
+      "線を指すと、給与と制度の切り替わりを表示します。"}</figcaption>
   </figure>;
 }
 
-function MapResult({job,calculator,retry}) {
-  const [state,setState]=useState({type:"progress",percent:0});
-  const [axis,setAxis]=useSessionParameter("sectionAxis","head");
-  const [pointP]=useSessionParameter("income",["200","0"]);
-  const [fixedSalaries,setFixedSalaries]=useSessionParameter("sectionFixedSalaries",pointP);
-  const fixedIndex=axis==="head"?1:0;
-  const fixedText=fixedSalaries[fixedIndex], fixedWan=readSalaryWan(fixedText);
-  const [chosen,setChosen]=useState(null);
-  const section=useMemo(()=>fixedWan===null?null:buildSalaryIncomeSection(calculator,{axis,fixedWan}),[calculator,axis,fixedWan]);
-  const selectedAfterWan=section?.events.find(e=>e.afterWan===chosen)?.afterWan??section?.events.find(e=>e.dropYen>0)?.afterWan??section?.events[0]?.afterWan??null;
-  function pick(axisNext,fixedNext,salaryAfter){
-    setAxis(axisNext);
-    setFixedSalaries(prev=>prev.map((v,i)=>i===(axisNext==="head"?1:0)?String(fixedNext):v));
-    setChosen(salaryAfter);
-  }
-  useEffect(()=>{
-    let worker,active=true;
-    import("./createSalaryDecisionMapWorker").then(({createSalaryDecisionMapWorker})=>{
-      if(!active) return;
-      worker=createSalaryDecisionMapWorker();
-      worker.onmessage=({data})=>{
-        if(!active)return;
-        setState(data);
-        if(data.type!=="progress") worker.terminate();
-      };
-      worker.onerror=()=>{if(active){setState({type:"error",message:"制度の変更点を計算できませんでした。"});worker.terminate();}};
-      worker.postMessage({type:"decision-map",household:job});
-    }).catch(()=>{if(active)setState({type:"error",message:"制度の変更点を計算できませんでした。"});});
-    return ()=>{active=false;worker?.terminate();};
-  },[job]);
-  const fixedLabel=(axis==="head"?"配偶者":"世帯主")+"の固定給与（万円／年）";
-  return <>
-    <div className="decision-section-options">
-      <label>断面の横軸<select value={axis} onChange={e=>{setAxis(e.target.value);setChosen(null);}}>
-        <option value="head">世帯主の給与</option><option value="spouse">配偶者の給与</option>
-      </select></label>
-      <label>{fixedLabel}<input type="number" value={fixedText} min="0" max="1500" step="1"
-        onChange={e=>{const next=e.target.value;setFixedSalaries(prev=>prev.map((v,i)=>i===fixedIndex?next:v));setChosen(null);}}/></label>
-      <input type="range" aria-label={fixedLabel} min="0" max="1500" step="1" value={fixedWan??0} onChange={e=>pick(axis,e.target.value,null)}/>
-    </div>
-    {state.type==="complete"?<DecisionFigure map={state.map} calculator={calculator} axis={axis} fixedWan={fixedWan} selectedAfterWan={selectedAfterWan} onPick={pick}/>:
-      state.type==="error"?<p role="alert">{state.message} <button type="button" onClick={retry}>再計算</button></p>:<p role="status">境界図を計算中：{state.percent}%</p>}
-    {section?<IncomeSectionChart section={section} selectedAfterWan={selectedAfterWan} onSelectEvent={setChosen}/>:<p>固定給与は0～1,500万円の整数で指定してください。</p>}
-  </>;
-}
-
-/** Gと同じ世帯入力を同一タブで共有する。別条件の計算結果を使い回さない。 */
-export default function SalaryDecisionMapPage() {
-  const {children,setChildren,roles,setRoles,inputs}=usePaperHousehold();
-  const [job,setJob]=useState(null),[open,setOpen]=useState(true);
-  const {calculator,error}=useMemo(()=>{try{return {calculator:createRevisionCalculator(inputs)};}catch(e){return {error:e.message};}},[inputs]);
-  const draw=()=>{setJob({inputs});setOpen(false);};
-  return <section id="salary-decision-map" className="appendix-panel revision-simulator decision-page" aria-label="制度の変更点（2次元）">
-    <details className="revision-conditions" open={open} onToggle={e=>setOpen(e.currentTarget.open)}>
-      <summary>世帯と子どもの条件</summary>
-      <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={e=>{setJob(null);setChildren(Array.from({length:Number(e.target.value)},(_,i)=>children[i]||blankChild()));}}>{[1,2,3].map(n=><option key={n} value={n}>{n}人</option>)}</select></label></div>
-      <div className="revision-fields">
-        <label>配偶者控除・配偶者特別控除を申告する親<select value={roles.spouseDeductionClaimant} onChange={e=>{setJob(null);setRoles({...roles,spouseDeductionClaimant:e.target.value});}}><option value="head">世帯主</option><option value="spouse">配偶者</option><option value="none">どちらも申告しない</option></select></label>
-        <label>障害児福祉手当の主たる生計維持者<select value={roles.welfareMaintainer} onChange={e=>{setJob(null);setRoles({...roles,welfareMaintainer:e.target.value});}}><option value="highest-salary">給与の高い親（同額なら世帯主）</option><option value="head">世帯主固定</option><option value="spouse">配偶者固定</option></select></label>
-      </div>
-      {children.map((c,i)=><ChildFields key={i} index={i} child={c} update={d=>{setJob(null);setChildren(cs=>cs.map((v,j)=>i===j?{...v,...d}:v));}}/>)}
-      {error&&<p role="alert">{error}</p>}
-      <button type="button" disabled={!!error || job?.inputs===inputs} onClick={draw}>変更点を描画</button>
-    </details>
-    {job&&calculator&&job.inputs===inputs&&<MapResult job={job.inputs} calculator={calculator} retry={()=>{setJob(null);setOpen(true);}}/>}
-  </section>;
+/** The XY figure projects the shared household grid; changing direction does not calculate another grid. */
+export default function SalaryDecisionMapPage({datasetState:state,calculator,head,spouse,onSelectSalary}) {
+  if(!state)return null;
+  if(state.type==="complete")return <DecisionFigure map={state.map} {...{calculator,head,spouse,onSelectSalary}}/>;
+  if(state.type==="error")return <p role="alert">{state.message}{state.retry&&<button type="button" onClick={state.retry}>再計算</button>}</p>;
+  return <p role="status">計算中：{state.percent}%</p>;
 }

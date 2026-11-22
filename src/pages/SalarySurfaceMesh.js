@@ -6,32 +6,11 @@ import "./SalarySurfaceMesh.css";
 import { SURFACE_SYSTEMS } from "../calc/salarySurfaceSystems.js";
 import { salaryInkGeometry, salaryInkRGB } from "./salarySurfaceInk.js";
 import { useSessionParameter } from "./salarySimulatorSession";
+import {salaryMeshIndices} from "./prepareSalaryGraphDrawing.js";
+export {salaryMeshIndices};
 
-const RESTART = 0xffffffff;
 const fmt = n => n.toLocaleString("ja-JP", {maximumFractionDigits:2});
 const clamp = (n, a, b) => Math.max(a, Math.min(n, b));
-
-// Each consecutive triple in a row strip is exactly one triangle in a 1×1 cell.
-// Restarting at every gap drops all (and only) triangles touching an unknown vertex.
-export function salaryMeshIndices(heights, width) {
-  const out = new Uint32Array((2 * width + 1) * (width - 1));
-  let n = 0;
-  for (let y = 0; y < width - 1; y++) {
-    let start = n;
-    for (let k = 0; k < 2 * width; k++) {
-      const i = (y + (k % 2)) * width + (k >>> 1);
-      if (Number.isFinite(heights[i])) out[n++] = i;
-      else {
-        if (n - start >= 3) out[n++] = RESTART;
-        else n = start;
-        start = n;
-      }
-    }
-    if (n - start >= 3) out[n++] = RESTART;
-    else n = start;
-  }
-  return out.subarray(0, n);
-}
 
 // Float heights on the GPU; X/Y follow directly from each index. No JS vertex objects.
 const vertexSource = `#version 300 es
@@ -168,7 +147,7 @@ function createRenderer(canvas, surface) {
       const b=gl.createBuffer(); buffers.push(b); gl.bindBuffer(target,b); gl.bufferData(target,data,gl.STATIC_DRAW);
       return b;
     };
-    const indices = salaryMeshIndices(surface.heights,surface.width);
+    const indices = surface.meshIndices ?? salaryMeshIndices(surface.heights,surface.width);
     if (!indices.length) throw Error("隣接する算定点が足りないため、立体面を描けません。");
     const count=indices.length;
     bind(gl.ARRAY_BUFFER,surface.heights);
@@ -176,7 +155,7 @@ function createRenderer(canvas, surface) {
     const faceIndex=bind(gl.ELEMENT_ARRAY_BUFFER,indices);
     const indexBuffer=data=>({count:data.length, buffer:data.length?bind(gl.ELEMENT_ARRAY_BUFFER,data):null});
     const systems=difference?[]:SURFACE_SYSTEMS.map(s=>({...s,rgb:salaryInkRGB(s.color)}));
-    const groups=difference?[]:salaryInkGeometry(surface,systems).map(({mask,points,lines,markers})=>{
+    const groups=difference?[]:(surface.inkGeometry ?? salaryInkGeometry(surface,systems)).map(({mask,points,lines,markers})=>{
       const members=systems.filter(s=>s.bit & mask);
       return {mask,colors:new Float32Array(members.flatMap(s=>s.rgb)),number:members.length,
         points:indexBuffer(points),lines:indexBuffer(lines),markers:indexBuffer(markers)};

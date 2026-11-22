@@ -14,19 +14,27 @@ export default function HouseholdCalculationTrace({point, inputs}) {
   const salary=Math.round(point.breakdown.salaryWan*10000), tax=Math.round(point.breakdown.taxWan*10000);
   const net=Math.round(point.studyDisposableWan*10000);
   const rows=[
-    ["給与収入", "世帯主給与 ＋ 配偶者給与", add(i.head.annualPayYen,i.spouse.annualPayYen), yen(salary)],
-    ["税額", "世帯主の所得税等・住民税等 ＋ 配偶者の所得税等・住民税等", "("+add(h.incomeTaxYen,h.residentTaxYen)+") ＋ ("+add(s.incomeTaxYen,s.residentTaxYen)+")", yen(tax)],
-    ["社会保険料", "世帯主の本人負担 ＋ 配偶者の本人負担", add(i.head.annual.totalYen,i.spouse.annual.totalYen), yen(i.totalYen)],
-    ["現金給付", "特別児童扶養手当 ＋ 障害児福祉手当 ＋ 児童手当", add(b.tcca,b.welfare,b.childAllowance), yen(b.tcca+b.welfare+b.childAllowance)],
-    ["サービス利用者負担", "世帯上限適用後の月額 × 12", n(u.monthly)+" × 12", yen(u.annual)],
     ["世帯の可処分所得（試算対象分）", "給与収入 − 税額 − 社会保険料 ＋ 現金給付 − サービス利用者負担",
       n(salary)+" − "+n(tax)+" − "+n(i.totalYen)+" ＋ ("+add(b.tcca,b.welfare,b.childAllowance)+") − "+n(u.annual), yen(net)],
+    ["給与収入", "世帯主給与 ＋ 配偶者給与", add(i.head.annualPayYen,i.spouse.annualPayYen), yen(salary)],
+    ["社会保険料", "世帯主の本人負担 ＋ 配偶者の本人負担", add(i.head.annual.totalYen,i.spouse.annual.totalYen), yen(i.totalYen)],
+    ["税額", "世帯主の所得税等・住民税等 ＋ 配偶者の所得税等・住民税等", "("+add(h.incomeTaxYen,h.residentTaxYen)+") ＋ ("+add(s.incomeTaxYen,s.residentTaxYen)+")", yen(tax)],
+    ["現金給付", "特別児童扶養手当 ＋ 障害児福祉手当 ＋ 児童手当", add(b.tcca,b.welfare,b.childAllowance), yen(b.tcca+b.welfare+b.childAllowance)],
+    ["サービス利用者負担", "世帯上限適用後の月額 × 12", n(u.monthly)+" × 12", yen(u.annual)],
   ];
   return <section className="revision-calculation-trace" aria-label="計算式と内訳">
     <TraceTable caption="世帯の可処分所得（円／年）" rows={rows}/>
-    <TraceServiceBurden point={point} inputs={inputs}/>
-    <details><summary>夫婦それぞれの社会保険料</summary><TraceInsurance point={point}/></details>
-    <details><summary>夫婦それぞれの給与所得・控除・税額</summary><TraceParentTaxes point={point} inputs={inputs}/></details>
-    <details><summary>各手当の所得判定・支給額</summary><TraceAllowances point={point} inputs={inputs}/></details>
+    <section aria-label="夫婦それぞれの社会保険料"><h4>夫婦それぞれの社会保険料</h4>
+      <TraceInsurance point={point}/>
+    </section>
+    <section aria-label="夫婦それぞれの給与所得・控除・税額"><h4>夫婦それぞれの給与所得・控除・税額</h4>
+      <TraceParentTaxes point={point} inputs={inputs}/>
+    </section>
+    <section aria-label="各手当の所得判定・支給額"><h4>各手当の所得判定・支給額</h4>
+      <TraceAllowances point={point} inputs={inputs}/>
+    </section>
+    <section aria-label="サービス利用者負担">
+      <TraceServiceBurden point={point} inputs={inputs}/>
+    </section>
   </section>;
 }

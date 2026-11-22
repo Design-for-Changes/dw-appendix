@@ -1,4 +1,9 @@
 .revision-simulator { color: #233b43; }
+.revision-graph-tabs { display:flex; flex-wrap:wrap; gap:.25rem; border-bottom:1px solid #a9bfba; margin:.9rem 0 .6rem; }
+.revision-simulator .revision-graph-tabs button { background:transparent; border:0; border-bottom:3px solid transparent; border-radius:0; color:#33564e; }
+.revision-simulator .revision-graph-tabs button[aria-selected="true"] { color:#164c41; font-weight:700; background:#edf5f1; border-bottom-color:#216b57; }
+.revision-simulator .revision-graph-tabs button:focus-visible { outline:2px solid #216b57; outline-offset:-2px; }
+.revision-simulator [role="tabpanel"][hidden] { display:none; }
 .revision-simulator fieldset, .revision-simulator .revision-point { min-width: 0; margin: 1.15rem 0; padding: .85rem 1rem; border: 1px solid #bfd0d0; border-radius: .35rem; }
 .revision-point > h3 { margin: 0 0 .65rem; font-size: 1.05rem; }
 .revision-simulator legend { padding: 0 .35rem; font-weight: 700; }
@@ -47,12 +52,12 @@
 .revision-breakdown div { display: flex; justify-content: space-between; gap: .6rem; border-bottom: 1px solid #dbe5e0; padding: .25rem .4rem; }
 .revision-breakdown dd { margin: 0; font-variant-numeric: tabular-nums; }
 .revision-surface { max-width: 50rem; margin: 1rem 0; }
-.revision-surface#salary-surface-plot { --salary-plot-height: max(26rem, 87vh); max-width:none; margin:0; }
+.revision-surface:is(#salary-surface-plot,#income-difference-plot) { --salary-plot-height: max(26rem, 87vh); max-width:none; margin:0; }
 @supports (height: 1svh) {
-  .revision-surface#salary-surface-plot { --salary-plot-height: max(26rem,87svh); }
+  .revision-surface:is(#salary-surface-plot,#income-difference-plot) { --salary-plot-height: max(26rem,87svh); }
 }
 @media (max-width: 640px) {
-  .revision-surface#salary-surface-plot { --salary-plot-height:clamp(22rem,110vw,42rem); margin-inline:-18px; }
+  .revision-surface:is(#salary-surface-plot,#income-difference-plot) { --salary-plot-height:clamp(22rem,110vw,42rem); margin-inline:-18px; }
 }
 .revision-surface[id] { scroll-margin-top:.5rem; }
 .revision-surface figcaption small { font-size:.82em; white-space:nowrap; }

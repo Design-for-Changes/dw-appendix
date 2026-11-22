@@ -8,8 +8,7 @@ import ResearchDataAppendix from "./ResearchDataAppendix";
 import CalculationReferenceAppendix from "./CalculationReferenceAppendix";
 import RevisionScenariosAppendix from "./RevisionScenariosAppendix";
 import ChildEligibilityEvidence from "./ChildEligibilityEvidence";
-import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
-import RevisionIncomePlane from "./RevisionIncomePlane";
+import { useSessionParameter } from "./salarySimulatorSession";
 
 const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
@@ -20,12 +19,15 @@ const APPENDIX_PAGES = [
   { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
   { mode: "scenarios", letter: "G", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
   { mode: "eligibility", letter: "H", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
-  { mode: "decisionmap", letter: "I", label: "制度境界と可処分所得の断面（2次元）", hash: "#salary-decision-map" },
-  { mode: "difference", letter: "J", label: "障害の有無による可処分所得差（3D）", hash: "#disability-income-difference" },
 ];
 
+const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",difference:"#disability-income-difference"};
+function graphForHash(hash){
+  if(hash==="#salary-surface")return "income";
+  return Object.keys(GRAPH_HASH).find(k=>GRAPH_HASH[k]===hash);
+}
 function viewModeForHash(hash) {
-  if (hash === "#salary-surface") return "scenarios";
+  if (graphForHash(hash)) return "scenarios";
   if (hash.startsWith("#calculation-function") || hash.startsWith("#calculation-flow")) return "functions";
   return APPENDIX_PAGES.find((page) => page.hash === hash)?.mode || "current";
 }
@@ -1315,11 +1317,18 @@ function BreakdownPanel({ point }) {
 
 export default function AppendixCliffMap() {
   const [viewMode, setViewMode] = useState(() => viewModeForHash(window.location.hash));
+  const [lastGraph,setLastGraph]=useSessionParameter("graphView","income");
+  const graphView=(viewMode==="scenarios" && graphForHash(window.location.hash)) || (Object.hasOwn(GRAPH_HASH,lastGraph)?lastGraph:"income");
   useEffect(() => {
-    const followHash = () => setViewMode(viewModeForHash(window.location.hash));
+    const followHash = () => {
+      setViewMode(viewModeForHash(window.location.hash));
+      const graph=graphForHash(window.location.hash);
+      if(graph)setLastGraph(graph);
+    };
+    followHash();
     window.addEventListener("hashchange", followHash);
     return () => window.removeEventListener("hashchange", followHash);
-  }, []);
+  }, [setLastGraph]);
   const [selectedId, setSelectedId] = useState("case1");
   const [selectedSalary, setSelectedSalary] = useState(900);
   const appendixData = useAppendixData(selectedId, selectedSalary);
@@ -1329,8 +1338,13 @@ export default function AppendixCliffMap() {
   const activePage = APPENDIX_PAGES.find((page) => page.mode === viewMode);
   const selectViewMode = (mode) => {
     setViewMode(mode);
-    const hash = APPENDIX_PAGES.find((page) => page.mode === mode).hash;
+    const hash = mode==="scenarios" ? GRAPH_HASH[graphView] : APPENDIX_PAGES.find((page) => page.mode === mode).hash;
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
+  };
+  const selectGraph=graph=>{
+    if(!Object.hasOwn(GRAPH_HASH,graph))return;
+    window.history.replaceState(null,"",GRAPH_HASH[graph]);
+    setLastGraph(graph);
   };
   const caseAccent = selected?.color || "#9aa7ad";
   const caseSectionStyle = {
@@ -1340,7 +1354,7 @@ export default function AppendixCliffMap() {
   };
 
   return (
-    <main className={"App appendix-page" + (["scenarios","decisionmap","difference"].includes(viewMode) ? " appendix-page-simulator" : "")}>
+    <main className={"App appendix-page" + (viewMode==="scenarios" ? " appendix-page-simulator" : "")}>
       <section className="appendix-hero">
         <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
         <h1>障害福祉における給付・負担の制度間相互作用と全体最適</h1>
@@ -1363,7 +1377,7 @@ export default function AppendixCliffMap() {
 
       <header className="appendix-page-heading" aria-labelledby="appendix-page-title">
         <h2 id="appendix-page-title">Web Appendix {activePage.letter}　{activePage.label}</h2>
-        <a href={activePage.hash}>このページへのリンク</a>
+        <a href={viewMode==="scenarios"?GRAPH_HASH[graphView]:activePage.hash}>このページへのリンク</a>
       </header>
 
       {(viewMode === "current" || viewMode === "optimal") && <p className="research-note">D・Eは従来3ケースの入力条件による参考計算です。医療費の旧代表値と旧就学奨励費条件を含み、改稿用の採用条件とは区別します。改稿用の条件とシミュレーターは<a href="#revision-scenarios" onClick={() => selectViewMode("scenarios")}>Web Appendix G</a>に示します。</p>}
@@ -1386,7 +1400,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "decisionmap" ? <SalaryDecisionMapPage /> : viewMode === "difference" ? <RevisionIncomePlane comparison /> : viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix graphView={graphView} onGraphViewChange={selectGraph}/> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

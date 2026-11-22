@@ -4,6 +4,8 @@ import { createRevisionCalculator } from "../calc/revisionEngine";
 import { createDisabilityIncomeComparison } from "../calc/disabilityIncomeDifference";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { RevisionSurface } from "./RevisionSurface";
+import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
+import {useSalaryGraphDataset} from "./salaryGraphDataset";
 import { useSessionParameter } from "./salarySimulatorSession";
 import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
 import HouseholdCalculationTrace from "./HouseholdCalculationTrace";
@@ -17,6 +19,11 @@ const PARENT_NAME={head:"世帯主",spouse:"配偶者"};
 const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
 const designUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(design, null, 2));
+const GRAPH_VIEWS = [
+  ["income","可処分所得（3D）"],
+  ["boundaries","制度境界・下落・回復（2D）"],
+  ["difference","可処分所得差"],
+];
 
 export function ChildFields({ index, child, update }) {
   return <fieldset className="revision-child"><legend>子ども{index + 1}</legend>
@@ -37,30 +44,57 @@ export function ChildFields({ index, child, update }) {
 }
 
 
-/** 世帯条件ごとに同じ計算器で選択点と立体格子を計算する。 */
-export default function RevisionIncomePlane({comparison=false}) {
+/** 3種類の図が世帯条件・描画済み条件・点Pを共有する。 */
+export default function RevisionIncomePlane({graphView,onGraphViewChange,comparison=false}) {
   const pointId=useId();
+  const [localView,setLocalView]=useState(comparison?"difference":"income");
+  const view=graphView ?? localView;
+  const isDifference=view==="difference";
+  function changeView(id) {
+    if(graphView===undefined)setLocalView(id);
+    onGraphViewChange?.(id);
+  }
+  function navigateTabs(event,index) {
+    const n=GRAPH_VIEWS.length;
+    const target={ArrowRight:(index+1)%n,ArrowLeft:(index+n-1)%n,Home:0,End:n-1}[event.key];
+    if(target===undefined)return;
+    event.preventDefault();
+    event.currentTarget.parentNode.children[target].focus();
+    changeView(GRAPH_VIEWS[target][0]);
+  }
   const {children,setChildren,roles,setRoles,inputs}=usePaperHousehold();
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
-  const [lastDrawnKey,setLastDrawnKey] = useSessionParameter(comparison?"differenceDrawnKey":"lastDrawnKey", null);
+  const [lastDrawnKey,setLastDrawnKey] = useSessionParameter("lastDrawnKey", null);
   const salary = income.map(readSalaryWan);
   const { min, max } = salaryBounds(fixedTotal);
   const incomesValid = salary.every((v) => v !== null && v >= min && v <= max);
   const total = incomesValid ? salary[0] + salary[1] : null;
-  const { calculator, error } = useMemo(() => {
+  const { calculator, differenceCalculator, error } = useMemo(() => {
     try {
-      return { calculator: comparison?createDisabilityIncomeComparison(inputs):createRevisionCalculator(inputs), error:null };
+      return { calculator:createRevisionCalculator(inputs), differenceCalculator:createDisabilityIncomeComparison(inputs), error:null };
     } catch (err) { return { calculator: null, error: err.message }; }
-  }, [inputs,comparison]);
+  }, [inputs]);
   const inputKey=useMemo(()=>calculator ? JSON.stringify(inputs) : null,[calculator,inputs]);
   const drawn=inputKey !== null && lastDrawnKey === inputKey;
+  // 給与格子は世帯条件ごとに一度だけ走査し、各図は同じ結果を使う。
+  const datasetState=useSalaryGraphDataset(inputs,drawn);
+  // 未訪問の図は先回りで描画せず、一度開いた図は非表示状態のまま保持する。
+  const [visited,setVisited]=useState([]);
+  useEffect(()=>{
+    setVisited(old=>!drawn ? (old.length?[]:old) : old.includes(view)?old:[...old,view]);
+  },[drawn,view]);
+  const plotted=id=>drawn&&(view===id||visited.includes(id));
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
   useEffect(()=>{
     if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(null);
   },[inputKey,lastDrawnKey,setLastDrawnKey]);
-  const point = incomesValid && calculator ? calculator.evaluate(salary[0], salary[1]) : null;
-  const recipient=point?.status==="calculated" ? (comparison ? point.allowanceRecipient : point.details.roles.allowanceRecipient) : null;
+  const [head,spouse]=incomesValid?salary:[null,null];
+  const point=useMemo(()=>head!==null&&calculator?calculator.evaluate(head,spouse):null,[calculator,head,spouse]);
+  const needDifference=isDifference||plotted("difference");
+  const differencePoint=useMemo(()=>needDifference&&head!==null&&differenceCalculator
+    ?differenceCalculator.evaluate(head,spouse):null,[differenceCalculator,head,spouse,needDifference]);
+  const recipient=point?.status==="calculated" ? point.details.roles.allowanceRecipient : null;
   function changeIncome(i, value) {
     const next = [...income]; next[i] = value;
     const v = readSalaryWan(value);
@@ -75,9 +109,8 @@ export default function RevisionIncomePlane({comparison=false}) {
   function updateChild(i, delta) {
     setChildren(prev=>prev.map((c,j)=>j===i?{...c,...delta}:c));
   }
-  return <section id={comparison?"disability-income-difference":"salary-surface"} className="revision-simulator" aria-label={comparison?"障害の有無による可処分所得差":"夫婦の給与収入と世帯の可処分所得"}>
-    {comparison && <p>差額は、設定した世帯の年間可処分所得から、給与・子どもの人数・年齢・扶養関係が同じで、障害関係の手当・控除・サービス自己負担がない世帯の年間可処分所得を引いた額です。</p>}
-    {comparison && <DifferenceAllCases/>}
+  const sharedPlot={inputs,head,spouse,fixedTotal,onSelectSalary:selectSalary,datasetState};
+  return <section id="salary-surface" className="revision-simulator" aria-label="夫婦の給与収入と世帯の可処分所得">
     <details className="revision-conditions" open={conditionsOpen} onToggle={e=>setConditionsOpen(e.currentTarget.open)}>
       <summary>世帯と子どもの条件</summary>
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
@@ -89,7 +122,17 @@ export default function RevisionIncomePlane({comparison=false}) {
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
       <button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
     </details>
-    {drawn && <RevisionSurface inputs={inputs} calculator={calculator} head={point ? salary[0] : null} spouse={point ? salary[1] : null} point={point} fixedTotal={fixedTotal} onSelectSalary={selectSalary} comparison={comparison} />}
+    <div className="revision-graph-tabs" role="tablist" aria-label="グラフの切り替え">
+      {GRAPH_VIEWS.map(([id,label],index)=><button key={id} id={pointId+"-tab-"+id} type="button" role="tab"
+        aria-selected={view===id} aria-controls={pointId+"-panel-"+id} tabIndex={view===id?0:-1}
+        onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
+    </div>
+    {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
+      {id==="difference"&&(view===id||plotted(id))&&<><p>差額は、設定した世帯の年間可処分所得から、給与・子どもの人数・年齢・扶養関係が同じで、障害関係の手当・控除・サービス自己負担がない世帯の年間可処分所得を引いた額です。</p><DifferenceAllCases/></>}
+      {plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
+        <RevisionSurface {...sharedPlot} calculator={id==="income"?calculator:differenceCalculator}
+          point={id==="income"?point:differencePoint} comparison={id==="difference"}/>)}
+    </div>)}
     <section className="revision-point" aria-label="点P"><h3>点P</h3>
       <div className="point-salary-fields">{design.salary.axes.map((name,i)=>{
         const id=pointId+"-salary-"+i, caption=name+"（万円／年）";
@@ -104,8 +147,8 @@ export default function RevisionIncomePlane({comparison=false}) {
       <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与収入総額を固定して夫婦間の配分を変える</label>
       <p aria-live="polite">{incomesValid ? `世帯の給与収入総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
       {recipient&&<p>特児の受給資格者・子の税扶養：{PARENT_NAME[recipient]}</p>}
-    {comparison && point && <IncomeDifferencePoint point={point}/>}
-    {!comparison && point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
+    {isDifference && differencePoint && <IncomeDifferencePoint point={differencePoint}/>}
+    {!isDifference && point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
       {point.status !== "calculated" ? <><span>{point.status==="excluded"?"この給与点は試算対象外":"この給与点は未算定"}</span><ul>{point.reasons.map((r,i)=><li key={i}>{r}</li>)}</ul></> : <span>{fmt(point.studyDisposableWan)}<small> 万円／年</small></span>}
       </div>
       {point.breakdown && <HouseholdCalculationTrace point={point} inputs={inputs}/>}

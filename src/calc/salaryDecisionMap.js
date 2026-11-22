@@ -38,6 +38,23 @@ export function changedSalaryDecisionSystems(previous,current) {
  * @returns {object} 有効点数と3制度それぞれの線分 [x1,y1,x2,y2]（万円）。
  */
 export function buildSalaryDecisionMap(calculator, {maxSalaryWan = MAX, onProgress} = {}) {
+  return collectDecisionMap(maxSalaryWan,(x,y)=>{
+    const point=calculator.evaluate(x,y);
+    return point?.status==="calculated"?decisionCodes(point):-1;
+  },onProgress);
+}
+
+/** 既に算定した1万円格子の制度判定を読み、制度境界と方向別の変更マスクを同時に生成する。 */
+export function buildSalaryDecisionMapFromGrid({width,decisionCodes:codes,validCount},changedX,changedY) {
+  if(!(codes instanceof Uint8Array) || !(changedX instanceof Uint8Array) || !(changedY instanceof Uint8Array) ||
+    [codes,changedX,changedY].some(a=>a.length!==width*width))
+    throw new RangeError("制度境界の格子と変更マスクのサイズが一致しません。");
+  const map=collectDecisionMap(width-1,(_x,_y,index)=>codes[index],null,changedX,changedY);
+  return {...map,validCount};
+}
+
+/** 行方向に給与格子を走査し、隣接点で判定が変わった3制度の線分と、方向別変更マスクを集める。 */
+function collectDecisionMap(maxSalaryWan,readCode,onProgress,changedX,changedY) {
   if (!Number.isInteger(maxSalaryWan) || maxSalaryWan < 0 || maxSalaryWan > MAX)
     throw new RangeError("給与上限は0～1,500万円の整数で指定してください。");
   const n = maxSalaryWan, width = n + 1;
@@ -55,11 +72,13 @@ export function buildSalaryDecisionMap(calculator, {maxSalaryWan = MAX, onProgre
     let left = 0;
     openH.fill(0);
     for (let x = 0; x <= n; x++) {
-      const pt = (x === 0 && y === 0) ? null : calculator.evaluate(x, y);
-      if (pt?.status === "calculated") validCount++;
-      const current = decisionCodes(pt), up = above[x];
+      const index=y*width+x,raw=index===0?-1:readCode(x,y,index);
+      if(raw>=0) validCount++;
+      const current = raw>=0?raw:0, up = above[x];
       for (let j = 0; j < IDS.length; j++) {
         const v = transition(left, current, 2*j), h = transition(up, current, 2*j);
+        if(v && changedX)changedX[index]|=1<<j;
+        if(h && changedY)changedY[index]|=1<<j;
         const lines = layers[j].segments;
         if (v !== openV[j][x]) {
           if (openV[j][x]) lines.push([x-0.5, lower(startV[j][x]), x-0.5, upper(y-1)]);

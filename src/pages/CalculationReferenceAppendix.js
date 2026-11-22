@@ -36,8 +36,6 @@ const currentFlow = [
 const discussionFlow = [
   ["E「制度境界のみ」：各給与点の所得区分 → 制度別の境界線","夫婦各1万円刻みの隣接する給与点を比較し、各制度の区分が切り替わる位置だけを結ぶ。支出額や可処分所得の下落幅は用いない。","src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier","src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier","src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap"],
   ["隣接する給与点の判定区分 → 制度別・判定対象者別の変化点","収支が下がったか否かを問わず、判定区分が変わった点を抽出する。判定できない区間をまたいで変化を推定しない。","src/calc/paperChangePoints.js:scanPaperChangePoints"],
-  ["就学奨励費（N04）：世帯構成・級地・教育費 → 月需要額 → 支弁区分","特別支援学校小学部に在籍する場合の参考境界。令和6年度の需要額表を使い、必要な実費等が不明なら区分を判定しない。給付額は可処分所得に加えない。","src/calc/policyEducationNeed.js:assessBoundaryEducationNeed","src/calc/paperEducationAssessment.js:assessPaperEducationClass"],
-  ["船橋市の医療費助成（M01）・子ども医療：各制度の要件 → 適用状況","同一医療保険単位の所得割・障害要件等によるM01の判定と、年齢や診療条件等による子ども医療の判定を分ける。窓口の実支払額は推定しない。","src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage"],
 ];
 
 /** 計算処理と各関数の説明を、ページ内で相互に参照できるようにする。 */

@@ -11,15 +11,15 @@ const {parse}=require('@babel/parser');
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')&&!f.endsWith('.test.js')).map(f=>'src/calc/'+f),
   'scripts/generate-appendix-data.mjs','scripts/generate-revision-scenarios.mjs','scripts/generate-pattern-salary-envelopes.mjs'].sort();
-const apiNames=new Set(['createRevisionCalculator','calculateHouseholdInsurance2029','calculatePaperSalaryTaxInputs2029','calculateSpecialChildAllowance','calculateDisabledChildWelfareAllowance','scanPaperChangePoints','assessFunabashiMedicalCoverage','assessPaperEducationClass','calculateHouseholdCoverage','estimateFunabashiNational','annualEmployeePremiums','buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
+const apiNames=new Set(['createRevisionCalculator','calculateHouseholdInsurance2029','calculatePaperSalaryTaxInputs2029','calculateSpecialChildAllowance','calculateDisabledChildWelfareAllowance','scanPaperChangePoints','calculateHouseholdCoverage','estimateFunabashiNational','annualEmployeePremiums','buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
 function category(file){
   if(/allPatternsComparison|generate-pattern-salary-envelopes/.test(file))return '全パターンの可処分所得差';
-  if(/policyOnlyBoundaries|policyAdditionalBands|policyEducationNeed/.test(file))return '制度ごとの所得区分の境界';
+  if(/policyOnlyBoundaries|policyAdditionalBands/.test(file))return '制度ごとの所得区分の境界';
   if(/paperSalaryBands/.test(file))return '二給与格子と配偶者所得区分';
   if(/disabilityIncomeDifference/.test(file))return '障害の有無による可処分所得差';
   if(/salaryDecisionMap/.test(file))return '二給与平面での制度変更点';
   if(/salaryIncomeSection/.test(file))return '給与断面での下落・後退・回復';
-  if(/paperChangePoints|paperEducationAssessment|paperMedicalCoverage/.test(file))return '考察専用・制度区分と代替助成（収支に算入しない）';
+  if(/paperChangePoints/.test(file))return '考察専用・制度上の変化点（収支に算入しない）';
   if(/householdInsurance2029/.test(file))return '主試算・夫婦別の社会保険料';
   if(/paperSalaryTaxInputs2029/.test(file))return '主試算・給与所得と所得控除';
   if(/specialChildAllowance|disabledChildWelfareAllowance/.test(file))return '主試算・障害児の手当と対象者別の所得制限';

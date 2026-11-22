@@ -2,14 +2,13 @@ import {useMemo} from "react";
 import {useSessionParameter} from "./salarySimulatorSession";
 import {retryPolicyBoundaryDataset, usePolicyBoundaryDataset} from "./policyBoundaryDataset";
 import {partitionPolicyBoundaries} from "./policyBoundaryInk";
-import {BOUNDARY_EDUCATION_BASIS} from "../calc/policyEducationNeed";
 import SalaryPlaneAxes,{WIDTH,HEIGHT,toSalaryPlanePath} from "./SalaryPlaneAxes";
 import "./salary-decision-map.css";
 import "./SalarySurfaceMesh.css";
 import "./policy-boundaries.css";
 
 const colors = {"N01-1":"#a72344","N01-2":"#13498b","N02/N03":"#13764f",
-  N04:"#934d09",M01:"#86418d","N02/M03":"#246d7e",
+  "N02/M03":"#246d7e",
   housing:"#59612b",hearing:"#814637",power:"#4f568b",medicalCare:"#1c677a"};
 
 export function PolicyBoundaryFigure({result}) {
@@ -22,6 +21,7 @@ export function PolicyBoundaryFigure({result}) {
   const describe=g=>g.transitions.map(t=>names[t.id]+(t.from && t.to ? "："+t.from+" ↔ "+t.to : "")).join(" ／ ");
   const active=chartGroups.find(g=>g.key===focus);
   return <figure className="decision-figure policy-boundary-figure" aria-label="制度ごとの所得区分の境界">
+    <p>（船橋市を想定）</p>
     <div className="salary-mesh-legend" role="group" aria-label="表示する制度">
       <button type="button" aria-pressed={layers.every(s=>!s.segments.length||!hidden.includes(s.id))} onClick={()=>setHidden([])}>すべて</button>
       {layers.map(s=>{
@@ -44,9 +44,9 @@ export function PolicyBoundaryFigure({result}) {
   </figure>;
 }
 
-export default function PolicyBoundariesOnly({inputs,educationInputs={}}) {
+export default function PolicyBoundariesOnly({inputs}) {
   // このタブは共通の「グラフを描画」で条件が確定した後だけマウントする。
-  const key=JSON.stringify({inputs,options:{educationInputs}});
+  const key=JSON.stringify({inputs});
   const state=usePolicyBoundaryDataset(key);
   return <section className="policy-boundaries" aria-label="制度境界のみ">
     {state?.type==="progress" && <p role="status">制度境界を計算中：{state.percent}%</p>}
@@ -54,7 +54,7 @@ export default function PolicyBoundariesOnly({inputs,educationInputs={}}) {
     {state?.type==="ready" && <><PolicyBoundaryFigure result={state.result}/>
       <details><summary>境界の算定に用いた資料</summary>
         <ul>{state.result.layers.filter(s=>typeof s.source==="string").map(s=><li key={s.id}>
-          <a href={s.source}>{s.label}</a>{s.id==="N04"&&<> ／ <a href={BOUNDARY_EDUCATION_BASIS.rateTable}>需要額の費目別単価表（転載）</a></>}</li>)}</ul>
+          <a href={s.source}>{s.label}</a></li>)}</ul>
       </details></>}
   </section>;
 }

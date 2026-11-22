@@ -7,12 +7,11 @@ Web Appendix。障害児世帯モデルで、世帯主の給与に対する可�
 シミュレーター名は「障害福祉給付・負担シミュレーター（dw-appendix）」とする。
 
 ## 概要
-給与収入を掃引し、特別児童扶養手当、障害児福祉手当、障害児通所支援の利用者負担、
-重度心身障害者医療費助成、特別支援教育就学奨励費などが同時に作用したときの
+給与収入を掃引し、特別児童扶養手当、障害児福祉手当、障害児通所支援の利用者負担などが同時に作用したときの
 可処分所得を計算する。制度の所得制限や負担区分によって可処分所得が不連続に低下する
 地点を「崖」として表示する静的Webアプリケーションである。
 
-[E：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。[制度境界のみ（2D）](https://design-for-changes.github.io/dw-appendix/#system-boundaries)では、医療費助成や就学奨励費等を年額の収支に加えず、所得区分の境界を示す。[G：全パターン比較](https://design-for-changes.github.io/dw-appendix/#all-patterns)は、障害要件の組み合わせごとに、対照世帯との年間の可処分所得差の最低点・最高点を示す。
+[E：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。[制度境界のみ（2D）](https://design-for-changes.github.io/dw-appendix/#system-boundaries)では、各制度の所得区分が切り替わる位置を示す。[G：全パターン比較](https://design-for-changes.github.io/dw-appendix/#all-patterns)は、障害要件の組み合わせごとに、対照世帯との年間の可処分所得差の最低点・最高点を示す。
 
 ## 再現性
 - `src/calc/computePoint.js`：給与点ごとの計算を組み合わせる入口。税・社会保険・手当・医療・教育の計算は同ディレクトリのモジュールに分離。

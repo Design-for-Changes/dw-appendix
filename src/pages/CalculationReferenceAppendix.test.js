@@ -63,7 +63,8 @@ test("新稿計算表と受け渡し図から適切な関数と実引数に到�
   expect(flowTable()).toHaveTextContent("医療費助成");
   const discussion=screen.getByRole("table",{name:"収支の下落幅とは別に調べる制度上の変化点"});
   expect(discussion).toHaveTextContent("収支が下がったか否かを問わず");
-  for(const label of ["scanPaperChangePoints","assessPaperEducationClass","assessFunabashiMedicalCoverage","createPolicyOnlyClassifier","createAdditionalPolicyClassifier","buildPolicyOnlyMap"]){
+  expect(discussion).not.toHaveTextContent(/就学奨励費|医療費助成|N04|M01/);
+  for(const label of ["scanPaperChangePoints","createPolicyOnlyClassifier","createAdditionalPolicyClassifier","buildPolicyOnlyMap"]){
     const target=targetFor(within(discussion).getByRole("link",{name:label}));
     expect(target).toBeInTheDocument();
     expect(targetFor(within(target).getByRole("link",{name:"↩ 考察：制度の変化点"}))).toBe(document.getElementById("calculation-flow-discussion"));

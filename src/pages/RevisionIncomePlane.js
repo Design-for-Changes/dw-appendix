@@ -4,7 +4,6 @@ import { createRevisionCalculator } from "../calc/revisionEngine";
 import { RevisionSurface } from "./RevisionSurface";
 import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
 import PolicyBoundariesOnly from "./PolicyBoundariesOnly";
-import BoundaryEducationFields from "./BoundaryEducationFields";
 import {useSalaryGraphDataset} from "./salaryGraphDataset";
 import { useSessionParameter } from "./salarySimulatorSession";
 import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
@@ -58,7 +57,6 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
     changeView(GRAPH_VIEWS[target][0]);
   }
   const {children,setChildren,inputs}=usePaperHousehold();
-  const [educationInputs,setEducationInputs]=useSessionParameter("boundaryEducationInputsV2",{});
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
   const [lastDrawnKey,setLastDrawnKey] = useSessionParameter("lastDrawnKey", null);
@@ -71,9 +69,14 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       return { calculator:createRevisionCalculator(inputs), error:null };
     } catch (err) { return { calculator: null, error: err.message }; }
   }, [inputs]);
-  // 教育費の前提は制度境界にだけ使う。変更しても可処分所得の格子のキーには加えない。
-  const inputKey=useMemo(()=>calculator ? JSON.stringify(Object.keys(educationInputs).length ? {inputs,educationInputs} : inputs) : null,[calculator,inputs,educationInputs]);
-  const drawn=inputKey !== null && lastDrawnKey === inputKey;
+  const inputKey=useMemo(()=>calculator ? JSON.stringify(inputs) : null,[calculator,inputs]);
+  const drawn=useMemo(()=>{
+    if(inputKey===null || !lastDrawnKey)return false;
+    if(lastDrawnKey===inputKey)return true;
+    // 旧版で教材費等を入力して描画した場合も、同じ世帯条件なら再描画を求めない。
+    try { return JSON.stringify(JSON.parse(lastDrawnKey)?.inputs)===inputKey; }
+    catch { return false; }
+  },[lastDrawnKey,inputKey]);
   // 未訪問の図は先回りで描画せず、一度開いた図は非表示状態のまま保持する。
   const [visited,setVisited]=useState([]);
   useEffect(()=>{
@@ -83,8 +86,8 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
   const datasetState=useSalaryGraphDataset(inputs,drawn&&(view!=="systems"||visited.some(id=>id!=="systems")));
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
   useEffect(()=>{
-    if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(null);
-  },[inputKey,lastDrawnKey,setLastDrawnKey]);
+    if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(drawn ? inputKey : null);
+  },[drawn,inputKey,lastDrawnKey,setLastDrawnKey]);
   const [head,spouse]=incomesValid?salary:[null,null];
   const point=useMemo(()=>head!==null&&calculator?calculator.evaluate(head,spouse):null,[calculator,head,spouse]);
   const recipient=point?.status==="calculated" ? point.details.roles.allowanceRecipient : null;
@@ -108,7 +111,6 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       <summary>世帯と子どもの条件</summary>
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
       {children.map((c, i) => <ChildFields key={i} index={i} child={c} update={delta=>updateChild(i,delta)} />)}
-      <BoundaryEducationFields children={children} values={educationInputs} onChange={setEducationInputs}/>
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
       <button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
     </details>
@@ -118,7 +120,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
         onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
     </div>
     {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
-      {plotted(id)&&(id==="systems"?<PolicyBoundariesOnly inputs={inputs} educationInputs={educationInputs}/>:id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
+      {plotted(id)&&(id==="systems"?<PolicyBoundariesOnly inputs={inputs}/>:id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
         id==="difference"?<RevisionSurface {...sharedPlot} comparison/>:
         <RevisionSurface {...sharedPlot} {...{calculator,point,head,spouse,fixedTotal}} onSelectSalary={selectSalary}/>)}
     </div>)}

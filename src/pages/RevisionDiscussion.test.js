@@ -2,12 +2,11 @@ import {fireEvent,render,screen,within} from "@testing-library/react";
 import RevisionDiscussion from "./RevisionDiscussion";
 import {createRevisionCalculator} from "../calc/revisionEngine";
 import {scanPaperChangePoints} from "../calc/paperChangePoints";
-import {createPaperEducationAssessor} from "../calc/paperEducationAssessment";
 import {paperComparisonInputs} from "../calc/paperComparison";
 import {paperCases} from "./revisionPaperCases";
 
 const c=createRevisionCalculator(paperComparisonInputs(paperCases[1],3100));
-const scanned=(minWan,maxWan)=>scanPaperChangePoints(c,"head",400,{minWan,maxWan,assessors:[createPaperEducationAssessor()]});
+const scanned=(minWan,maxWan)=>scanPaperChangePoints(c,"head",400,{minWan,maxWan});
 
 test("本稿の給与を動かして得た変化の前後と判定主体を表示し、資料のないN04を同じ変化に数えない",()=>{
   const {rerender}=render(<RevisionDiscussion boundaries={scanned(781,782)}/>);
@@ -15,9 +14,8 @@ test("本稿の給与を動かして得た変化の前後と判定主体を表�
   const row=within(table).getAllByRole("row")[1];
   expect(within(row).getByRole("rowheader")).toHaveTextContent(/N01-1.*受給資格者/);
   expect(within(row).getAllByRole("cell").map(c=>c.textContent)).toEqual(["781 → 782","所得制限に該当しない（世帯主）","所得制限に該当（世帯主）"]);
-  const missing=screen.getByText("比較できなかった給与区間");
-  fireEvent.click(missing);
-  expect(screen.getByText("N04（世帯）の判定条件不足：781～782万円")).toBeVisible();
+  expect(table).not.toHaveTextContent(/N04|M01/);
+  expect(screen.queryByText(/N04（世帯）の判定条件不足/)).not.toBeInTheDocument();
   rerender(<RevisionDiscussion boundaries={scanned(500,501)}/>);
   expect(screen.queryByRole("table",{name:"世帯主の給与と制度別の判定変化"})).not.toBeInTheDocument();
   expect(screen.getByText(/未判定の区間まで「変化なし」/)).toBeVisible();

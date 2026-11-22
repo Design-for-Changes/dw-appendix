@@ -1,8 +1,4 @@
 .policy-boundaries { color:#20333d; margin-top:1rem; }
 .policy-boundaries > p { margin:.65rem 0; line-height:1.7; }
-.boundary-school-costs { margin:.65rem 0; }
-.boundary-school-costs summary { cursor:pointer; }
-.boundary-school-costs input[type=number] { width:9em; max-width:100%; }
-.boundary-school-costs p { margin:.35rem 0; }
 .policy-boundary-figure g[tabindex] { cursor:pointer; }
 .policy-boundary-figure g[tabindex]:focus-visible { outline:2px dashed #405068; }

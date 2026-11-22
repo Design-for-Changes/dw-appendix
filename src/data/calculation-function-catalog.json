@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
-  "revision": "84ff28b4f314d7d8f5e8dab2f235daf410d5684096c8000e34503219dabe2853",
+  "revision": "6bf475fbe04a765042abb04c567c8e544ce81c2cee6c3fd9f9c2b51a45b97ec7",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 231,
+  "functionCount": 221,
   "classCount": 0,
   "sources": [
     {
@@ -100,14 +100,6 @@
       "sha256": "108f4104d8ce0f7c7e8899c749ab6e7e36c597c83c6980bc515e8ea76ee1cebb"
     },
     {
-      "file": "src/calc/paperEducationAssessment.js",
-      "sha256": "2fc531d9fc353bfb9bdff6d1b24fb68247e96cfb9721080a24d69c91b03a55cb"
-    },
-    {
-      "file": "src/calc/paperMedicalCoverage.js",
-      "sha256": "efd45560b697c79b735c6928b8b5add7406db7b1a8aa737e14d2023eaa022cbb"
-    },
-    {
       "file": "src/calc/paperSalaryBands.js",
       "sha256": "01017ba86659cbe16e8df8da4beffe66b81df425034c5cac58d80601b93ab499"
     },
@@ -120,12 +112,8 @@
       "sha256": "12f9173a81477a27672b77982840266c56db4899936608dfb8237d8b2e67725f"
     },
     {
-      "file": "src/calc/policyEducationNeed.js",
-      "sha256": "dccbd11e1aa9c63711481e9e35ed949e4da2475b9f2b6e7f810dfcda580c318b"
-    },
-    {
       "file": "src/calc/policyOnlyBoundaries.js",
-      "sha256": "81cbc4b47de96db64fa0187625ef82cbcf7864a0bd1c3e57a1dad2c96d20fdfb"
+      "sha256": "fbbeacfaf18ac3f6fc7a19c95eabbbb9595554b0444088904f20a4e73f8b34fb"
     },
     {
       "file": "src/calc/revisionCoverage.js",
@@ -2387,7 +2375,7 @@
       "qualifiedName": "incomeState",
       "kind": "function",
       "file": "src/calc/paperChangePoints.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
+      "category": "考察専用・制度上の変化点（収支に算入しない）",
       "line": 5,
       "endLine": 5,
       "role": "内部関数",
@@ -2402,7 +2390,7 @@
       "qualifiedName": "memberLabel",
       "kind": "function",
       "file": "src/calc/paperChangePoints.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
+      "category": "考察専用・制度上の変化点（収支に算入しない）",
       "line": 7,
       "endLine": 8,
       "role": "内部関数",
@@ -2417,7 +2405,7 @@
       "qualifiedName": "standardStates",
       "kind": "function",
       "file": "src/calc/paperChangePoints.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
+      "category": "考察専用・制度上の変化点（収支に算入しない）",
       "line": 11,
       "endLine": 42,
       "role": "内部関数",
@@ -2432,7 +2420,7 @@
       "qualifiedName": "appendGap",
       "kind": "function",
       "file": "src/calc/paperChangePoints.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
+      "category": "考察専用・制度上の変化点（収支に算入しない）",
       "line": 45,
       "endLine": 49,
       "role": "内部関数",
@@ -2447,7 +2435,7 @@
       "qualifiedName": "scanPaperChangePoints",
       "kind": "function",
       "file": "src/calc/paperChangePoints.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
+      "category": "考察専用・制度上の変化点（収支に算入しない）",
       "line": 64,
       "endLine": 110,
       "role": "計算エントリ",
@@ -2494,132 +2482,6 @@
         "{number} fee 通所を利用する児童1人当たりの世帯上限適用前負担（円／月）。"
       ],
       "returns": "{object} 収支曲線、逆転点・最初の回復点、通所の一般1→2境界での符号付き純変化。給与額は万円、収支差は円。"
-    },
-    {
-      "id": "src/calc/paperEducationAssessment.js:assessPaperEducationClass",
-      "name": "assessPaperEducationClass",
-      "qualifiedName": "assessPaperEducationClass",
-      "kind": "function",
-      "file": "src/calc/paperEducationAssessment.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 36,
-      "endLine": 42,
-      "role": "計算エントリ",
-      "signature": "assessPaperEducationClass(measurement)",
-      "description": "政令第2条の通常判定。給与総額、手取り、税の課税所得は入力ではない。 測定要領Ⅲ・Ⅴ：当該年度の住民税の基礎となった各人の所得から所定の控除だけを 差し引いて月換算し、世帯員分を合算した「収入額」が必要。Ⅳ：前年12月末の世帯構成と 基準に基づいて測定した生活・教育・住宅扶助の合計が「需要額」。代表住宅費で代用しない。 このモデルは在宅通学の特別支援学校小学部かつ比率で通常判定する世帯に限る。 未就学、特別支援学級への在籍、要保護・施設入所等のみなし、家計急変時等に外挿しない。",
-      "params": [
-        "{object|null} measurement 同一の世帯・判定年度・給与点の scope と制度所定の measuredMonthlyIncomeYen、measuredMonthlyNeedYen（いずれも円/月）。"
-      ],
-      "returns": "{string|null} 第1～第3区分。適用条件・二つの測定額が揃わなければnull。金額は返さない。"
-    },
-    {
-      "id": "src/calc/paperEducationAssessment.js:createPaperEducationAssessor",
-      "name": "createPaperEducationAssessor",
-      "qualifiedName": "createPaperEducationAssessor",
-      "kind": "function",
-      "file": "src/calc/paperEducationAssessment.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 50,
-      "endLine": 57,
-      "role": "内部モジュール間",
-      "signature": "createPaperEducationAssessor(readMeasurement)",
-      "description": "1万円給与グリッドに対応するN04の測定資料を外部から渡す。座標は資料の照合キーであって、 給与収入自体をN04の収入額として流用しない。既存educationAidの給付額・初期値を呼ばない。",
-      "params": [
-        "{Function} readMeasurement (point,{headWan,spouseWan})から同一点の測定資料またはnullを返す任意の関数。未指定は全点未判定。"
-      ],
-      "returns": "{object} scanPaperChangePointsのassessorsへ渡す{id,label,assess}。収支・判定元データを変更しない。"
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:severeMedicalStatus",
-      "name": "severeMedicalStatus",
-      "qualifiedName": "severeMedicalStatus",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 19,
-      "endLine": 28,
-      "role": "内部関数",
-      "signature": "severeMedicalStatus(p)",
-      "description": "M01の資格を保険単位・調整済み所得割で判定。給与・通所の課税額・特児認定からは推定しない。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:childAgeEligible",
-      "name": "childAgeEligible",
-      "qualifiedName": "childAgeEligible",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 31,
-      "endLine": 35,
-      "role": "内部関数",
-      "signature": "childAgeEligible(p)",
-      "description": "児童向け助成の年齢は、18歳到達後最初の3月31日まで。18歳は年度末との関係を別に入力する。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:childMedicalStatus",
-      "name": "childMedicalStatus",
-      "qualifiedName": "childMedicalStatus",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 38,
-      "endLine": 44,
-      "role": "内部関数",
-      "signature": "childMedicalStatus(p)",
-      "description": "対象本人と当該請求費目の二つの要件を判定。保険者給付のある受診全体ではなく、その給付分が対象外。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:childCopayClass",
-      "name": "childCopayClass",
-      "qualifiedName": "childCopayClass",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 47,
-      "endLine": 53,
-      "role": "内部関数",
-      "signature": "childCopayClass(p)",
-      "description": "子ども医療利用時の自己負担区分のみ。受給券の使用・他公費適用後の実際の窓口負担を計算しない。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "name": "assessFunabashiMedicalCoverage",
-      "qualifiedName": "assessFunabashiMedicalCoverage",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 65,
-      "endLine": 85,
-      "role": "計算エントリ",
-      "signature": "assessFunabashiMedicalCoverage(p={})",
-      "description": "船橋市の重度心身障害者医療費助成(M01)の受給要件と、子ども医療の当該費用の適用を独立に判定。",
-      "params": [
-        "{object} p 船橋市に住民登録があるか・保険加入・生活保護・児童の年齢と診療条件。"
-      ],
-      "returns": "{object} m01Statusは児童の受給要件、childStatusは指定した費目の対象・対象外、childCopayClassは子ども医療利用時の区分。"
-    },
-    {
-      "id": "src/calc/paperMedicalCoverage.js:funabashiMedicalBoundaryExample",
-      "name": "funabashiMedicalBoundaryExample",
-      "qualifiedName": "funabashiMedicalBoundaryExample",
-      "kind": "function",
-      "file": "src/calc/paperMedicalCoverage.js",
-      "category": "考察専用・制度区分と代替助成（収支に算入しない）",
-      "line": 88,
-      "endLine": 91,
-      "role": "内部モジュール間",
-      "signature": "funabashiMedicalBoundaryExample()",
-      "description": "例示された同一医療保険単位の調整済み所得割2点で、M01境界前後と子ども医療の状態を対照する。",
-      "params": [],
-      "returns": ""
     },
     {
       "id": "src/calc/paperSalaryBands.js:createPaperSalaryBands",
@@ -2714,32 +2576,14 @@
       "returns": "{object} 各層の利用可否と、高給与親（同額時は世帯主）・他方の親の順に受け取った個別判定値から区分を符号化する関数。"
     },
     {
-      "id": "src/calc/policyEducationNeed.js:assessBoundaryEducationNeed",
-      "name": "assessBoundaryEducationNeed",
-      "qualifiedName": "assessBoundaryEducationNeed",
-      "kind": "function",
-      "file": "src/calc/policyEducationNeed.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 40,
-      "endLine": 85,
-      "role": "内部モジュール間",
-      "signature": "assessBoundaryEducationNeed(children, inputs={})",
-      "description": "前年末の月需要額を、両親45歳＋子1～3人・船橋市の在宅通学生モデルについて測定する。 子の入力年齢を4月1日現在とし、全員が前年末から4月1日までに誕生日を迎えない設定。 進級は通常どおり、転学なし。小学部相当児(6～11歳)のうち少なくとも1人が特別支援学校に 通うとした参考境界。きょうだいの学校種を固定せず、障害者控除や特児等級から在学を推定しない。 新小1は前年末は未就学なので加算・教育扶助に含めない。",
-      "params": [
-        "{object[]} children 共有設定の子ども（age:0～17歳）",
-        "{object} inputs 指定教材代（年額・世帯計）、前年度の対象通学費（年額・世帯計）、"
-      ],
-      "returns": "{object} 計算可能なら月需要額とその内訳。費目が未確定なら月需要額=null。"
-    },
-    {
       "id": "src/calc/policyOnlyBoundaries.js:parentRecord",
       "name": "parentRecord",
       "qualifiedName": "parentRecord",
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 24,
-      "endLine": 27,
+      "line": 18,
+      "endLine": 21,
       "role": "内部関数",
       "signature": "parentRecord(t)",
       "description": "各制度の所得判定に必要な親別の税・所得・保険料を、Eと同じ計算結果から取り出す。",
@@ -2753,26 +2597,11 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 30,
-      "endLine": 94,
+      "line": 24,
+      "endLine": 68,
       "role": "内部モジュール間",
-      "signature": "createPolicyOnlyClassifier(inputs, options={}, maxSalaryWan=MAX)",
+      "signature": "createPolicyOnlyClassifier(inputs, maxSalaryWan=MAX)",
       "description": "Conditional policy classifications, not actual service uptake, payable expenses, or disposable income.",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.medicalClass",
-      "name": "medicalClass",
-      "qualifiedName": "createPolicyOnlyClassifier.medicalClass",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 37,
-      "endLine": 43,
-      "role": "内部関数",
-      "signature": "medicalClass(t)",
-      "description": "M01の障害要件に該当し、所得制限の特例がない場合の参考線。実際の資格は推定しない。",
       "params": [],
       "returns": ""
     },
@@ -2783,8 +2612,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 68,
-      "endLine": 92,
+      "line": 52,
+      "endLine": 66,
       "role": "内部関数",
       "signature": "classify(x, y, out)",
       "description": "一組の夫婦給与について各制度の区分を2語に格納する。非該当・未設定は0とする。",
@@ -2798,10 +2627,10 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 99,
-      "endLine": 140,
+      "line": 73,
+      "endLine": 114,
       "role": "内部モジュール間",
-      "signature": "buildPolicyOnlyMap(inputs, options={}, {maxSalaryWan=MAX,onProgress}={})",
+      "signature": "buildPolicyOnlyMap(inputs, {maxSalaryWan=MAX,onProgress}={})",
       "description": "Consecutive adjacent 1万円 cells with the same *directed* change are merged, never interpolated. A segment [x1,y1,x2,y2,before,after] lies halfway between neighboring valid salaries; its class indices are 1-based. No financial height is read.",
       "params": [],
       "returns": ""
@@ -2813,8 +2642,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 109,
-      "endLine": 109,
+      "line": 83,
+      "endLine": 83,
       "role": "内部関数",
       "signature": "lower(i)",
       "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
@@ -2828,8 +2657,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 109,
-      "endLine": 109,
+      "line": 83,
+      "endLine": 83,
       "role": "内部関数",
       "signature": "upper(i)",
       "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
@@ -10428,46 +10257,6 @@
       ]
     },
     {
-      "from": "src/calc/paperMedicalCoverage.js:childMedicalStatus",
-      "to": "src/calc/paperMedicalCoverage.js:childAgeEligible",
-      "line": 39,
-      "column": 13,
-      "resultUse": "age に格納",
-      "arguments": [
-        "p"
-      ]
-    },
-    {
-      "from": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "to": "src/calc/paperMedicalCoverage.js:severeMedicalStatus",
-      "line": 77,
-      "column": 19,
-      "resultUse": "m01Status に格納",
-      "arguments": [
-        "p"
-      ]
-    },
-    {
-      "from": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "to": "src/calc/paperMedicalCoverage.js:childMedicalStatus",
-      "line": 77,
-      "column": 54,
-      "resultUse": "childStatus に格納",
-      "arguments": [
-        "p"
-      ]
-    },
-    {
-      "from": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "to": "src/calc/paperMedicalCoverage.js:childCopayClass",
-      "line": 84,
-      "column": 68,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "p"
-      ]
-    },
-    {
       "from": "src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029",
       "to": "src/calc/paperSalaryTaxInputs2029.js:beforeAdjustmentYen",
       "line": 58,
@@ -10501,7 +10290,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
       "to": "src/calc/paperSalaryBands.js:createPaperSalaryBands",
-      "line": 31,
+      "line": 25,
       "column": 39,
       "resultUse": "{wages,band,first:lo,last:hi} に格納",
       "arguments": [
@@ -10511,7 +10300,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
       "to": "src/calc/revisionEngine.js:createRevisionCalculator",
-      "line": 35,
+      "line": 29,
       "column": 15,
       "resultUse": "model に格納",
       "arguments": [
@@ -10519,30 +10308,9 @@
       ]
     },
     {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.medicalClass",
-      "to": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "line": 39,
-      "column": 23,
-      "resultUse": "{m01Status} に格納",
-      "arguments": [
-        "{funabashiRegistered:true,insured:true,publicAssistance:false,\n      m01DisabilityConfirmed:true,m01ExceptionConfirmed:false,adjustedInsuranceUnitLevyYen:levy}"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "to": "src/calc/policyEducationNeed.js:assessBoundaryEducationNeed",
-      "line": 58,
-      "column": 42,
-      "resultUse": "{applicable,monthlyNeedYen:need} に格納",
-      "arguments": [
-        "children",
-        "options.educationInputs??{}"
-      ]
-    },
-    {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
       "to": "src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier",
-      "line": 60,
+      "line": 44,
       "column": 20,
       "resultUse": "additional に格納",
       "arguments": [
@@ -10552,7 +10320,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 77,
+      "line": 61,
       "column": 15,
       "resultUse": "cap に格納",
       "arguments": [
@@ -10561,31 +10329,20 @@
       ]
     },
     {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
-      "to": "src/calc/paperEducationAssessment.js:assessPaperEducationClass",
-      "line": 86,
-      "column": 29,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "{scope:PAPER_EDUCATION_ASSESSMENT_BASIS.scope,\n        measuredMonthlyIncomeYen,measuredMonthlyNeedYen:need}"
-      ]
-    },
-    {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "line": 100,
+      "line": 74,
       "column": 27,
       "resultUse": "{layers,classify} に格納",
       "arguments": [
         "inputs",
-        "options",
         "maxSalaryWan"
       ]
     },
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 120,
+      "line": 94,
       "column": 48,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10595,7 +10352,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 120,
+      "line": 94,
       "column": 79,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10605,7 +10362,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 124,
+      "line": 98,
       "column": 43,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10615,7 +10372,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 124,
+      "line": 98,
       "column": 73,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10625,7 +10382,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 131,
+      "line": 105,
       "column": 55,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10635,7 +10392,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 137,
+      "line": 111,
       "column": 59,
       "resultUse": "式の一部として使用",
       "arguments": [

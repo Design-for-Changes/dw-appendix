@@ -3,7 +3,7 @@ import {usePolicyBoundaryDataset, retryPolicyBoundaryDataset} from "./policyBoun
 import createPolicyOnlyWorker from "./createPolicyOnlyWorker";
 
 jest.mock("./createPolicyOnlyWorker",()=>({__esModule:true,default:jest.fn()}));
-const jobKey=tag=>JSON.stringify({inputs:{tag},options:{}});
+const jobKey=tag=>JSON.stringify({inputs:{tag}});
 function Probe({cacheKey}) {
   const value=usePolicyBoundaryDataset(cacheKey);
   return <span>{value?.type || "idle"}:{value?.percent ?? value?.result?.maxSalaryWan ?? ""}</span>;

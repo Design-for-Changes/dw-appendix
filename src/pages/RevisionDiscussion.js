@@ -1,16 +1,36 @@
-import { PAPER_EDUCATION_ASSESSMENT_BASIS, PAPER_EDUCATION_PUBLISHED_EXAMPLES } from "../calc/paperEducationAssessment";
-import { funabashiMedicalBoundaryExample, funabashiMedicalSources } from "../calc/paperMedicalCoverage";
-
 const number = n => n.toLocaleString("ja-JP");
 const person = id => ({head:"世帯主",spouse:"配偶者",household:"世帯"}[id] ?? id.replace(/^child(\d+)$/, "子$1"));
 const range = (a,b) => a===b ? number(a) : number(a)+"～"+number(b);
+
+// 県教委の資料に掲載された例。給与平面上の世帯には当てはめない。
+const school = {
+  title: "埼玉県教育委員会「支弁区分について」：同一世帯の所得条件を変えた3例",
+  householdLabel: "さいたま市。父40歳・母37歳・特別支援学校在籍の子7歳・妹5歳（前年12月31日時点）。",
+  yearLabel: "資料に適用年度の記載なし。",
+  order: "https://laws.e-gov.go.jp/law/329CO0000000157#Mp-At_2",
+  sourceUrl: "https://www.pref.saitama.lg.jp/documents/27010/sibenkubun.pdf",
+  measuredMonthlyNeedYen: 229089,
+  rows: [
+    {annualIncomeYen:4000000,annualDeductionYen:900000,measuredMonthlyIncomeYen:258333,classification:"第1区分"},
+    {annualIncomeYen:6000000,annualDeductionYen:1200000,measuredMonthlyIncomeYen:400000,classification:"第2区分"},
+    {annualIncomeYen:9000000,annualDeductionYen:1400000,measuredMonthlyIncomeYen:633333,classification:"第3区分"},
+  ],
+};
+const funabashiMedicalSources = {
+  m01: "https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html",
+  child: "https://www.city.funabashi.lg.jp/kodomo/teate/002/p004273a.html",
+};
+// 市の資料の制度要件を本文に掲げた受診条件に当てはめた対照例。世帯の試算結果ではない。
+const medicalExamples = [
+  {adjustedInsuranceUnitLevyYen:234900,m01Status:"対象",childStatus:"対象",childCopayClass:"一部負担区分"},
+  {adjustedInsuranceUnitLevyYen:235000,m01Status:"対象外（所得制限）",childStatus:"対象",childCopayClass:"一部負担区分"},
+];
 
 /** 給与ベースの判定変化と、給与換算できない制度指標の例を分ける。給付額や家計への差額は計算しない。 */
 export default function RevisionDiscussion({boundaries}) {
   if (!boundaries) return null;
   const {axis,fixedWan,events,pointGaps,unknownRanges}=boundaries;
   const moving=axis==="head" ? "世帯主" : "配偶者", fixed=axis==="head" ? "配偶者" : "世帯主";
-  const school=PAPER_EDUCATION_PUBLISHED_EXAMPLES;
   return <section aria-label="考察：制度の判定が変わる給与区間">
     <h5>考察：制度の判定が変わる給与区間</h5>
     <p>{fixed}の給与を年{number(fixedWan)}万円に固定し、{moving}の給与を1万円ずつ増やしたときの判定を比べました。前後の給与は観測点であり、円単位の境界額ではありません。判定が変わっても、世帯収支が減るとは限りません。</p>
@@ -29,7 +49,7 @@ export default function RevisionDiscussion({boundaries}) {
     </details>}
     <p>就学奨励費と医療費助成については、この世帯の給与いくらで区分が変わるかは未確定です。以下は、給与とは別の制度上の指標で見た判定例です。</p>
     <details><summary>就学奨励費：収入額と需要額による3例</summary>
-      <p><a href={PAPER_EDUCATION_ASSESSMENT_BASIS.order}>施行令第2条</a>の通常判定では、制度所定の収入額が需要額の1.5倍未満なら第1区分、1.5倍以上2.5倍未満なら第2区分、2.5倍以上なら第3区分です。ここでいう収入額は給与の額面ではありません。</p>
+      <p><a href={school.order}>施行令第2条</a>の通常判定では、制度所定の収入額が需要額の1.5倍未満なら第1区分、1.5倍以上2.5倍未満なら第2区分、2.5倍以上なら第3区分です。ここでいう収入額は給与の額面ではありません。</p>
       <p>{school.householdLabel} この1世帯の所得条件だけを変えた県の例です。{school.yearLabel}</p>
       <div style={{overflowX:"auto"}}><table className="appendix-table"><caption>{school.title}（月需要額{number(school.measuredMonthlyNeedYen)}円）</caption>
         <thead><tr><th scope="col">年間所得（円）</th><th scope="col">年間の所得控除（円）</th><th scope="col">制度所定の月収入額（円）</th><th scope="col">支弁区分</th></tr></thead>
@@ -40,7 +60,7 @@ export default function RevisionDiscussion({boundaries}) {
       <p>船橋市在住の10歳児で、障害要件を満たし、所得制限の特例はないと仮定します。課税世帯で、受診は保険診療の外来初回、ほかの優先公費はない場合です。</p>
       <div style={{overflowX:"auto"}}><table className="appendix-table"><caption>同一医療保険単位の所得割と2制度の適用</caption>
         <thead><tr><th scope="col">調整済み市町村民税所得割（円）</th><th scope="col">重度心身障害者医療費助成（M01）</th><th scope="col">子ども医療費助成</th></tr></thead>
-        <tbody>{funabashiMedicalBoundaryExample().map(r=><tr key={r.adjustedInsuranceUnitLevyYen}><th scope="row">所得割 {number(r.adjustedInsuranceUnitLevyYen)}円</th><td data-label="障害者医療">{r.m01Status}</td><td data-label="子ども医療">{r.childStatus}（{r.childCopayClass}）</td></tr>)}</tbody>
+        <tbody>{medicalExamples.map(r=><tr key={r.adjustedInsuranceUnitLevyYen}><th scope="row">所得割 {number(r.adjustedInsuranceUnitLevyYen)}円</th><td data-label="障害者医療">{r.m01Status}</td><td data-label="子ども医療">{r.childStatus}（{r.childCopayClass}）</td></tr>)}</tbody>
       </table></div><p>この例では所得割が235,000円に達するとM01は対象外になりますが、子ども医療は引き続き対象です。助成は重複計上せず、実際の受診費用や世帯の自己負担額は推計しません。出典：船橋市「<a href={funabashiMedicalSources.m01}>重度心身障害者医療費助成</a>」「<a href={funabashiMedicalSources.child}>子ども医療費助成</a>」。</p>
     </details>
   </section>;

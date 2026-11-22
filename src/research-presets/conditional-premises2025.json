@@ -1,0 +1,169 @@
+{
+  "kind": "explicit-counterfactual-premises-not-administrative-facts",
+  "experimentKind": "steady-reference-income-and-support-counterfactual",
+  "referenceIncomeYear": 2025,
+  "residentTaxFiscalYear": 2026,
+  "referenceMonth": "2026-08",
+  "mode": "conditional-components-and-recipient-branches",
+  "futurePayContinuationThrough": "2027-07",
+  "forecastAnnualIncomeEqualsSteadySalary": true,
+  "healthPremises": {
+    "bothEmployeeInsured": true,
+    "noMutualAidDependentAllowance": true,
+    "noParentalLeaveException": true,
+    "forecastBasis": "explicit-next12-month-income-assumption"
+  },
+  "cases": {
+    "1": {
+      "caseId": "illustrative-case-one-2025-special-cohabiting-child",
+      "taxElectionByChild": {
+        "child-1": "parent-a"
+      },
+      "cohabitingSpecialTaxTreatmentUnchanged": true,
+      "noOtherIncomeOrDeductionsBeyondExplicitLedgers": true,
+      "bothParentsSameLivelihoodAndCoMaintainChildrenAtReferenceMonth": true,
+      "noOtherTccaSameHouseholdObligors": true,
+      "ifChosenParentRecognizedAndEntitlementEffectiveInReferenceMonth": true,
+      "law6MaintainedChildrenByCandidate": {
+        "parent-a": {
+          "kind": "not-additional-already-tax-dependents"
+        },
+        "parent-b": {
+          "kind": "unconfirmed",
+          "reason": "Separate prior-Dec31 law6 qualifying maintained-child facts are not supplied; do not infer from parenthood/current support"
+        }
+      },
+      "children": {
+        "child-1": {
+          "tccaGradeIfRecognized": 1,
+          "childWelfareEligibilityPremise": "passes-all-non-income-conditions-if-recognized",
+          "childWelfareRecipientId": "child-1",
+          "childWelfareSpouseIds": [],
+          "childWelfareMaintainingObligorIds": [
+            "parent-a",
+            "parent-b"
+          ],
+          "noOtherRelevantObligors": true,
+          "dayDecisionHolderIfDecisionContinues": "parent-a",
+          "dayDecisionContinuesAsScenarioPremise": true,
+          "eligibleDayCostYen": 500000,
+          "atHomeSchoolAgeNoOtherServiceCosts": true
+        }
+      },
+      "siblingOneHolderManagedInKind": false,
+      "noLaterRefundCombined": true,
+      "note": "Explicit comparative premises for this fictional profile, not new administrative recognition or documentary proof underTCCA rule1(3)",
+      "ordinaryIncomeRuleAppliesForReferenceMonthAsPremise": true,
+      "noRightsAffectingExceptionsOrAdministrativeNonpaymentAsPremise": true
+    },
+    "2": {
+      "caseId": "illustrative-case-two-2025-visual-child",
+      "taxElectionByChild": {
+        "child-1": "parent-a"
+      },
+      "cohabitingSpecialTaxTreatmentUnchanged": true,
+      "noOtherIncomeOrDeductionsBeyondExplicitLedgers": true,
+      "bothParentsSameLivelihoodAndCoMaintainChildrenAtReferenceMonth": true,
+      "noOtherTccaSameHouseholdObligors": true,
+      "ifChosenParentRecognizedAndEntitlementEffectiveInReferenceMonth": true,
+      "law6MaintainedChildrenByCandidate": {
+        "parent-a": {
+          "kind": "not-additional-already-tax-dependents"
+        },
+        "parent-b": {
+          "kind": "unconfirmed",
+          "reason": "Separate prior-Dec31 law6 qualifying maintained-child facts are not supplied; do not infer from parenthood/current support"
+        }
+      },
+      "children": {
+        "child-1": {
+          "tccaGradeIfRecognized": 1,
+          "childWelfareEligibilityPremise": "fails-independent-disability-condition",
+          "childWelfareRecipientId": "child-1",
+          "childWelfareSpouseIds": [],
+          "childWelfareMaintainingObligorIds": [
+            "parent-a",
+            "parent-b"
+          ],
+          "noOtherRelevantObligors": true,
+          "dayDecisionHolderIfDecisionContinues": "parent-a",
+          "dayDecisionContinuesAsScenarioPremise": true,
+          "eligibleDayCostYen": 500000,
+          "atHomeSchoolAgeNoOtherServiceCosts": true
+        }
+      },
+      "siblingOneHolderManagedInKind": false,
+      "noLaterRefundCombined": true,
+      "note": "Explicit comparative premises for this fictional profile, not new administrative recognition or documentary proof underTCCA rule1(3)",
+      "ordinaryIncomeRuleAppliesForReferenceMonthAsPremise": true,
+      "noRightsAffectingExceptionsOrAdministrativeNonpaymentAsPremise": true
+    },
+    "3": {
+      "caseId": "illustrative-case-three-2025-two-independent-children",
+      "taxElectionByChild": {
+        "child-1": "parent-a",
+        "child-2": "parent-a"
+      },
+      "cohabitingSpecialTaxTreatmentUnchanged": true,
+      "noOtherIncomeOrDeductionsBeyondExplicitLedgers": true,
+      "bothParentsSameLivelihoodAndCoMaintainChildrenAtReferenceMonth": true,
+      "noOtherTccaSameHouseholdObligors": true,
+      "ifChosenParentRecognizedAndEntitlementEffectiveInReferenceMonth": true,
+      "law6MaintainedChildrenByCandidate": {
+        "parent-a": {
+          "kind": "not-additional-already-tax-dependents"
+        },
+        "parent-b": {
+          "kind": "unconfirmed",
+          "reason": "Separate prior-Dec31 law6 qualifying maintained-child facts are not supplied; do not infer from parenthood/current support"
+        }
+      },
+      "children": {
+        "child-1": {
+          "tccaGradeIfRecognized": 1,
+          "childWelfareEligibilityPremise": "passes-all-non-income-conditions-if-recognized",
+          "childWelfareRecipientId": "child-1",
+          "childWelfareSpouseIds": [],
+          "childWelfareMaintainingObligorIds": [
+            "parent-a",
+            "parent-b"
+          ],
+          "noOtherRelevantObligors": true,
+          "dayDecisionHolderIfDecisionContinues": "parent-a",
+          "dayDecisionContinuesAsScenarioPremise": true,
+          "eligibleDayCostYen": 500000,
+          "atHomeSchoolAgeNoOtherServiceCosts": true
+        },
+        "child-2": {
+          "tccaGradeIfRecognized": 1,
+          "childWelfareEligibilityPremise": "fails-independent-disability-condition",
+          "childWelfareRecipientId": "child-2",
+          "childWelfareSpouseIds": [],
+          "childWelfareMaintainingObligorIds": [
+            "parent-a",
+            "parent-b"
+          ],
+          "noOtherRelevantObligors": true,
+          "dayDecisionHolderIfDecisionContinues": "parent-a",
+          "dayDecisionContinuesAsScenarioPremise": true,
+          "eligibleDayCostYen": 500000,
+          "atHomeSchoolAgeNoOtherServiceCosts": true
+        }
+      },
+      "siblingOneHolderManagedInKind": true,
+      "noLaterRefundCombined": true,
+      "note": "Explicit comparative premises for this fictional profile, not new administrative recognition or documentary proof underTCCA rule1(3)",
+      "ordinaryIncomeRuleAppliesForReferenceMonthAsPremise": true,
+      "noRightsAffectingExceptionsOrAdministrativeNonpaymentAsPremise": true
+    }
+  },
+  "futureFixedHoursPremise": "same20h-1040annual-hours",
+  "futureMinimumWageCheck": {
+    "effectiveFrom": "2026-10",
+    "hourlyYen": 1195,
+    "annualScheduledHours": 1040,
+    "minimumConstantAnnualSalaryYen": 1242800,
+    "source": "https://jsite.mhlw.go.jp/chiba-roudoukyoku/news_topics/_20261001_chingin_00004.html",
+    "scope": "Only future same-pay/same-hours auxiliary forecast, not2025 historical tax/premium orAug2026 wage validity"
+  }
+}

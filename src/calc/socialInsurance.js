@@ -1,5 +1,4 @@
 import { normalizeScenario, toNumber, roundWan } from "./numeric.js";
-import { CALCULATION_SOURCES } from "./calculationSources.js";
 
 export const SOCIAL_RATE_RULES = {
   s1: { health: 0.0998 / 2, care: 0.016 / 2, support: 0, pension: 0.183 / 2, employment: 0.006 },

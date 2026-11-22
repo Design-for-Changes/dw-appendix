@@ -6,8 +6,10 @@ import { getIncomeTaxParts, getResidentTaxParts } from "./taxes.js";
 import { calcBasicDisabilityPensionYenFor, calcTccaComputedLocal, calcWelfareAllowanceLimitSelfYen, calcWelfareAllowanceLimitObligorYen, calcChildSupportMonthlyYen } from "./allowances.js";
 import { calcM01Detail } from "./medicalAid.js";
 import { calcN04Detail } from "./educationAid.js";
+import { calcServiceAssessmentLevyYen, getChildDayServiceCapYen } from "./serviceBurdenLimits.js";
 
 export { CALCULATION_SOURCES };
+export { calcServiceAssessmentLevyYen, getChildDayServiceCapYen };
 export { buildHousehold } from "./household.js";
 export { calculateSocialInsuranceComponents } from "./socialInsurance.js";
 export { M01_KENSHIN_ANNUAL_YEN_DEFAULT, M01_KENSHIN_ANNUAL_YEN_RANGE, M01_LEVY_CUTOFF_YEN, M01_INCOME_LIMIT_SOURCE } from "./medicalAid.js";
@@ -15,24 +17,6 @@ export { N04_SHOGAKU_ANNUAL_YEN, N04_INCOME_NEED_SOURCE, N04_LIVELIHOOD_SOURCE, 
 
 const DEFAULT_SWEEP = { min: 1, max: 1500, step: 1 };
 export const RAW_TSUSHO_CHILD_MONTHLY_YEN = 10406;
-
-/**
- * 通所判定用の市町村民税所得割から、旧年少・特定扶養控除相当税額を差し引く。
- * @remarks 児童福祉法施行規則第18条の3の2。単位: 円/年。16歳未満19,800円、16～18歳7,200円。税の徴収額そのものは変更しない。
- */
-export function calcServiceAssessmentLevyYen(municipalIncomeLevyYen, dependentAges) {
-  const reliefYen = dependentAges.reduce((sum, age) => sum + (age < 16 ? 19800 : age < 19 ? 7200 : 0), 0);
-  return Math.max(0, Math.round(municipalIncomeLevyYen) - reliefYen);
-}
-
-/**
- * 障害児通所支援の世帯課税状況と判定用所得割から月額上限を選ぶ。
- * @remarks 単位: 円/月。28万円未満は一般1、28万円以上は一般2。所得割0円だけでは住民税非課税と判断しない。
- */
-export function getChildDayServiceCapYen(assessmentLevyYen, householdTaxable) {
-  if (!householdTaxable) return 0;
-  return assessmentLevyYen < 280000 ? 4600 : 37200;
-}
 
 /**
  * 世帯条件を固定し、世帯主の給与収入を指定刻みで変化させて全返値を求める。

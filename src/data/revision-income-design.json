@@ -1,0 +1,10 @@
+{
+  "id": "joint-salary-grid",
+  "status": "on-demand",
+  "household": { "adultAge": 45, "minChildren": 1, "maxChildren": 3, "minChildAge": 0, "maxChildAge": 17, "wageIncomeOnly": true },
+  "salary": { "axes": ["世帯主の給与収入", "配偶者の給与収入"], "unit": "万円／年", "min": 0, "max": 1500, "step": 1, "includeEndpoints": true, "excludedCoordinates": [[0, 0]] },
+  "analysisOrder": ["各給与点の年間収支を算出し、増収に伴って収支が低下する場合に、その下落幅を求める。", "考察では、収支の低下の有無とは別に、各制度の判定が切り替わる給与点を抽出する。所得判定資料があれば、主試算から除いた制度もこの段階で扱う。"],
+  "outcome": { "axis": "世帯の可処分所得", "unit": "万円／年", "field": "studyDisposableWan", "computed": true, "definition": "給与収入 ＋ 現金給付 − 税・社会保険料 − サービス利用者負担", "scopeNote": "就学奨励費（N04）とその対象支出、医療費助成（M01）と医療の自己負担は試算対象外です。これらの実額を0円と仮定したものではありません。" },
+  "serviceUse": { "label": "通所支援を利用する児童1人当たりの上限適用前負担相当額", "unit": "円／月", "min": 0, "max": 37200, "step": 1 },
+  "reference": { "authors": "磯・天達", "year": 2021, "salaryStepWan": 10, "figures": [2, 7], "url": "https://www8.cao.go.jp/kisei-kaikaku/kisei/publication/direct/210924direct74_02.pdf#page=4" }
+}

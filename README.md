@@ -12,7 +12,7 @@ Web Appendix。障害児世帯モデルで、世帯主の給与に対する可�
 可処分所得を計算する。制度の所得制限や負担区分によって可処分所得が不連続に低下する
 地点を「崖」として表示する静的Webアプリケーションである。
 
-2026年11月15日：制度式の是正と改稿用条件の拡張を分けた。D・Eは旧医療・旧N04条件を含む従来3入力の参考計算であり、改稿用の結果ではない。Gは31家族構成×配偶者給与3条件×利用額3条件を定義しているが、N04需要測定の必須入力の原典確認待ちのため、結果を0円で補完せず保留している。[更新内容と制約](docs/calculation-update-20261115.md)を参照。
+D・Eは医療費助成・就学奨励費を含む旧条件の参考計算。[G：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。医療費と就学奨励費はGの年間収支には算入しない。
 
 ## 再現性
 - `src/calc/computePoint.js`：給与点ごとの計算を組み合わせる入口。税・社会保険・手当・医療・教育の計算は同ディレクトリのモジュールに分離。
@@ -56,7 +56,7 @@ npm run fetch:egov-screening
 
 表A3は計算の流れからページ内の関数説明へ移動でき、関数説明から対応する処理・ソースへ辿れる。名前付き関数の引数・返却値・所在を検索でき、各関数への直接URLも利用できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。クラスは使用していない。
 
-G（`#revision-scenarios`）の条件定義は `public/data/research/revision-scenarios.json`。`node scripts/generate-revision-scenarios.mjs`で再生成する。未確定の需要測定入力を含む場合、条件だけを保存し結果は出さない。これらを実態の分位点・代表世帯と呼ばず、人口や財政総額の重みは付けない。
+Gの計算入口は `src/calc/revisionEngine.js`（`paper-2029`）。住民税の境界は `node --experimental-default-type=module scripts/audit-current-surface.mjs --tax-only`、全給与格子から図への受け渡しは同じコマンドから `--tax-only` を外して照合できる。H（`#child-eligibility-evidence`）は児童別の障害要件の根拠資料。
 
 ## ドキュメント
 - `docs/calculation-update-20261115.md`：制度式の更新、旧条件と改稿条件の区別、残る原典確認。

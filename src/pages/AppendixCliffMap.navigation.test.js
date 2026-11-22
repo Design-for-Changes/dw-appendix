@@ -24,7 +24,8 @@ const pages = [
   { letter: "D", title: "現行制度", hash: "#current" },
   { letter: "E", title: "調整モデル（探索例）", hash: "#optimal" },
   { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
-  { letter: "G", title: "モデル条件・感度分析", hash: "#revision-scenarios", region: "モデル条件" },
+  { letter: "G", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
+  { letter: "H", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
 ];
 
 beforeEach(() => {
@@ -92,7 +93,7 @@ test("空hashは従来の現行制度を表示し、ページ番号はDになる
   expect(window.location.hash).toBe("");
 });
 
-test("メニューはAからGに並ぶ", () => {
+test("メニューはAからHに並ぶ", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(

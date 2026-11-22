@@ -1,5 +1,6 @@
 import { normalizeScenario, toNumber, roundWan } from "./numeric.js";
 import { CALCULATION_SOURCES } from "./calculationSources.js";
+import { salaryIncomeBeforeAdjustmentYen } from "./employmentIncome.js";
 
 /**
  * 令和8年分の年末確定給与所得控除を、年末調整表の端数処理も含めて求める。
@@ -7,17 +8,7 @@ import { CALCULATION_SOURCES } from "./calculationSources.js";
  */
 export function calcEmploymentIncomeDeductionR8FinalWan(salaryWan) {
   const salaryYen = Math.max(0, Math.round(toNumber(salaryWan, 0) * 10000));
-  let incomeYen;
-  if (salaryYen < 741000) incomeYen = 0;
-  else if (salaryYen < 2191000) incomeYen = salaryYen - 740000;
-  else if (salaryYen < 2193000) incomeYen = 1451000;
-  else if (salaryYen < 2196000) incomeYen = 1453000;
-  else if (salaryYen < 2200000) incomeYen = 1456000;
-  else if (salaryYen < 3600000) incomeYen = Math.floor(salaryYen / 4000) * 2800 - 80000;
-  else if (salaryYen < 6600000) incomeYen = Math.floor(salaryYen / 4000) * 3200 - 440000;
-  else if (salaryYen <= 8500000) incomeYen = salaryYen * 0.9 - 1100000;
-  else incomeYen = salaryYen - 1950000;
-  return (salaryYen - Math.max(0, incomeYen)) / 10000;
+  return (salaryYen - salaryIncomeBeforeAdjustmentYen(salaryYen, 2026)) / 10000;
 }
 
 /**

@@ -5,14 +5,31 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
+import {spawnSync} from 'node:child_process';
+import {extractCallEdges} from './function-call-edges.mjs';
 const require=createRequire(import.meta.url);
 const {parse}=require('@babel/parser');
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')&&!f.endsWith('.test.js')).map(f=>'src/calc/'+f),'scripts/generate-appendix-data.mjs','scripts/generate-revision-scenarios.mjs'].sort();
-const apiNames=new Set(['buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
+const apiNames=new Set(['createRevisionCalculator','calculateHouseholdInsurance2029','calculatePaperSalaryTaxInputs2029','calculateSpecialChildAllowance','calculateDisabledChildWelfareAllowance','scanPaperChangePoints','assessFunabashiMedicalCoverage','assessPaperEducationClass','calculateHouseholdCoverage','estimateFunabashiNational','annualEmployeePremiums','buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
+// 公開済みファイルと同じ内容であることを確認してから、不変のコミットへリンクする。
+// 未公開の改定中ファイルでは誤った main の行を示さず、この資料に実装そのものを収録する。
+const git=(args)=>spawnSync('git',args,{cwd:ROOT,encoding:'utf8'});
+const upstream=git(['rev-parse','--verify','refs/remotes/origin/main']).stdout?.trim();
+const published=new Map();
 
 function category(file){
+  if(/paperChangePoints|paperEducationAssessment|paperMedicalCoverage/.test(file))return '考察専用・制度区分と代替助成（収支に算入しない）';
+  if(/householdInsurance2029/.test(file))return '主試算・夫婦別の社会保険料';
+  if(/paperSalaryTaxInputs2029/.test(file))return '主試算・給与所得と所得控除';
+  if(/specialChildAllowance|disabledChildWelfareAllowance/.test(file))return '主試算・障害児の手当と対象者別の所得制限';
+  if(/serviceBurdenLimits/.test(file))return 'サービス利用料と負担上限';
   if(/generate-(appendix|revision)/.test(file))return '表示データ生成';
+  if(/revisionCoverage/.test(file))return '改定版・夫婦の保険加入';
+  if(/revisionPayroll/.test(file))return '改定版・勤務先の社会保険料';
+  if(/funabashiNational/.test(file))return '改定版・船橋市国保と国民年金';
+  if(/revisionEngine/.test(file))return '改定版・二給与軸の制度計算';
+  if(/paperComparison/.test(file))return '論文ケースの比較';
   if(/optimalModel|illustrativeAdjustment/.test(file))return '探索的調整モデル';
   if(file.includes('cliffCause'))return '低下・回復の抽出';
   if(/numeric|tableUtils/.test(file))return '数値・表の補助処理';
@@ -37,10 +54,15 @@ function documentation(comments=[]){
   return {description:summary.join(' ').trim(),params,returns};
 }
 const functions=[];const sources=[];
+const modules=new Map(), symbolByNode=new WeakMap();
 for(const file of files){
   const code=fs.readFileSync(path.join(ROOT,file),'utf8');
-  sources.push({file,sha256:crypto.createHash('sha256').update(code).digest('hex')});
+  const ref=upstream&&git(['show',upstream+':'+file]);
+  const commit=ref?.status===0 && ref.stdout===code ? upstream : null;
+  if(commit) published.set(file,commit);
+  sources.push({file,sha256:crypto.createHash('sha256').update(code).digest('hex'),publishedCommit:commit});
   const ast=parse(code,{sourceType:'module',plugins:['jsx']});
+  modules.set(file,{ast,code});
   const exported=new Set();
   for(const node of ast.program.body){
     if(node.type==='ExportNamedDeclaration'&&node.declaration?.id)exported.add(node.declaration.id.name);
@@ -60,14 +82,18 @@ for(const file of files){
       if(node.type==='VariableDeclarator'&&grandparent?.type==='ExportNamedDeclaration')carriers.push(grandparent);
       const doc=carriers.map(n=>documentation(n.leadingComments)).find(d=>d.description)||documentation();
       const isExport=scope.length===0&&exported.has(name);
+      const id=`${file}:${[...scope,name].join('.')}`;
+      symbolByNode.set(node,id);
+      symbolByNode.set(declaration,id);
       functions.push({
-        id:`${file}:${[...scope,name].join('.')}`,
+        id,
         name,qualifiedName:[...scope,name].join('.'),kind,file,
         category:category(file),line:node.loc.start.line,endLine:declaration.loc.end.line,
         role:apiNames.has(name)&&scope.length===0?'計算エントリ':isExport?'内部モジュール間':'内部関数',
         signature:`${name}(${(declaration.params||[]).map(p=>code.slice(p.start,p.end).replace(/\s+/g,' ')).join(', ')})`,
         ...doc,
-        sourceUrl:`https://github.com/Design-for-Changes/dw-appendix/blob/main/${file}#L${node.loc.start.line}`,
+        localSource:code.slice(declaration.start,declaration.end),
+        sourceUrl:commit ? `https://github.com/Design-for-Changes/dw-appendix/blob/${commit}/${file}#L${node.loc.start.line}` : null,
       });
       childScope=[...scope,name];
     }
@@ -86,14 +112,18 @@ const missing=functions.filter(f=>!f.description);
 if(missing.length){console.error('関数のJSDoc概要が未記載:\n'+missing.map(f=>`${f.file}:${f.line} ${f.qualifiedName}`).join('\n'));process.exit(1);}
 const revision=crypto.createHash('sha256').update(JSON.stringify(sources)).digest('hex');
 const catalog={
-  schemaVersion:1,revision,
+  schemaVersion:3,revision,
   scope:'src/calcと表示データ・条件生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証スクリプトは対象外。',
+  callScope:'対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。',
   unitNote:'金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。',
   functionCount:functions.filter(f=>f.kind==='function').length,
   classCount:functions.filter(f=>f.kind==='class').length,
-  sources,functions,
+  sources,functions,calls:extractCallEdges(modules,symbolByNode).map(e=>{
+    const file=e.from.slice(0,e.from.indexOf(':')), commit=published.get(file);
+    return {...e,sourceUrl:commit ? `https://github.com/Design-for-Changes/dw-appendix/blob/${commit}/${file}#L${e.line}` : null};
+  }),
 };
 const output=path.join(ROOT,'src/data/calculation-function-catalog.json');
 fs.mkdirSync(path.dirname(output),{recursive:true});
 fs.writeFileSync(output,JSON.stringify(catalog,null,2)+'\n');
-console.log(`✓ function catalog: ${catalog.functionCount} functions, ${catalog.classCount} classes, ${sources.length} source files`);
+console.log(`✓ function catalog: ${catalog.functionCount} functions, ${catalog.classCount} classes, ${catalog.calls.length} call sites, ${sources.length} source files`);

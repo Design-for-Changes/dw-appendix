@@ -7,6 +7,7 @@ import IncomeAssessmentAppendix from "./IncomeAssessmentAppendix";
 import ResearchDataAppendix from "./ResearchDataAppendix";
 import CalculationReferenceAppendix from "./CalculationReferenceAppendix";
 import RevisionScenariosAppendix from "./RevisionScenariosAppendix";
+import ChildEligibilityEvidence from "./ChildEligibilityEvidence";
 
 const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
@@ -15,10 +16,12 @@ const APPENDIX_PAGES = [
   { mode: "current", letter: "D", label: "現行制度", hash: "#current" },
   { mode: "optimal", letter: "E", label: "調整モデル（探索例）", hash: "#optimal" },
   { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
-  { mode: "scenarios", letter: "G", label: "モデル条件・感度分析", hash: "#revision-scenarios" },
+  { mode: "scenarios", letter: "G", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
+  { mode: "eligibility", letter: "H", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
 ];
 
 function viewModeForHash(hash) {
+  if (hash === "#salary-surface") return "scenarios";
   if (hash.startsWith("#calculation-function") || hash.startsWith("#calculation-flow")) return "functions";
   return APPENDIX_PAGES.find((page) => page.hash === hash)?.mode || "current";
 }
@@ -1333,7 +1336,7 @@ export default function AppendixCliffMap() {
   };
 
   return (
-    <main className="App appendix-page">
+    <main className={"App appendix-page" + (viewMode==="scenarios" ? " appendix-page-simulator" : "")}>
       <section className="appendix-hero">
         <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
         <h1>障害福祉における給付・負担の制度間相互作用と全体最適</h1>
@@ -1359,7 +1362,7 @@ export default function AppendixCliffMap() {
         <a href={activePage.hash}>このページへのリンク</a>
       </header>
 
-      {(viewMode === "current" || viewMode === "optimal") && <p className="research-note">D・Eは従来3ケースの入力条件による参考計算です。医療費の旧代表値と旧就学奨励費条件を含み、改稿用の採用条件とは区別します。改稿用の条件と未確定入力は<a href="#revision-scenarios" onClick={() => selectViewMode("scenarios")}>Web Appendix G</a>に示します。</p>}
+      {(viewMode === "current" || viewMode === "optimal") && <p className="research-note">D・Eは従来3ケースの入力条件による参考計算です。医療費の旧代表値と旧就学奨励費条件を含み、改稿用の採用条件とは区別します。改稿用の条件とシミュレーターは<a href="#revision-scenarios" onClick={() => selectViewMode("scenarios")}>Web Appendix G</a>に示します。</p>}
 
       {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {
@@ -1379,7 +1382,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

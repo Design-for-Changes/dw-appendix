@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { summarizeAdjustmentImpact } from "../calc/illustrativeAdjustment";
 import { validateN04EducationProfile } from "../calc/educationAid";
+import { CALCULATION_SOURCES, getChildDayServiceCapYen } from "../calc/computePoint";
+import { REVISION_INCOME_DESIGN } from "../data/revisionIncomeDesign";
+import RevisionIncomePlane from "./RevisionIncomePlane";
 
 const base = process.env.PUBLIC_URL || ".";
 const metadataUrl = `${base}/data/research/revision-scenarios.json`;
@@ -41,6 +44,11 @@ function validateMetadata(json) {
   if (json?.schema_version !== "1.0.0" || !Array.isArray(json.family_profiles) || !json.family_profiles.length || !Array.isArray(json.conditions)) throw new Error("条件資料の形式が不正です。");
   const familyIds = new Set(json.family_profiles.map((item) => item.id));
   if (familyIds.size !== json.family_profiles.length || [...familyIds].some((id) => typeof id !== "string" || !id)) throw new Error("家族条件IDが不正です。");
+  for (const family of json.family_profiles) {
+    const { total_children: n, disabled_children: d, qualification_counts: q } = family;
+    if (!Number.isInteger(n) || !Number.isInteger(d) || d < 1 || n < d || !q ||
+      ["A", "B", "C"].some((k) => !Number.isInteger(q[k]) || q[k] < 0) || q.A + q.B + q.C !== d) throw new Error("児童の人数構成と手当要件の人数が一致しません。");
+  }
   const conditionIds = new Set();
   const conditionKeys = new Set();
   for (const condition of json.conditions) {
@@ -157,12 +165,93 @@ function AdjustmentImpact({ model }) {
   </section>;
 }
 
+const qualificationLabels = {
+  A: "特別児童扶養手当2級のみ",
+  B: "特別児童扶養手当1級のみ",
+  C: "特別児童扶養手当1級と障害児福祉手当",
+};
+
+/** 同年齢のきょうだいを並べ替えず、各要件に該当する人数で表す。 */
+function qualificationLabel(family) {
+  return Object.entries(qualificationLabels).filter(([key]) => family.qualification_counts[key] > 0)
+    .map(([key, label]) => `${label}：${family.qualification_counts[key]}人`).join("、");
+}
+
+/** 登録された人数構成からのみ選択できる。人数の変更時にも該当しない旧パターンを残さない。 */
+function FamilyPatternControl({ profiles, profile, onChange }) {
+  const uniqueCounts = (items, key) => [...new Set(items.map((item) => item[key]))].sort((a,b) => a - b);
+  const byTotal = profiles.filter((item) => item.total_children === profile.total_children);
+  const choices = byTotal.filter((item) => item.disabled_children === profile.disabled_children);
+  function changeCounts(total, disabled) {
+    const sameSize = profiles.filter((item) => item.total_children === total);
+    const available = uniqueCounts(sameSize, "disabled_children");
+    const nearest = available.reduce((best, n) => Math.abs(n - disabled) < Math.abs(best - disabled) ? n : best);
+    const candidates = sameSize.filter((item) => item.disabled_children === nearest);
+    const matching = candidates.find((row) => ["A", "B", "C"].every((key) => row.qualification_counts[key] === profile.qualification_counts[key]));
+    onChange((matching || candidates[0]).id);
+  }
+  return <div className="appendix-controls">
+    <label>子どもの総数<select value={profile.total_children} onChange={(e) => changeCounts(Number(e.target.value), profile.disabled_children)}>{uniqueCounts(profiles, "total_children").map((n) => <option key={n} value={n}>{n}人</option>)}</select></label>
+    <label>うち障害児の人数<select value={profile.disabled_children} onChange={(e) => changeCounts(profile.total_children, Number(e.target.value))}>{uniqueCounts(byTotal, "disabled_children").map((n) => <option key={n} value={n}>{n}人</option>)}</select></label>
+    <label>各障害児の手当要件の組合せ<select value={profile.id} onChange={(e) => onChange(e.target.value)}>{choices.map((item) => <option key={item.id} value={item.id}>{qualificationLabel(item)}</option>)}</select></label>
+  </div>;
+}
+
+/** 本稿の7歳の利用児全員について同一の仮定額を設定し、世帯上限適用後の月額と区別して表示する。 */
+function DayServiceControl({ amount, onChange, profile }) {
+  const { min, max, step } = REVISION_INCOME_DESIGN.serviceUse;
+  const count = profile?.disabled_children;
+  const subtotal = Number.isInteger(count) && count > 0 ? count * amount : null;
+  const bands = [
+    ["非課税", getChildDayServiceCapYen(0, false)],
+    ["一般1", getChildDayServiceCapYen(0, true)],
+    ["一般2", getChildDayServiceCapYen(280000, true)],
+  ];
+  return <section aria-labelledby="revision-fee-title">
+    <h3 id="revision-fee-title">通所支援の費用を設定する</h3>
+    <label htmlFor="revision-fee-slider">上限適用前の自己負担相当額（利用児1人・月額）</label>
+    <div className="appendix-controls">
+      <input id="revision-fee-slider" type="range" min={min} max={max} step={step} value={amount}
+        aria-valuetext={`${amount.toLocaleString("ja-JP")}円／人・月`} aria-describedby="revision-fee-hint"
+        onChange={(event) => onChange(Number(event.target.value))} style={{ width: "min(100%, 24rem)" }} />
+      <output htmlFor="revision-fee-slider">{amount.toLocaleString("ja-JP")}円／人・月</output>
+    </div>
+    <p id="revision-fee-hint">サービスの総費用ではなく、上限を適用する前の利用者負担を動かす。37,200円は利用額の上限ではなく、これを超えても世帯の最終負担が変わらないために設けた表示上限である。<a href={CALCULATION_SOURCES.serviceBurden.url}>こども家庭庁「利用者負担の仕組み」</a></p>
+    {subtotal !== null && <><p>利用児{count}人に同じ額を設定し、同月分を合算する。上限適用前の世帯合計は<strong>{subtotal.toLocaleString("ja-JP")}円／月</strong>。</p>
+      <dl className="appendix-controls" aria-label="所得区分別にみた上限適用後の世帯負担">{bands.map(([label, cap]) => <div key={label}><dt>{label}</dt><dd>{Math.min(subtotal, cap).toLocaleString("ja-JP")}円／月</dd></div>)}</dl></>}
+  </section>;
+}
+
 export default function RevisionScenariosAppendix() {
+  return <div id="revision-scenarios" className="appendix-panel"><RevisionIncomePlane /></div>;
+}
+
+// 旧試算の資料と照合用の表示。現在のGの画面には載せない。
+export function LegacyRevisionMaterials() {
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  return <>
+    <section aria-labelledby="revision-observations-title">
+      <h3 id="revision-observations-title">試算の給与帯・利用料は、公表統計のどこに当たるか</h3>
+      <p><strong>旧試算（v2）の給与帯。</strong>配偶者給与を0円としたとき、特別児童扶養手当が停止する世帯主給与はケース1・2で年824万円、ケース3で年867万円である。いずれも12で割ると月60万円以上90万円未満に当たる。厚生労働省の「生活のしづらさなどに関する調査」（令和4年）では、0～18歳の回答者のうち「働いて得た収入」がこの階級にあるのは<a href="https://www.mhlw.go.jp/toukei/list/dl/seikatsu_chousa_c_r04.pdf#page=223">全体の52人／888人（5.9%、第62表・217頁）</a>、うち<a href="https://www.mhlw.go.jp/toukei/list/dl/seikatsu_chousa_c_r04.pdf#page=263">療育手帳所持者では28人／452人（6.2%、同257頁）</a>である。いずれも収入不詳を含む回答者数を分母とする。</p>
+      <p><a href="https://www.mhlw.go.jp/toukei/list/dl/seikatsu_chousa_r04.pdf#page=22">調査票・問20</a>は、税・社会保険料控除前の平均月収を、18歳未満には世帯合計、18歳以上には本人分で尋ねている。公表表の「0～18歳」には両者が混在する。また、「収入の総額」には特別児童扶養手当等の社会保障給付も含まれる。上記は収入階級の照合にとどまり、夫婦別の給与、障害児数、手当の認定状況を同一世帯で結び付けた個票は用いていない。この割合は、3ケースの出現割合や所得逆転を経験する世帯の割合ではない。</p>
+      <p><strong>通所支援の利用料。</strong><a href={CALCULATION_SOURCES.serviceRepresentative.url + "#page=4"}>東京都の放課後等デイサービス調査（令和6年6月、3～4頁）</a>では、児童1人当たりの月の利用者負担は一般1で平均3,896円、一般2で平均10,406円であり、一般2の4,103人（60%）は1万円以下だった。これらは上限適用後の東京都の値であり、全国の上限適用前負担や、きょうだいで利用する世帯の合算額の分布ではない。本試算では<a href={CALCULATION_SOURCES.serviceBurden.url}>全国共通の月額上限</a>を適用する前の負担を利用児1人につき0～37,200円で動かす。10,406円を入力する場合も、観測平均を再現するのではなく、その金額を仮定した比較である。</p>
+      <p><strong>主試算から除外した医療費。</strong>船橋市では、<a href="https://www.city.funabashi.lg.jp/kenkou/shougaisha/004/01/p009691.html">重度心身障害者医療費助成</a>の所得要件を満たさなくなっても、<a href="https://www.city.funabashi.lg.jp/kodomo/teate/002/p004273a.html">子ども医療費助成</a>で同じ窓口負担が続く場合、その切替えによる下落は生じない。代替助成がなく、所得境界を越えて実際の自己負担が増す場合には、その増額分だけ可処分所得の下落が大きくなる。どちらに当たるかを全国一律には仮定していない。</p>
+    </section>
+    <details className="revision-archive" open={archiveOpen} onToggle={(e) => setArchiveOpen(e.currentTarget.open)}>
+      <summary>旧設計：配偶者給与と利用額を固定した条件索引</summary>
+      {archiveOpen && <RevisionArchive />}
+    </details>
+  </>;
+}
+
+// 旧資料の読み込み失敗は独立した新設計の計算器を停止させない。
+function RevisionArchive() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [familyId, setFamilyId] = useState("");
   const [spouse, setSpouse] = useState(0);
   const [use, setUse] = useState(4600);
+  const [archivedUse, setArchivedUse] = useState(4600);
   const [series, setSeries] = useState(null);
   const [seriesError, setSeriesError] = useState(null);
   useEffect(() => {
@@ -170,7 +259,7 @@ export default function RevisionScenariosAppendix() {
     fetch(metadataUrl, { signal: controller.signal }).then((r) => { if (!r.ok) throw new Error(`conditions: ${r.status}`); return r.json(); }).then(validateMetadata).then((json) => { setData(json); setFamilyId(json.family_profiles[0].id); }).catch((e) => { if (e.name !== "AbortError") setError(e); });
     return () => controller.abort();
   }, []);
-  const condition = useMemo(() => data?.conditions?.find((item) => item.family_profile_id === familyId && Number(item.spouse_salary_wan) === Number(spouse) && Number(item.service_use_yen_per_child_month) === Number(use)), [data, familyId, spouse, use]);
+  const condition = useMemo(() => data?.conditions?.find((item) => item.family_profile_id === familyId && Number(item.spouse_salary_wan) === Number(spouse) && Number(item.service_use_yen_per_child_month) === Number(archivedUse)), [data, familyId, spouse, archivedUse]);
   useEffect(() => {
     setSeries(null); setSeriesError(null);
     if (!condition || condition.calculation_status !== "computed" || !condition.result?.series_url) return undefined;
@@ -182,17 +271,18 @@ export default function RevisionScenariosAppendix() {
   if (!data) return <section role="status" className="appendix-panel">条件資料を読み込んでいます。</section>;
   const profile = data.family_profiles?.find((item) => item.id === familyId);
   const computedCount = data.conditions.filter((item) => item.calculation_status === "computed").length;
-  return <section id="revision-scenarios" className="appendix-panel" aria-labelledby="revision-scenarios-title">
-    <div className="appendix-section-head"><div><p className="appendix-kicker">Web Appendix G</p><h2 id="revision-scenarios-title">モデル条件と感度分析</h2><p>家族構成、配偶者の給与、通所利用条件を分けて比較する。各条件は仮想的な比較設定であり、典型世帯や人口分位を表すものではない。</p></div><a className="research-download" href={metadataUrl} download>モデル条件JSON</a></div>
-    <div className="municipal-method"><p>家族構成 {data.family_profiles.length}通り × 配偶者給与3条件 × 通所利用3条件 ＝ {data.conditions.length}条件。計算済み {computedCount}条件。</p><p>横軸は世帯主の給与200〜1,500万円。配偶者給与を増やす比較と、同じ世帯給与を夫婦間で配分する比較は異なる。</p></div>
+  return <section id="revision-archive" aria-label="旧設計の条件索引">
+    <FamilyPatternControl profiles={data.family_profiles} profile={profile} onChange={setFamilyId} />
+    {profile?.description && <p>{profile.description}</p>}
+    <p>手当要件は所得判定前の資格を示し、医学的重症度を三階層に区分したものではない。</p>
+    <DayServiceControl amount={use} onChange={setUse} profile={profile} />
+    <p aria-label="選択した試算条件">選択条件：子ども{profile.total_children}人（うち障害児{profile.disabled_children}人）、{qualificationLabel(profile)}。通所支援の上限適用前負担 {use.toLocaleString("ja-JP")}円／人・月。記録用：<code>{`${familyId}-R${use}`}</code></p>
+    <p>以下は旧設計の {data.conditions.length} 条件（計算済み {computedCount} 条件）。上のスライダーで選んだ金額や夫婦の給与の組合せに対する結果ではない。<a href={metadataUrl} download>旧設計の条件JSON</a></p>
     <div className="appendix-controls">
-      <label>家族構成<select value={familyId} onChange={(e) => setFamilyId(e.target.value)}>{data.family_profiles.map((item) => <option key={item.id} value={item.id}>{item.label || item.id}</option>)}</select></label>
       <label>配偶者給与（万円／年）<select value={spouse} onChange={(e) => setSpouse(Number(e.target.value))}>{[0, 200, 400].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
-      <label>児童1人の上限適用前負担相当額（円／月）<select value={use} onChange={(e) => setUse(Number(e.target.value))}>{[4600, 10406, 37200].map((value) => <option key={value} value={value}>{value.toLocaleString("ja-JP")}</option>)}</select></label>
+      <label>児童1人の上限適用前負担相当額（円／月）<select value={archivedUse} onChange={(e) => setArchivedUse(Number(e.target.value))}>{[4600, 10406, 37200].map((value) => <option key={value} value={value}>{value.toLocaleString("ja-JP")}</option>)}</select></label>
     </div>
-    <p>{profile?.description || "各児童の受給資格の組合せは条件JSONに記載する。"}</p>
-    <p>A＝特児2級、B＝特児1級、C＝特児1級及び障害児福祉手当の要件を満たすと仮定した組合せ。医学的重症度を三階層に区分したものではない。</p>
-    <p>通所利用の3条件は構造比較のために置いた仮定であり、実測された上限適用前費用の平均・中央値・分位点ではない。</p>
+    <p>旧設計の通所利用の3条件は実測された上限適用前費用の平均・中央値・分位点ではない。</p>
     {condition?.calculation_status === "computed" ? <>
       {seriesError ? <p role="alert">計算系列を読み込めませんでした。欠損値や、現行制度と参考例の対応を確認してください。</p> : series?.conditionId === condition.id ? <><ScenarioChart points={series.points} adjustment={series.adjustment} />{series.adjustment ? <AdjustmentImpact model={series.adjustment} /> : <p>この条件の参考調整例は未計算のため、現行制度のみを表示する。</p>}</> : <p role="status">計算系列を読み込んでいます。</p>}
       <div className="appendix-table-wrap"><table className="appendix-table"><caption>所得逆転と回復に必要な増収額</caption><thead><tr><th>給与（万円）</th><th>作用した制度</th><th>下落幅（万円）</th><th>回復点（万円）</th><th>回復に必要な増収額（万円）</th></tr></thead><tbody>{(condition.result?.reversals || []).map((row, i) => <tr key={i}><td>{row.salary_wan ?? row.x}</td><td>{row.programs?.join("・") || row.cause || "条件JSONを参照"}</td><td>{Number(row.drop_wan ?? row.drop).toFixed(2)}</td><td>{row.recovery_salary_wan ?? row.recovery_x ?? "範囲内未回復"}</td><td>{row.recovery_increase_wan ?? row.recovery_width ?? "―"}</td></tr>)}</tbody></table></div>

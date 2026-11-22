@@ -32,8 +32,11 @@ export function getIncomeTaxParts(taxableWan, options = {}) {
   const band = INCOME_TAX_BANDS.find((b) => taxableYen < b.max) || INCOME_TAX_BANDS[INCOME_TAX_BANDS.length - 1];
   const rawTaxYen = taxableYen * band.rate - band.deductionYen;
   const baseTaxYen = Math.max(0, Math.floor(rawTaxYen));
-  const reconstructionSpecialIncomeTaxYen = options.includeReconstruction ? Math.floor(baseTaxYen * 0.021) : 0;
-  const taxYen = options.includeReconstruction
+  // 令和9年以後の年末調整は復興1.1%＋防衛1%。別々に丸めた税額を足すのでなく、102.1%に100円未満切捨てを一度適用。
+  // https://www.nta.go.jp/publication/pamph/pdf/0026005-024_03.pdf （問8）
+  const reconstructionSpecialIncomeTaxYen = options.includeDefense ? Math.floor(baseTaxYen*11/1000)
+    : options.includeReconstruction ? Math.floor(baseTaxYen * 0.021) : 0;
+  const taxYen = options.includeDefense ? Math.floor(baseTaxYen*1021/100000)*100 : options.includeReconstruction
     ? Math.floor((baseTaxYen + reconstructionSpecialIncomeTaxYen) / 100) * 100
     : Math.max(0, Math.round(rawTaxYen));
   return {
@@ -45,6 +48,7 @@ export function getIncomeTaxParts(taxableWan, options = {}) {
     baseTaxYen,
     reconstructionSpecialIncomeTaxYen,
     includesReconstruction: Boolean(options.includeReconstruction),
+    ...(options.includeDefense ? {defenseSpecialIncomeTaxYen:Math.floor(baseTaxYen/100), includesDefense:true} : {}),
     taxYen,
     taxWan: taxYen / 10000,
   };
@@ -79,10 +83,24 @@ export function getResidentTaxParts(taxableWan, options = {}) {
   if (incomeLevyExempt) adjustmentDeductionYen = 0;
   const exactComponents = Number.isFinite(options.personalDeductionDifferenceWan);
   const postAdjustmentYen = Math.max(0, rawIncomeLevyYen - adjustmentDeductionYen);
-  const municipalIncomeLevyYen = incomeLevyExempt ? 0 : exactComponents
+  // 地方税法附則3条の3第2・5項。人的控除差の「調整控除」とは別で、
+  // 所得割を引いた後の給与所得が非課税限度額を下回る分だけ所得割を減額。
+  // https://laws.e-gov.go.jp/law/325AC0000000226
+  // 船橋・給与のみ・他の税額控除なしの本稿では、丸め前の市:県の算出所得割は
+  // 6:4。法定の税額按分はこの場合に限り3:2に等しい。市県別の100円切捨ては最後に行う。
+  // 保存済み比較の旧計算にこのモデル固有の条件を遡及させない。
+  const thresholdAdjustment = options.applySalaryOnlyExemptionAdjustment === true;
+  if (thresholdAdjustment && (!hasIncomeContext || !exactComponents))
+    throw new TypeError("所得割の減額には給与所得と人的控除差が必要です。");
+  const beforeThresholdYen = incomeLevyExempt ? 0 : postAdjustmentYen;
+  const afterThresholdYen = thresholdAdjustment
+    ? Math.min(beforeThresholdYen, Math.max(0, incomeYen - incomeLevyExemptionThresholdYen)) : beforeThresholdYen;
+  const municipalIncomeLevyYen = thresholdAdjustment ? Math.floor(afterThresholdYen * 3 / 500) * 100
+    : incomeLevyExempt ? 0 : exactComponents
     ? Math.floor((taxableYen * 0.06 - adjustmentDeductionYen * 0.6) / 100) * 100
     : Math.max(0, Math.round(postAdjustmentYen * 0.6));
-  const prefecturalIncomeLevyYen = incomeLevyExempt ? 0 : exactComponents
+  const prefecturalIncomeLevyYen = thresholdAdjustment ? Math.floor(afterThresholdYen * 2 / 500) * 100
+    : incomeLevyExempt ? 0 : exactComponents
     ? Math.floor((taxableYen * 0.04 - adjustmentDeductionYen * 0.4) / 100) * 100
     : Math.max(0, Math.round(postAdjustmentYen) - municipalIncomeLevyYen);
   const incomeLevyYen = Math.max(0, municipalIncomeLevyYen) + Math.max(0, prefecturalIncomeLevyYen);
@@ -96,6 +114,9 @@ export function getResidentTaxParts(taxableWan, options = {}) {
     rate,
     rawIncomeLevyYen,
     adjustmentDeductionYen,
+    ...(thresholdAdjustment ? {incomeLevyBeforeThresholdAdjustmentYen:beforeThresholdYen,
+      incomeLevyAfterThresholdAdjustmentYen:afterThresholdYen,
+      incomeLevyThresholdReductionYen:beforeThresholdYen-afterThresholdYen} : {}),
     incomeLevyYen,
     incomeLevyWan,
     municipalIncomeLevyYen,

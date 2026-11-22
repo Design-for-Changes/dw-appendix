@@ -30,6 +30,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Check household tax boundaries before publishing
+        run: node --experimental-default-type=module scripts/audit-current-surface.mjs --tax-only
+
       - name: Build
         run: npm run build
         env:

@@ -10,7 +10,7 @@ const flowTable = () => screen.getByRole("table", { name: "入力から計算・
 beforeEach(() => window.history.replaceState(null, "", "/#calculation-functions"));
 afterEach(() => window.history.replaceState(null, "", "/"));
 
-test("独立資料は初期表示され、94関数とソース・JSONを保持する", () => {
+test("独立資料は初期表示され、現行の関数とソース・JSONを保持する", () => {
   render(<CalculationReferenceAppendix />);
   expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeVisible();
   const table = listTable();
@@ -40,7 +40,7 @@ test("計算処理からページ内説明へ移動し、対応する全処理�
   expect(within(computePoint).getByRole("link", { name: "↩ 可処分所得の集計" })).toBeInTheDocument();
 });
 
-test("全94件の完全IDが一意で、親・逆リンクの宛先が存在する", () => {
+test("全関数の完全IDが一意で、親・逆リンクの宛先が存在する", () => {
   render(<CalculationReferenceAppendix />);
   const ids = catalog.functions.map((entry) => entryId(entry));
   expect(new Set(ids).size).toBe(catalog.functions.length);
@@ -51,6 +51,28 @@ test("全94件の完全IDが一意で、親・逆リンクの宛先が存在す�
   const helpers = catalog.functions.filter((f) => f.qualifiedName === "toNumber");
   expect(helpers.length).toBeGreaterThan(1);
   expect(new Set(helpers.map(entryId)).size).toBe(helpers.length);
+});
+
+test("新稿計算表と受け渡し図から適切な関数と実引数に到達できる", () => {
+  render(<CalculationReferenceAppendix />);
+  const current=screen.getByRole("table",{name:"入力から年額への計算表（現行制度のみ）"});
+  expect(current).not.toHaveTextContent(/就学奨励費|教育実費|医療費助成/);
+  expect(flowTable()).toHaveTextContent("就学奨励費");
+  expect(flowTable()).toHaveTextContent("医療費助成");
+  const discussion=screen.getByRole("table",{name:"収支の下落幅とは別に調べる制度上の変化点"});
+  expect(discussion).toHaveTextContent("収支が下がったか否かを問わず");
+  for(const label of ["scanPaperChangePoints","assessPaperEducationClass","assessFunabashiMedicalCoverage"]){
+    const target=targetFor(within(discussion).getByRole("link",{name:label}));
+    expect(target).toBeInTheDocument();
+    expect(targetFor(within(target).getByRole("link",{name:"↩ 考察：制度の変化点"}))).toBe(document.getElementById("calculation-flow-discussion"));
+  }
+  for(const link of within(current).getAllByRole("link")) expect(targetFor(link)).toBeInTheDocument();
+  for(const link of within(screen.getByRole("list",{name:"通所支援の計算順"})).getAllByRole("link")) expect(targetFor(link)).toBeInTheDocument();
+  expect(screen.getByRole("combobox",{name:"調べる関数"})).toHaveValue("src/calc/revisionEngine.js:createRevisionCalculator.evaluate");
+  const next=screen.getByRole("button",{name:"revisionServiceBurden"});
+  expect(next.closest("li")).toHaveTextContent("service に格納");
+  fireEvent.click(next);
+  expect(screen.getByRole("combobox",{name:"調べる関数"})).toHaveValue("src/calc/revisionEngine.js:revisionServiceBurden");
 });
 
 test("検索・区分で隠れた関数も対応表のリンクで表示しフォーカスする", async () => {

@@ -10,12 +10,15 @@ const checkResult = stop => stop ? "該当（所得で停止）" : "非該当（
 
 // Use the income, limit, decision and payment returned for this point. Earning-age
 // and disability counts below explain those values; they do not determine eligibility again.
-function incomeRow(title, actual, tax, dependents) {
+function disabilityAmounts(dependents) {
+  const ordinary=dependents.filter(c=>c.taxStatus==="ordinary").length, special=dependents.filter(c=>c.taxStatus==="special").length;
+  return {ordinary,special,total:270000*ordinary+400000*special};
+}
+function incomeRow(title, actual, tax, disabilityTerm) {
   if (!tax) return [title,"子の前年所得（無所得）","0",yen(actual)];
   const wage=tax.salaryTaxInputs.salaryIncomeBeforeAdjustmentYen;
-  const ordinary=dependents.filter(c=>c.taxStatus==="ordinary").length, special=dependents.filter(c=>c.taxStatus==="special").length;
   return [title, "所得金額調整控除前の給与所得 − 給与所得からの控除（最大10万円）− 一律8万円 − 配偶者特別控除 − 障害者控除（27万・40万円／人）。下限0円",
-    "max(0, "+n(wage)+" − "+n(Math.min(100000,wage))+" − 80,000 − "+n(tax.spouseDeduction.previous.specialLT)+" − 270,000 × "+ordinary+" − 400,000 × "+special+")", yen(actual)];
+    "max(0, "+n(wage)+" − "+n(Math.min(100000,wage))+" − 80,000 − "+n(tax.spouseDeduction.previous.specialLT)+" − "+disabilityTerm+")", yen(actual)];
 }
 
 export default function TraceAllowances({point,inputs}) {
@@ -30,9 +33,21 @@ export default function TraceAllowances({point,inputs}) {
     const name=who(check.id), tax=parents[check.id];
     const claimant=check.role==="claimant";
     const role={claimant:"受給資格者",spouse:"受給資格者の配偶者",obligor:"扶養義務者"}[check.role];
-    t.push(incomeRow(name+"の判定所得",check.assessmentIncomeYen,tax,dependents(check.id)));
-    t.push([name+"の限度額",claimant?"4,596,000 ＋ 380,000 ×（扶養親族等数 ＋ 税扶養外の生計維持児童数）＋ 250,000 × 対象となる16～18歳の扶養人数":"扶養0人は6,287,000、1人以上は6,323,000 ＋ 213,000 × 扶養人数",
-      claimant?"4,596,000 ＋ 380,000 × ("+check.dependentCount+" ＋ "+b.additionalSupportedCount+") ＋ 250,000 × "+tax.olderDependentCount:otherLimit(check.dependentCount),yen(check.limitYen)]);
+    const deps=dependents(check.id);
+    const names=children.flatMap((c,i)=>roles.taxDependentOf[i]===check.id?["子"+(i+1)+"（"+c.age+"歳）"]:[]);
+    if(check.dependentCount>tax.taxDependentCount) names.push(who(check.id==="head"?"spouse":"head")+"（同一生計配偶者）");
+    const extra=claimant?b.additionalSupportedCount:0;
+    if(extra) names.push("税扶養外の生計維持児童"+extra+"人");
+    const limitCount=check.dependentCount+extra;
+    t.push([name+"の扶養人数（限度額用）",
+      claimant?"扶養親族等と、そこに含まれない生計維持児童を各1人と数える":"この親自身の扶養親族等を各1人と数える",
+      names.join("、")||"該当者なし",limitCount+"人"]);
+    t.push([name+"の限度額",claimant?"4,596,000 ＋ 380,000 × 扶養人数 ＋ 250,000 × うち16～18歳の控除対象扶養親族数":"扶養0人は6,287,000、1人以上は6,323,000 ＋ 213,000 × 扶養人数",
+      claimant?"4,596,000 ＋ 380,000 × "+limitCount+" ＋ 250,000 × "+tax.olderDependentCount:otherLimit(check.dependentCount),yen(check.limitYen)]);
+    const {ordinary,special,total}=disabilityAmounts(deps);
+    t.push([name+"の障害者控除（判定所得用）","障害者（特別障害者を除く）1人27万円、特別障害者1人40万円",
+      "270,000 × "+ordinary+"人 ＋ 400,000 × "+special+"人",yen(total)]);
+    t.push(incomeRow(name+"の判定所得",check.assessmentIncomeYen,tax,n(total)));
     t.push([name+"（"+role+"）の停止判定","判定所得 ≥ 限度額なら停止",n(check.assessmentIncomeYen)+" ≥ "+n(check.limitYen)+" か",checkResult(check.stopped)]);
   }
   const amounts=children.map(c=>gradeAmount[c.tccaGrade]);
@@ -44,7 +59,8 @@ export default function TraceAllowances({point,inputs}) {
     const recipient=check.role==="recipient", person=who(check.id);
     const name=recipient?person+"（本人）":"扶養義務者（"+person+"）";
     const op=check.stopComparison===">"?">":"≥";
-    welfare.push(incomeRow(name+"の判定所得",check.incomeYen,parents[check.id],dependents(check.id)));
+    const {ordinary,special}=disabilityAmounts(dependents(check.id));
+    welfare.push(incomeRow(name+"の判定所得",check.incomeYen,parents[check.id],"270,000 × "+ordinary+" − 400,000 × "+special));
     welfare.push([name+"の限度額",recipient?"本人：3,758,000 ＋ 380,000 × 扶養人数":"扶養0人は6,287,000、1人以上は6,323,000 ＋ 213,000 × 扶養人数",recipient?"3,758,000 ＋ 380,000 × "+check.dependentCount:otherLimit(check.dependentCount),yen(check.limitYen)]);
     welfare.push([name+"の停止判定","判定所得 "+op+" 限度額なら停止",
       n(check.incomeYen)+" "+op+" "+n(check.limitYen)+" か",checkResult(!check.passes)]);

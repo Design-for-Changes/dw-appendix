@@ -16,12 +16,14 @@ test("親に扶養される無所得児の特児表では両親だけを所得�
   const point=calc.evaluate(600,400);
   render(<TraceAllowances point={point} inputs={inputs}/>);
   const t="特別児童扶養手当", w="障害児福祉手当";
-  expect(cells(t,"世帯主の限度額").slice(1)).toEqual(["4,596,000 ＋ 380,000 × (3 ＋ 0) ＋ 250,000 × 1","5,986,000円"]);
+  expect(cells(t,"世帯主の扶養人数（限度額用）").slice(1)).toEqual(["子1（4歳）、子2（17歳）、子3（2歳）","3人"]);
+  expect(cells(t,"世帯主の限度額").slice(1)).toEqual(["4,596,000 ＋ 380,000 × 3 ＋ 250,000 × 1","5,986,000円"]);
   expect(cells(t,"配偶者の限度額").slice(1)).toEqual(["扶養0人：6,287,000","6,287,000円"]);
   const tcca=within(screen.getByRole("table",{name:t}));
   expect(tcca.queryAllByRole("rowheader",{name:/^子\d.*(判定所得|限度額|停止判定)$/})).toHaveLength(0);
   expect(cells(t,"所得判定前の月額")[1]).toBe("子1（1級）58,450 ＋ 子2（2級）38,930 ＋ 子3（非該当）0");
-  expect(cells(t,"世帯主の判定所得")[1]).toBe("max(0, 4,360,000 − 100,000 − 80,000 − 0 − 270,000 × 1 − 400,000 × 1)");
+  expect(cells(t,"世帯主の障害者控除（判定所得用）").slice(1)).toEqual(["270,000 × 1人 ＋ 400,000 × 1人","670,000円"]);
+  expect(cells(t,"世帯主の判定所得")[1]).toBe("max(0, 4,360,000 − 100,000 − 80,000 − 0 − 670,000)");
   expect(cells(t,"特別児童扶養手当の年額").slice(1)).toEqual(["97,380 × 12","1,168,560円"]);
   expect(cells(w,"子1（本人）の停止判定")[1]).toBe("0 > 3,758,000 か");
   const ward=within(screen.getByRole("table",{name:w}));
@@ -75,14 +77,24 @@ test("給与の低い親だけが限度額以上になる給与点でも児福�
   expect(cells(w,"障害児福祉手当の年額")[2]).toBe("0円");
 });
 
-test("特児では特別障害者の子を二重計上せず、人数による限度額と40万円の所得控除を分ける",()=>{
-  const model=taxStatus=>createRevisionCalculator({protocol:"paper-2029",serviceAmountYen:0,
-    children:[child(8,{tccaGrade:"1",taxStatus})]});
-  for(const [spouse,count,limit] of [[400,1,4976000],[0,2,5356000]]){
-    for(const [status,income] of [["none",4180000],["special",3780000]]){
-      const b=model(status).evaluate(600,spouse).details.benefits;
-      expect(b.specialChildAllowance.checks[0]).toMatchObject({id:"head",dependentCount:count,limitYen:limit,assessmentIncomeYen:income});
-      expect(b.additionalSupportedCount).toBe(0);
-    }
+test.each([
+  [600,400,"世帯主","配偶者",1,"4,976,000円"],
+  [600,0,"世帯主","配偶者",2,"5,356,000円"],
+  [400,600,"配偶者","世帯主",1,"4,976,000円"],
+  [0,600,"配偶者","世帯主",2,"5,356,000円"],
+])("特児の点P（給与 %i・%i 万円）：扶養人数の内訳と障害者控除額を別々に表示する",(head,spouse,claimant,partner,count,limit)=>{
+  const {rerender}=render(null);
+  const t="特別児童扶養手当";
+  for(const [taxStatus,deduction,income] of [["none","0円","4,180,000円"],["ordinary","270,000円","3,910,000円"],["special","400,000円","3,780,000円"]]){
+    const modelInputs={protocol:"paper-2029",serviceAmountYen:0,children:[child(8,{tccaGrade:"1",taxStatus})]};
+    const point=createRevisionCalculator(modelInputs).evaluate(head,spouse);
+    rerender(<TraceAllowances point={point} inputs={modelInputs}/>);
+    const persons="子1（8歳）"+(count===2?"、"+partner+"（同一生計配偶者）":"");
+    expect(cells(t,claimant+"の扶養人数（限度額用）").slice(1)).toEqual([persons,count+"人"]);
+    expect(cells(t,claimant+"の限度額")[2]).toBe(limit);
+    expect(cells(t,claimant+"の障害者控除（判定所得用）")[2]).toBe(deduction);
+    expect(cells(t,claimant+"の判定所得")[2]).toBe(income);
+    expect(cells(t,partner+"の扶養人数（限度額用）").slice(1)).toEqual(["該当者なし","0人"]);
+    expect(cells(t,partner+"の障害者控除（判定所得用）")[2]).toBe("0円");
   }
 });

@@ -19,16 +19,19 @@ const missing = {status:"excluded"};
 // 各点の個別所得判定から、当該世帯への実際の支給の有無を組み立てる。
 // 月額上限は親の市民税所得割・扶養児童と年齢から再算定する。判定用所得割や
 // 計算器の世帯上限そのもの、手当の合計年額からコピーしない。
-function reference(point,children) {
+function reference(point,children,headWan,spouseWan) {
   if (point.status!=="calculated") return [null,null,null];
   const d=point.details, checks=d.benefits.specialChildAllowance.checks;
+  const owner=headWan>=spouseWan?"head":"spouse";
+  assert.equal(d.roles.allowanceRecipient,owner);
+  assert(d.roles.taxDependentOf.length===children.length && d.roles.taxDependentOf.every(id=>id===owner));
   const eligibleSpecial=children.some(c=>c.tccaGrade!=="not") && checks.every(c=>c.assessmentIncomeYen<c.limitYen);
   const eligibleWelfare=children.some((c,i)=>c.welfareEligible && d.benefits.welfareChildren[i].checks.every(t=>
     t.role==="recipient"?t.incomeYen<=t.limitYen:t.incomeYen<t.limitYen));
   if (!children.some(c=>c.serviceUser && (c.age<3 || c.age>5))) return [eligibleSpecial,eligibleWelfare,null];
   const levy=["head","spouse"].reduce((sum,id)=>{
     const tax=d[id+"Tax"].residentTax;
-    const reduction=children.filter(c=>c.taxDependentOf===id).reduce((a,c)=>a+(c.age<16?19800:7200),0);
+    const reduction=id===owner?children.reduce((a,c)=>a+(c.age<16?19800:7200),0):0;
     return sum+Math.max(0,tax.municipalIncomeLevyYen-reduction);
   },0);
   const taxed=[d.headTax,d.spouseTax].some(t=>t.residentTax.perCapitaYen>0 || t.residentTax.incomeLevyYen>0);
@@ -79,7 +82,7 @@ function audit(name,children,{ox=0,oy=0,n,all=false,hole}={}) {
       let last;
       for(let k=0;k<=n;k++){
         const x=verticalOfLine?k:fixed, y=verticalOfLine?fixed:k;
-        const current=reference(evalAt(x,y),children);
+        const current=reference(evalAt(x,y),children,ox+x,oy+y);
         for(let j=0;j<3;j++){
           const expected=k>0 && last[j]!==null && current[j]!==null && current[j]!==last[j];
           const actual=Boolean(hits[j][y*w+x]&bit);
@@ -111,8 +114,8 @@ const stopped=[];
 for(let x=600;x<=900;x++){
   const b=calcOne.evaluate(x,1200).details.benefits;
   assert.equal(b.tcca,0);
-  assert(b.specialChildAllowance.checks.some(c=>c.role==="spouse"&&c.assessmentIncomeYen>=c.limitYen));
-  stopped.push(b.specialChildAllowance.checks.find(c=>c.role==="claimant").stopped);
+  assert(b.specialChildAllowance.checks.some(c=>c.role==="claimant"&&c.assessmentIncomeYen>=c.limitYen));
+  stopped.push(b.specialChildAllowance.checks.find(c=>c.role==="spouse").stopped);
 }
 const cross=stopped.findIndex((state,i)=>i>0&&state!==stopped[i-1])+600;
 assert(cross>600 && cross<900);
@@ -123,8 +126,8 @@ audit("無償通所だけ・手当要件なし",free,{ox:170,oy:120,n:26,all:tru
 if(quick){
   audit("特児の支給停止",one,{ox:732,oy:296,n:12,all:true});
   audit("生計維持者の交代",one,{ox:894,oy:897,n:18,all:true});
-  audit("扶養先を分けた3児",mixed,{ox:880,oy:390,n:40,all:true});
+  audit("異年齢3児・旧扶養入力あり",mixed,{ox:880,oy:390,n:40,all:true});
 }else{
   audit("1児・月額1円",one,{n:1500});
-  audit("3児・扶養先を分けた世帯",mixed,{n:1500});
+  audit("3児・給与逆転で全児の扶養先が切替",mixed,{n:1500});
 }

@@ -17,12 +17,12 @@ async function draw(){fireEvent.click(screen.getByRole("button",{name:"変更点
 const finish=layers=>act(()=>worker.onmessage({data:{type:"complete",map:{maxSalaryWan:1500,validCount:2253000,layers}}}));
 
 test("最初は計算せず、Gと同じ条件をworkerへ渡す。変えた瞬間に前の図を消して再描画待ちにする",async()=>{
-  window.sessionStorage.setItem("dw-appendix:salary-surface:v1:children",JSON.stringify([{age:16,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:100}]));
+  window.sessionStorage.setItem("dw-appendix:salary-surface:v1:children",JSON.stringify([{age:16,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:100,taxDependentOf:"spouse",maintainedByRecipient:true}]));
   render(<SalaryDecisionMapPage/>);
   expect(createSalaryDecisionMapWorker).not.toHaveBeenCalled();
   expect(screen.getByRole("combobox",{name:"年齢"})).toHaveValue("16");
   const h=await draw();
-  expect(h).toMatchObject({protocol:"paper-2029",children:[{age:16,tccaGrade:"2",taxStatus:"special",serviceAmountYen:100,serviceUser:true}]});
+  expect(h).toMatchObject({protocol:"paper-2029",roles:{allowanceRecipient:"highest-salary"},children:[{age:16,tccaGrade:"2",taxStatus:"special",serviceAmountYen:100,serviceUser:true,taxDependentOf:"highest-salary",maintainedBy:null}]});
   finish([{id:"N01-1",segments:[]},{id:"N01-2",segments:[]},{id:"N02/N03",segments:[]}]);
   expect(screen.getByText("この条件では対象制度の切り替わりはありません。")).toBeInTheDocument();
   fireEvent.click(screen.getByText("世帯と子どもの条件",{selector:"summary"}));
@@ -55,20 +55,24 @@ test("途中で条件を変更したらworkerを止め、古い計算結果が�
   expect(screen.queryByRole("figure")).toBeNull();expect(screen.queryByText(/^計算中：/)).toBeNull();
 });
 
-test("配偶者840→841万円で重なる2手当を同じ座標の詳細から両方読める",async()=>{
+test("配偶者の増収により児福が停止する境界では、先に停止済みの特児を重ねて表示しない",async()=>{
   render(<SalaryDecisionMapPage/>);
   fireEvent.change(screen.getByRole("combobox",{name:"障害の組み合わせ"}),{target:{value:"1:yes:special"}});
-  await draw();
-  const seg=[379.5,840.5,380.5,840.5];
-  finish([{id:"N01-1",segments:[seg]},{id:"N01-2",segments:[seg]},{id:"N02/N03",segments:[]}]);
+  const h=await draw(),calc=createRevisionCalculator(h);
+  let y=801;while(y<1500&&calc.evaluate(380,y).details.benefits.welfare>0)y++;
+  expect(y).toBeLessThan(1500);
+  const before=calc.evaluate(380,y-1),after=calc.evaluate(380,y);
+  expect(before.details.roles.allowanceRecipient).toBe("spouse");
+  expect([before.details.benefits.tcca,after.details.benefits.tcca]).toEqual([0,0]);
+  expect(before.details.benefits.welfare).toBeGreaterThan(0);
+  expect(after.details.benefits.welfare).toBe(0);
+  const seg=[379.5,y-.5,380.5,y-.5];
+  finish([{id:"N01-1",segments:[]},{id:"N01-2",segments:[seg]},{id:"N02/N03",segments:[]}]);
   const plot=screen.getByRole("img");
-  const paths=Array.from(plot.querySelectorAll("path[data-system]"));
-  expect(paths[0].getAttribute("d")).toBe(paths[1].getAttribute("d"));
-  expect(Number(paths[0].getAttribute("stroke-width"))).toBeGreaterThan(Number(paths[1].getAttribute("stroke-width")));
   fireEvent.keyDown(plot,{key:"ArrowRight"});
-  expect(within(plot).getByText("特別児童扶養手当：支給 → 停止")).toBeVisible();
+  expect(within(plot).queryByText("特別児童扶養手当：支給 → 停止")).toBeNull();
   expect(within(plot).getByText("障害児福祉手当：支給 → 停止")).toBeVisible();
-  expect(plot.parentElement.querySelector("figcaption")).toHaveTextContent("（380, 840）→（380, 841）万円");
+  expect(plot.parentElement.querySelector("figcaption")).toHaveTextContent(`（380, ${y-1}）→（380, ${y}）万円`);
 });
 
 test("サービスの実負担が1,000円のままでも、負担上限の変更を表示する",async()=>{

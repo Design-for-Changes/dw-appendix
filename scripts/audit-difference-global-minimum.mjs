@@ -1,6 +1,7 @@
 // Reproduce the lower bound for Appendix J from the current model (not an observed population).
 // Run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/audit-difference-global-minimum.mjs
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {CHILD_ELIGIBILITY_OPTIONS as profiles} from "../src/data/childEligibilityOptions.js";
 import {createDisabilityIncomeComparison} from "../src/calc/disabilityIncomeDifference.js";
 import {createRevisionCalculator, REVISION_SPOUSE_DEDUCTION_TABLE} from "../src/calc/revisionEngine.js";
@@ -12,12 +13,12 @@ const maxMonthly=getChildDayServiceCapYen(280000,true);
 assert.deepEqual([getChildDayServiceCapYen(0,false),getChildDayServiceCapYen(279999,true),maxMonthly],[0,4600,37200]);
 const floorYen=-12*maxMonthly;
 const fields=(p,age=10,fee=maxMonthly)=>({age,tccaGrade:p.tccaGrade,welfareEligible:p.welfareEligible,
-  taxStatus:p.taxStatus,taxDependentOf:"head",serviceUser:fee>0,serviceAmountYen:fee});
+  taxStatus:p.taxStatus,serviceUser:fee>0,serviceAmountYen:fee});
 const plain=profiles.find(p=>p.tccaGrade==="not"&&!p.welfareEligible&&p.taxStatus==="none");
-const roles={allowanceRecipient:"head",spouseDeductionClaimant:"head",welfareMaintainer:"highest-salary"};
+const roles={spouseDeductionClaimant:"head",welfareMaintainer:"highest-salary"};
 const household=(children,other={})=>({protocol,roles,children,serviceAmountYen:0,...other});
-const witness={headWan:0,spouseWan:1500,age:10,taxDependentOf:"head",servicePerUserMonthlyYen:maxMonthly,
-  allowanceRecipient:roles.allowanceRecipient,welfareMaintainer:roles.welfareMaintainer};
+const witness={headWan:0,spouseWan:1500,age:10,profile:plain.id,taxDependentOf:"spouse",servicePerUserMonthlyYen:maxMonthly,
+  allowanceRecipient:"spouse",welfareMaintainer:roles.welfareMaintainer};
 
 // For fixed wages and tax-filing relationships, only the two disability deductions change the taxes:
 // the tax exemption limit depends on the number of dependants, not their disability classifications.
@@ -55,7 +56,9 @@ function taxAudit(){
         const variant=createRevisionCalculator(spec(children.map((c,i)=>({...c,
           taxStatus:i<ordinary?"ordinary":i<ordinary+special?"special":"none"}))));
         taxProfiles++;
-        for(const [index,b] of partnerWages.entries())for(let a=0;a<=maxSalary;a++){
+        // Tax deductions are assigned only to the higher earner (the head on an exact tie).
+        // The low earner's tax inputs remain identical on both sides of the comparison.
+        for(const [index,b] of partnerWages.entries())for(let a=Math.max(1,b);a<=maxSalary;a++){
           const t=variant.evaluate(a,b).details.headTax.totalTaxYen;
           assert.ok(t<=baselineTax[index][a],`Tax burden increased: ${[a,b,count,older,ordinary,special,claim]}`);
           individualTaxComparisons++;
@@ -66,21 +69,33 @@ function taxAudit(){
   return {taxProfiles,partnerWagesWithoutSpouseDeduction:reps[0],partnerWagesWithSpouseDeduction:reps[1],individualTaxComparisons};
 }
 
-// Maximal loss must be attained, not merely bounded. Test EACH ordered selection from the published
-// dropdown, even the all-nonqualifying allowance/tax selection. Service eligibility/use is independent
-// of those three choices; with non-use a household cannot lose income in the scope of Appendix J.
+// Attain the lower bound with a valid dropdown selection. Service use does not automatically
+// establish tax or cash disability qualifications. This is a model witness, not an observed family.
+const published=JSON.parse(readFileSync(new URL("../src/data/disabilityDifferenceRange.json",import.meta.url),"utf8"));
+for(const {children:n,minimumYen} of published){
+  const h=household(Array.from({length:n},()=>fields(plain,witness.age,maxMonthly)));
+  const d=createRevisionCalculator(h).evaluate(witness.headWan,witness.spouseWan).details;
+  assert.deepEqual(d.roles.taxDependentOf,Array(n).fill("spouse"));
+  assert.equal(d.roles.allowanceRecipient,"spouse");
+  const p=createDisabilityIncomeComparison(h).evaluate(witness.headWan,witness.spouseWan);
+  assert.deepEqual([p.taxSavingYen,p.insuranceSavingYen,p.extraBenefitsYen,p.extraServiceYen,p.differenceYen],
+    [0,0,0,12*maxMonthly,floorYen]);
+  assert.equal(minimumYen,floorYen);
+}
+// At these specific wages census each ordered profile without asserting every one reaches
+// the global minimum or even becomes negative. These are not counts of affected families.
 assert.equal(new Set(profiles.map(p=>p.id)).size,profiles.length);
-const counts=[0,0,0]; let witnessUnserved=0, reducedFeeWitnesses=0;
+const counts=[0,0,0],negativeAtPoint=[0,0,0],atFloorAtPoint=[0,0,0];
 function walk(list) {
   if(list.length){
     const ev=fee=>createDisabilityIncomeComparison(household(list.map(p=>fields(p,10,fee)))).evaluate(witness.headWan,witness.spouseWan);
     const p=ev(maxMonthly);
     assert.equal(p.status,"calculated");
-    assert.deepEqual([p.taxSavingYen,p.insuranceSavingYen,p.extraBenefitsYen,p.extraServiceYen,p.differenceYen],
-      [0,0,0,maxMonthly*12,floorYen],list.map(item=>item.id).join(","));
-    assert.equal(ev(0).differenceYen,0);witnessUnserved++;
-    assert.equal(ev(1000).differenceYen,-12000*list.length);reducedFeeWitnesses++;
-    counts[list.length-1]++;
+    assert.ok(p.differenceYen>=floorYen);
+    assert.equal(ev(0).differenceYen,p.differenceYen+maxMonthly*12);
+    assert.equal(ev(1000).differenceYen,p.differenceYen+maxMonthly*12-12000*list.length);
+    const i=list.length-1;
+    counts[i]++;negativeAtPoint[i]+=Number(p.differenceYen<0);atFloorAtPoint[i]+=Number(p.differenceYen===floorYen);
   }
   if(list.length<3)for(const p of profiles)walk([...list,p]);
 }
@@ -92,4 +107,4 @@ assert.deepEqual(counts,[1,2,3].map(n=>profiles.length**n));
 // charge=0 cannot produce a negative value. The cap, not the number of children, bounds the annual loss.
 const tax=taxAudit();
 console.log(JSON.stringify({scope:"Appendix J paper-2029; salary grid, not population",floorYen,
-  perChildProfiles:profiles.length,orderedFamilyCounts:counts,witness,witnessUnserved,reducedFeeWitnesses,tax},null,2));
+  perChildProfiles:profiles.length,orderedFamilyCounts:counts,witness,negativeAtPoint,atFloorAtPoint,tax},null,2));

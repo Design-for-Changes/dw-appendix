@@ -83,8 +83,6 @@ test("同じタブで再表示すると子ども別の条件・通所額、申�
   setChildCount(2);
   change(child(2).getByLabelText("年齢"),"16");
   change(combination(2),"1:yes:special");
-  change(child(2).getByLabelText("この子を税の扶養親族として申告する親"),"spouse");
-  fireEvent.click(child(2).getByLabelText(/前年12月31日/));
   change(serviceSlider(1),"1100"); change(serviceSlider(2),"3200");
   change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
   change(screen.getByLabelText("障害児福祉手当の主たる生計維持者"),"spouse");
@@ -202,24 +200,27 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   setChildCount(2);
   expect(screen.queryByLabelText("配偶者の勤務先の健康保険・厚生年金")).not.toBeInTheDocument();
   expect(screen.queryByLabelText("世帯の当年の国保支払額（円／年）")).not.toBeInTheDocument();
-  change(child(2).getByLabelText("この子を税の扶養親族として申告する親"),"spouse");
-  fireEvent.click(child(2).getByLabelText(/前年12月31日/));
+  expect(child(2).queryByLabelText(/税の扶養親族として申告する親/)).toBeNull();
+  expect(child(2).queryByLabelText(/追加申告/)).toBeNull();
   change(screen.getByLabelText(/世帯主の給与収入/),"350");
   change(screen.getByLabelText(/配偶者の給与収入/),"500");
   let p=savedPoint();
   expect(p.inputs.protocol).toBe("paper-2029");
   expect(p.inputs).not.toHaveProperty("insurance");
-  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"head",allowanceRecipient:"head",welfareMaintainer:"highest-salary"});
-  expect(savedChildren(p).map(c=>c.taxDependentOf)).toEqual(["head","spouse"]);
-  expect(savedChildren(p)[1].maintainedByRecipient).toBe(true);
-  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"spouse"});
+  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"head",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"});
+  expect(savedChildren(p).map(c=>c.taxDependentOf)).toEqual(["highest-salary","highest-salary"]);
+  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"spouse",taxDependentOf:["spouse","spouse"],welfareMaintainer:"spouse"});
+  expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
+  expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
   expect(p.result.details.insurance.spouse.status).toBe("employee");
   const totals=screen.getByRole("table",{name:"世帯の可処分所得（円／年）",hidden:true});
   const taxRow=within(totals).getByText("税額",{selector:"th"}).closest("tr");
   expect(taxRow.cells[2]).toHaveTextContent(p.result.details.spouseTax.incomeTaxYen.toLocaleString("ja-JP"));
   expect(taxRow.cells[3]).toHaveTextContent(Math.round(p.result.breakdown.taxWan*10000).toLocaleString("ja-JP")+"円");
   change(screen.getByLabelText(/配偶者の給与収入/),"350");
-  expect(savedPoint().result.details.roles.welfareMaintainer).toBe("head");
+  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",taxDependentOf:["head","head"],welfareMaintainer:"head"});
+  expect(savedPoint().result.details.benefits.additionalSupportedCount).toBe(0);
+  expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
   change(screen.getByLabelText("障害児福祉手当の主たる生計維持者"),"spouse");
   change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
   expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"spouse",spouseDeductionClaimant:"none"});
@@ -232,6 +233,39 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   change(screen.getByLabelText(/世帯主の給与収入/),"0");
   expect(savedPoint().result).toMatchObject({status:"excluded",studyDisposableWan:null,breakdown:null});
   expect(screen.getByText("この給与点は試算対象外")).toBeVisible();
+});
+
+test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]])(
+  "旧固定受給者 %s と個別申告を廃止し、児童の年齢・等級等は保持する", (oldRecipient,taxDependentOf,newHeadHigher)=>{
+    const key="dw-appendix:salary-surface:v1:";
+    if(oldRecipient)window.sessionStorage.setItem(key+"roles",JSON.stringify({spouseDeductionClaimant:"head",allowanceRecipient:oldRecipient,welfareMaintainer:"highest-salary"}));
+    window.sessionStorage.setItem(key+"children",JSON.stringify([{age:8,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:0,taxDependentOf,maintainedByRecipient:true}]));
+    const {unmount}=renderWithPoint();
+    expect(child(1).queryByRole("checkbox",{name:/追加申告/})).toBeNull();
+    change(screen.getByLabelText(/世帯主の給与収入/),newHeadHigher?"600":"400");
+    change(screen.getByLabelText(/配偶者の給与収入/),"500");
+    const actual=newHeadHigher?"head":"spouse";
+    const p=savedPoint();
+    expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual]});
+    expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
+    expect(savedChildren(p)[0]).toMatchObject({age:8,tccaGrade:"2",taxStatus:"special",taxDependentOf:"highest-salary",maintainedBy:null});
+    expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("taxDependentOf");
+    expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("maintainedByRecipient");
+    expect(JSON.parse(window.sessionStorage.getItem(key+"roles")).allowanceRecipient).toBe("highest-salary");
+    unmount(); renderWithPoint(); expect(savedPoint()).toEqual(p);
+  });
+
+test("差額ページの点Pも、その給与点で計算に用いた受給資格者・税扶養先を表示する",()=>{
+  render(<RevisionIncomePlane comparison/>);
+  const p=within(screen.getByRole("region",{name:"点P"}));
+  change(p.getByLabelText(/世帯主の給与収入/),"132");
+  change(p.getByLabelText(/配偶者の給与収入/),"841");
+  expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
+  change(p.getByLabelText(/世帯主の給与収入/),"841");
+  expect(p.getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
+  change(p.getByLabelText(/世帯主の給与収入/),"0");
+  change(p.getByLabelText(/配偶者の給与収入/),"0");
+  expect(p.queryByText(/特児の受給資格者・子の税扶養/)).toBeNull();
 });
 
 test("児童別の通所スライダーは0円なら利用なし、正額なら合算後に世帯上限を一度だけ適用する",()=>{

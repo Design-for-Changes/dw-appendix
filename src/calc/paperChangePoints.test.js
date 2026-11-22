@@ -50,14 +50,21 @@ test("通所上限の変化は負担額の変化と別：未利用・無償対�
 
 test("特児は各人を個別比較。すでに別人の所得で停止済みでも、残る人の所得基準の切替を拾う",()=>{
   const c=index([qualified(10)]), r=scanPaperChangePoints(c,"head",1250);
-  const change=r.events.find(e=>e.system==="N01-1" && e.subject==="claimant:head" && e.after==="所得制限に該当");
-  expect(change).toBeDefined();
+  // 配偶者が高給与の受給者。低給与側（世帯主）は扶養0人の配偶者表628.7万円。
+  const change=r.events.find(e=>e.system==="N01-1" && e.subject==="spouse:head" && e.after==="所得制限に該当");
+  expect(change).toMatchObject({fromWan:840,atWan:841});
   const previous=c.evaluate(change.fromWan,1250), current=c.evaluate(change.atWan,1250);
   expect(previous.breakdown.tccaWan).toBe(0);
   expect(current.breakdown.tccaWan).toBe(0);
   expect(change.beforePerson).toBe("head");
   const swap=scanPaperChangePoints(c,"spouse",1200).events.find(e=>e.system==="N01-1" && e.subject==="spouse:spouse");
   expect(swap.afterPerson).toBe("spouse");
+});
+
+test("給与順位と本人表の支給可否が同じ一歩で変わっても、本人の制限境界を落とさない",()=>{
+  const c=index([qualified(10),child(8)]), events=scanPaperChangePoints(c,"spouse",781,{minWan:780,maxWan:783}).events;
+  const changes=events.filter(e=>e.system==="N01-1");
+  expect(changes).toMatchObject([{atWan:782,subject:"claimant:spouse",beforePerson:"head",afterPerson:"spouse",after:"所得制限に該当"}]);
 });
 
 test("同一給与で2人の児福の維持者判定が変われば2件。本人や維持者でない親の限度超過を混ぜない",()=>{

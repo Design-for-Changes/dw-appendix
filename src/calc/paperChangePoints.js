@@ -15,7 +15,8 @@ function standardStates(point) {
   // 所得停止前の障害要件に該当する児童がいない世帯は対象外。停止後の給付ゼロとは区別。
   if (special && special.status !== "no-qualifying-child") for (const c of special.checks) {
     const role = {claimant:"受給資格者",spouse:"受給資格者の配偶者",obligor:"扶養義務者"}[c.role];
-    rows.push({system:"N01-1",subject:c.role+":"+c.id,label:"特別児童扶養手当："+role+"（"+memberLabel(c.id)+"）",
+    // 受給者（又はその配偶者）が給与順位の交代で別の親になっても、本人表同士・配偶者表同士を比較する。
+    rows.push({system:"N01-1",subject:c.role+":"+c.id,trackAs:c.role==="obligor" ? c.role+":"+c.id : c.role,label:"特別児童扶養手当："+role+"（"+memberLabel(c.id)+"）",
       person:c.id,state:incomeState(typeof c.stopped === "boolean" ? !c.stopped : null)});
   }
   for (const child of b?.welfareChildren ?? []) {
@@ -92,7 +93,7 @@ export function scanPaperChangePoints(calculator,axis,fixedWan,{assessors=[],min
     const current=new Map();
     for (const row of rows) {
       const {system,subject,label,state}=row;
-      const key=JSON.stringify([system,subject]);
+      const key=JSON.stringify([system,row.trackAs ?? subject]);
       if (state===null) {
         if (!unknownByKey.has(key)) unknownByKey.set(key,[]);
         appendGap(unknownByKey.get(key),w,{system,subject});

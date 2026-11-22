@@ -3,7 +3,7 @@ import {createRevisionCalculator} from "./revisionEngine.js";
 const WAN=10000;
 /** 差額を算出できない点は、上下限や符号の集計に使われないよう金額を null とする。 */
 function uncalculated(status,reasons) {
-  return {status,reasons,differenceYen:null,withYen:null,withoutYen:null,taxSavingYen:null,
+  return {status,reasons,allowanceRecipient:null,differenceYen:null,withYen:null,withoutYen:null,taxSavingYen:null,
     extraBenefitsYen:null,extraServiceYen:null,insuranceSavingYen:null};
 }
 
@@ -43,7 +43,7 @@ export function createDisabilityIncomeComparison(inputs) {
     const differenceYen=withYen-withoutYen;
     if(differenceYen!==taxSavingYen+insuranceSavingYen+extraBenefitsYen-extraServiceYen)
       throw new Error("二世帯の可処分所得差が計算内訳と一致しません。");
-    return {status:"calculated",reasons:[],differenceYen,withYen,withoutYen,taxSavingYen,extraBenefitsYen,
+    return {status:"calculated",reasons:[],allowanceRecipient:da.roles.allowanceRecipient,differenceYen,withYen,withoutYen,taxSavingYen,extraBenefitsYen,
       extraServiceYen,insuranceSavingYen};
   }
   return {evaluate,baselineInputs};

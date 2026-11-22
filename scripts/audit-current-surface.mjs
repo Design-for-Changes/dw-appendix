@@ -26,9 +26,12 @@ for (const children of process.argv.includes("--tax-only")?[]:fixtures) {
   const grid=buildSalarySurfaceGrid({evaluate(x,y){
     const p=model.evaluate(x,y),d=p.details,b=d.benefits,i=d.insurance,k=W*y+x;
     const parents=[d.headTax,d.spouseTax];
+    const owner=x>=y?"head":"spouse";
+    assert.equal(d.roles.allowanceRecipient,owner);
+    assert(d.roles.taxDependentOf.length===children.length && d.roles.taxDependentOf.every(id=>id===owner));
     const taxed=parents.some(t=>t.residentTax.perCapitaYen>0 || t.residentTax.incomeLevyYen>0);
     const assess=parents.reduce((v,t,j)=>v+Math.max(0,t.residentTax.municipalIncomeLevyYen-
-      children.filter(c=>c.taxDependentOf===(j?"spouse":"head")).reduce((a,c)=>a+(c.age<16?19800:7200),0)),0);
+      ((j?"spouse":"head")===owner?children.reduce((a,c)=>a+(c.age<16?19800:7200),0):0)),0);
     const cap=taxed?(assess<280000?4600:37200):0;
     const s=12*Math.min(rawService,cap);
     const a=b.specialChildAllowance.checks.some(c=>c.assessmentIncomeYen>=c.limitYen)?0:
@@ -80,22 +83,29 @@ const model=children=>createRevisionCalculator({protocol:"paper-2029",serviceAmo
 // A income 1,474,000; limit 350,000*3+420,000=1,470,000. The maximum
 // levy is 4,000 (2,400 municipal + 1,600 prefectural), excluding flat taxes.
 expected("所得割：給与222万・配偶者0・10歳児1人",model(fixtures[0]).evaluate(222,0).details.headTax.residentTax.incomeLevyYen,4000);
-// Tax claimant A, two children claimed by A. With B earning 1.82m, B's
-// income is 1.13m. When A earns 1.31m, A income is 620k; B's exemption
-// limit is 1.12m. At A=1.32m, A income=630k, B's limit falls to 450k.
+// B earns more and claims both children. B income=1,130,000; at A=131/132万,
+// A income=620,000/630,000, so B's number of dependents including spouse is
+// 3/2. B's income-levy exemption limit is 350,000*(n+1)+420,000, above B income at both points.
 const dis=model([child(10,"2",false,"special",37200),child(8,"not",false,"none",0)]);
 const left=dis.evaluate(131,182),right=dis.evaluate(132,182);
-expected("配偶者所得割：世帯主131万・配偶者182万",left.details.spouseTax.residentTax.incomeLevyYen,10000);
-expected("配偶者所得割：世帯主132万・配偶者182万",right.details.spouseTax.residentTax.incomeLevyYen,39500);
-// +10,000 gross -48 insurance -(39,500-10,000) municipal/prefectural
-// income levy. The cash benefits, service fees and other taxes do not change.
-expected("この隣接2点の可処分所得増減（円）",Math.round((right.studyDisposableWan-left.studyDisposableWan)*10000),-19548);
+expected("配偶者所得割：世帯主131万・配偶者182万",left.details.spouseTax.residentTax.incomeLevyYen,0);
+expected("配偶者所得割：世帯主132万・配偶者182万",right.details.spouseTax.residentTax.incomeLevyYen,0);
+// +10,000 gross -48 insurance; benefits, service fees and taxes are unchanged.
+expected("この隣接2点の可処分所得増減（円）",Math.round((right.studyDisposableWan-left.studyDisposableWan)*10000),9952);
 
-// A second regression catches applying the legal adjustment to cash taxes
-// but using the unadjusted municipal levy when choosing the child's service cap.
-// In this fixture the annual fee is 12 * min(10,406, 4,600), not 12 * 10,406.
-const feeCrossing=model([child(10,"2",false,"none",10406)]).evaluate(182,825);
-expected("通所の判定所得割：世帯主182万・配偶者825万",feeCrossing.details.service.assessmentLevyYen,276500);
-expected("通所の月額上限",feeCrossing.details.service.householdCapYen,4600);
-expected("年間の通所自己負担",feeCrossing.details.service.annual,55200);
-expected("住民税・通所負担をともに反映した可処分所得（円）",Math.round(feeCrossing.studyDisposableWan*10000),8111896);
+// A=181→182万, B=825万: A's municipal levy rises 23,200→23,700; B's remains 276,500.
+// The 19,800 adjustment for the 10-year-old belongs to B (tax parent). The 280,000 threshold
+// is bracketed by 279,900→280,400. A:B taxes = 43,600:936,700 → 44,500:936,700.
+const serviceModel=model([child(10,"2",false,"none",10406)]);
+for (const [a,cityA,levy,cap,annual,net] of [
+  [181,23200,279900,4600,55200,10060000-43600-936700-277968-1260348+120000-55200],
+  [182,23700,280400,37200,124872,10070000-44500-936700-278016-1260348+120000-124872],
+]) {
+  const p=serviceModel.evaluate(a,825),d=p.details, id="（世帯主"+a+"万・配偶者825万）";
+  expected("世帯主の市民税所得割"+id,d.headTax.residentTax.municipalIncomeLevyYen,cityA);
+  expected("配偶者の市民税所得割"+id,d.spouseTax.residentTax.municipalIncomeLevyYen,276500);
+  expected("通所の判定所得割"+id,d.service.assessmentLevyYen,levy);
+  expected("通所の月額上限"+id,d.service.householdCapYen,cap);
+  expected("年間の通所自己負担"+id,d.service.annual,annual);
+  expected("住民税・通所負担をともに反映した可処分所得"+id,Math.round(p.studyDisposableWan*10000),net);
+}

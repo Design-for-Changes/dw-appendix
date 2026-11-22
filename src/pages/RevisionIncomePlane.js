@@ -5,18 +5,20 @@ import { createDisabilityIncomeComparison } from "../calc/disabilityIncomeDiffer
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { RevisionSurface } from "./RevisionSurface";
 import { useSessionParameter } from "./salarySimulatorSession";
+import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
 import HouseholdCalculationTrace from "./HouseholdCalculationTrace";
 import { DifferenceAllCases, IncomeDifferencePoint } from "./IncomeDifferenceReadout";
 import { CHILD_ELIGIBILITY_OPTIONS, childEligibilityId } from "../data/childEligibilityOptions";
 import "./revision-simulator.css";
 
 const fmt = (v) => Number.isFinite(v) ? v.toLocaleString("ja-JP", { maximumFractionDigits: 2 }) : "未算定";
-export const blankChild = () => ({age:8, tccaGrade:"not", welfareEligible:false, taxStatus:"none", serviceAmountYen:0});
+export {blankChild};
+const PARENT_NAME={head:"世帯主",spouse:"配偶者"};
 const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
 const designUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(design, null, 2));
 
-export function ChildFields({ index, child, update, recipient }) {
+export function ChildFields({ index, child, update }) {
   return <fieldset className="revision-child"><legend>子ども{index + 1}</legend>
     <div className="revision-fields">
       <label>年齢<select value={child.age} onChange={(e) => update({ age: Number(e.target.value) })}>{range(17).map((n) => <option key={n} value={n}>{n}歳</option>)}</select></label>
@@ -24,9 +26,7 @@ export function ChildFields({ index, child, update, recipient }) {
         const {tccaGrade, welfareEligible, taxStatus} = CHILD_ELIGIBILITY_OPTIONS.find(o => o.id === e.target.value);
         update({tccaGrade, welfareEligible, taxStatus});
       }}>{CHILD_ELIGIBILITY_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select></label>
-      <label>この子を税の扶養親族として申告する親<select value={child.taxDependentOf ?? "head"} onChange={e=>update({taxDependentOf:e.target.value, maintainedByRecipient:false})}><option value="head">世帯主</option><option value="spouse">配偶者</option></select></label>
     </div>
-    {(child.taxDependentOf ?? "head") !== recipient && <label className="revision-check"><input type="checkbox" checked={Boolean(child.maintainedByRecipient)} onChange={e=>update({maintainedByRecipient:e.target.checked})} />前年12月31日に特児の受給資格者がこの子の生計を維持（税の扶養に含まれない児童の追加申告）</label>}
     <div className="revision-fee-row">
       <label htmlFor={"day-fee-"+index}>通所支援の月額負担（多子軽減後・世帯上限前）</label>
       <input id={"day-fee-"+index} type="range" min="0" max="37200" step="1" value={child.serviceAmountYen}
@@ -39,8 +39,7 @@ export function ChildFields({ index, child, update, recipient }) {
 
 /** 世帯条件ごとに同じ計算器で選択点と立体格子を計算する。 */
 export default function RevisionIncomePlane({comparison=false}) {
-  const [children, setChildren] = useSessionParameter("children", [blankChild()]);
-  const [roles, setRoles] = useSessionParameter("roles", {spouseDeductionClaimant:"head", allowanceRecipient:"head", welfareMaintainer:"highest-salary"});
+  const {children,setChildren,roles,setRoles,inputs}=usePaperHousehold();
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
   const [lastDrawnKey,setLastDrawnKey] = useSessionParameter(comparison?"differenceDrawnKey":"lastDrawnKey", null);
@@ -48,21 +47,19 @@ export default function RevisionIncomePlane({comparison=false}) {
   const { min, max } = salaryBounds(fixedTotal);
   const incomesValid = salary.every((v) => v !== null && v >= min && v <= max);
   const total = incomesValid ? salary[0] + salary[1] : null;
-  const { calculator, error, inputs } = useMemo(() => {
-    // 障害要件と利用額は独立。正の月額を指定した児童の負担だけを合算する。
-    const configured = children.map(c => ({taxDependentOf:"head", maintainedByRecipient:false, ...c, serviceUser:c.serviceAmountYen > 0}));
+  const { calculator, error } = useMemo(() => {
     try {
-      const inputs = { protocol:"paper-2029", roles, children: configured, serviceAmountYen: 0 };
-      return { calculator: comparison?createDisabilityIncomeComparison(inputs):createRevisionCalculator(inputs), inputs, error: null };
+      return { calculator: comparison?createDisabilityIncomeComparison(inputs):createRevisionCalculator(inputs), error:null };
     } catch (err) { return { calculator: null, error: err.message }; }
-  }, [roles, children, comparison]);
-  const inputKey=useMemo(()=>inputs ? JSON.stringify(inputs) : null,[inputs]);
+  }, [inputs,comparison]);
+  const inputKey=useMemo(()=>calculator ? JSON.stringify(inputs) : null,[calculator,inputs]);
   const drawn=inputKey !== null && lastDrawnKey === inputKey;
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
   useEffect(()=>{
     if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(null);
   },[inputKey,lastDrawnKey,setLastDrawnKey]);
   const point = incomesValid && calculator ? calculator.evaluate(salary[0], salary[1]) : null;
+  const recipient=point?.status==="calculated" ? (comparison ? point.allowanceRecipient : point.details.roles.allowanceRecipient) : null;
   function changeIncome(i, value) {
     const next = [...income]; next[i] = value;
     const v = readSalaryWan(value);
@@ -87,15 +84,16 @@ export default function RevisionIncomePlane({comparison=false}) {
         <label>配偶者控除・配偶者特別控除を申告する親<select value={roles.spouseDeductionClaimant} onChange={e=>setRoles({...roles,spouseDeductionClaimant:e.target.value})}><option value="head">世帯主</option><option value="spouse">配偶者</option><option value="none">どちらも申告しない</option></select></label>
         <label>障害児福祉手当の主たる生計維持者<select value={roles.welfareMaintainer} onChange={e=>setRoles({...roles,welfareMaintainer:e.target.value})}><option value="highest-salary">給与の高い親（同額なら世帯主）</option><option value="head">世帯主固定</option><option value="spouse">配偶者固定</option></select></label>
       </div>
-      {children.map((c, i) => <ChildFields key={i} index={i} child={c} recipient={roles.allowanceRecipient} update={delta=>updateChild(i,delta)} />)}
+      {children.map((c, i) => <ChildFields key={i} index={i} child={c} update={delta=>updateChild(i,delta)} />)}
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
-      <button type="button" disabled={!inputs || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
+      <button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
     </details>
     {drawn && <RevisionSurface inputs={inputs} calculator={calculator} head={point ? salary[0] : null} spouse={point ? salary[1] : null} point={point} fixedTotal={fixedTotal} onSelectSalary={selectSalary} comparison={comparison} />}
     <section className="revision-point" aria-label="点P"><h3>点P</h3>
       <div className="revision-fields">{design.salary.axes.map((name, i) => <label key={name}>{name}（万円／年）<input type="number" min={min} max={max} step="1" value={income[i]} onChange={(e) => changeIncome(i, e.target.value)} /></label>)}</div>
       <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与収入総額を固定して夫婦間の配分を変える</label>
       <p aria-live="polite">{incomesValid ? `世帯の給与収入総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
+      {recipient&&<p>特児の受給資格者・子の税扶養：{PARENT_NAME[recipient]}</p>}
     {comparison && point && <IncomeDifferencePoint point={point}/>}
     {!comparison && point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
       {point.status !== "calculated" ? <><span>{point.status==="excluded"?"この給与点は試算対象外":"この給与点は未算定"}</span><ul>{point.reasons.map((r,i)=><li key={i}>{r}</li>)}</ul></> : <span>{fmt(point.studyDisposableWan)}<small> 万円／年</small></span>}
@@ -105,7 +103,7 @@ export default function RevisionIncomePlane({comparison=false}) {
     </>}
     </section>
     <details><summary>試算条件・出典</summary>
-      <p>船橋市在住・在勤の夫婦（ともに45歳）、子どもは同居・無所得。給与は前年と同額で12等分し、賞与・通勤手当・任意控除は含めない。給与が正の親は勤務先で加入、無給与の配偶者は被扶養者とする。</p>
+      <p>夫婦はともに45歳で、船橋市に居住・勤務する。子は全員、父母と同居し、本人の所得は前年・当年ともに0円とする。給与は前年と同額で12等分し、賞与・通勤手当・任意控除は含めない。給与が正の親は勤務先で加入、無給与の配偶者は被扶養者とする。</p>
       <p>2029年末の制度を想定し、未確定の手当額・保険料率には令和8年度の公表値を使用。通所負担は多子軽減後、食費等を除く。{design.outcome.scopeNote}</p>
       <a href={CALCULATION_SOURCES.serviceBurden.url}>利用者負担の基準</a> ／ <a href={designUrl} download="revision-income-design.json">給与軸の仕様（JSON）</a></details>
   </section>;

@@ -7,10 +7,10 @@ export const paperSpouseWages = [0, 200, 400];
 /** 図表用の固定条件。対話画面で個別に変更した入力は使わない。旧版は明示時だけ再現する。 */
 export function paperComparisonInputs(family, fee, protocol="paper-2029") {
   if (!["paper-2029","v3","legacy-v2"].includes(protocol)) throw new RangeError("図表に用いる計算条件が不正です。");
-  const children = family.children.map(c=>({...c,taxDependentOf:"head",maintainedByRecipient:false}));
+  const children = family.children.map(c=>protocol==="paper-2029" ? {...c} : {...c,taxDependentOf:"head",maintainedByRecipient:false});
   const base = {protocol,children,serviceAmountYen:fee,otherServiceMonthlyYen:0};
   if (protocol==="legacy-v2") return base;
-  if (protocol==="paper-2029") return {...base,roles:{spouseDeductionClaimant:"head",allowanceRecipient:"head",welfareMaintainer:"highest-salary"}};
+  if (protocol==="paper-2029") return {...base,roles:{spouseDeductionClaimant:"head",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"}};
   return {...base,roles:{spouseDeductionClaimant:"head",allowanceRecipient:"head"},insurance:{
     residence:"funabashi",head:{mode:"contract",workPattern:"regular",workRegion:"chiba"},
     spouse:{mode:"contract",workPattern:"under20",workRegion:"chiba"},

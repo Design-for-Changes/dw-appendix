@@ -30,13 +30,14 @@ describe("所得割の非課税限度直上の減額（地方税法附則3条の
       residentTax:{municipalIncomeLevyYen:2400,prefecturalIncomeLevyYen:1600,
         incomeLevyThresholdReductionYen:27200,exemption:{incomeLevyExemptionThresholdYen:1470000}}});
   });
-  test("配偶者の基準が動くため世帯主131→132万で税による逆転。福祉給付・負担は同額",()=>{
+  test("世帯主131→132万：高給与の配偶者が2児を税扶養しており、旧固定扶養の税による逆転はない",()=>{
     const c=calc({children:[{...qualifying,tccaGrade:"2",welfareEligible:false},sibling],serviceAmountYen:37200});
     const a=c.evaluate(131,182),b=c.evaluate(132,182);
-    expect([a,b].map(p=>p.details.spouseTax.residentTax.incomeLevyYen)).toEqual([10000,39500]);
-    expect([a,b].map(p=>annualYen(p.studyDisposableWan))).toEqual([3285184,3265636]);
-    expect(annualYen(b.studyDisposableWan)-annualYen(a.studyDisposableWan)).toBe(-19548);
-    expect(classifyRevisionFalls([a,b]).falls).toEqual([]);
+    expect([a,b].map(p=>p.details.spouseTax.residentTax.incomeLevyYen)).toEqual([0,0]);
+    // 扶養2児で配偶者の所得割は両点とも0。給与+10,000円、保険料+48円、世帯の税は同じ5,000円。
+    expect([a,b].map(p=>annualYen(p.studyDisposableWan))).toEqual([3295184,3305136]);
+    expect(annualYen(b.studyDisposableWan)-annualYen(a.studyDisposableWan)).toBe(9952);
+    expect(classifyRevisionFalls([a,b]).allFalls).toEqual([]);
   });
 });
 
@@ -88,17 +89,50 @@ test("世帯主給与を上げたとき、特児の本人限度と児福の扶�
   }
 });
 
-test("配偶者給与を上げる場合、特児は配偶者、児福は同じ人を生計維持者として別々に判定", () => {
+test("2児の扶養と特児本人を配偶者側に入れ替えると、同じ給与で同じ手当の停止境界になる", () => {
   const c = calc();
-  for (const [s,income,stops] of [[840,6280000,false],[841,6289000,true]]) {
+  for (const [s,income,stops,welfareStops] of [[781,5349000,false,false],[782,5358000,true,false],
+    [927,6740000,true,false],[928,6750000,true,true]]) {
     const p = c.evaluate(400,s), b=p.details.benefits;
-    expect(p.recipient).toBe("head");
-    expect(b.specialChildAllowance.checks[1]).toMatchObject({id:"spouse",role:"spouse",assessmentIncomeYen:income,
-      limitYen:6287000,stopped:stops});
+    expect(p.recipient).toBe("spouse");
+    expect(b.specialChildAllowance.checks[0]).toMatchObject({id:"spouse",role:"claimant",assessmentIncomeYen:income,
+      limitYen:5356000,stopped:stops});
+    expect(b.specialChildAllowance.checks[1]).toMatchObject({id:"head",role:"spouse",limitYen:6287000,stopped:false});
     expect(b.specialChildAllowance.stoppedBy.map(({id})=>id)).toEqual(stops ? ["spouse"] : []);
-    expect(b.welfareChildren[0].checks[1]).toMatchObject({id:"spouse",role:"maintainer",incomeYen:income,limitYen:6287000,passes:!stops});
-    expect(b.welfareChildren[0].reasons).toEqual(stops ? ["maintainer:spouse"] : []);
+    expect(b.welfareChildren[0].checks[1]).toMatchObject({id:"spouse",role:"maintainer",incomeYen:income,limitYen:6749000,passes:!welfareStops});
+    expect(b.welfareChildren[0].reasons).toEqual(welfareStops ? ["maintainer:spouse"] : []);
   }
+});
+
+test.each(["head","spouse","highest-salary"])("旧受給者設定 %s にかかわらず高給与の親が特児と全児童の税扶養を担う。同額は世帯主",stale=>{
+  const c=calc({roles:{allowanceRecipient:stale,spouseDeductionClaimant:"spouse",welfareMaintainer:"head"},
+    children:[{...qualifying,age:16,taxDependentOf:"spouse",maintainedBy:"head"},sibling]});
+  for(const [h,s,id,other] of [[601,600,"head","spouse"],[600,600,"head","spouse"],[599,600,"spouse","head"]]){
+    const p=c.evaluate(h,s);
+    expect(p.details.roles).toMatchObject({allowanceRecipient:id,allowanceRecipientAssumption:"highest-salary",
+      spouseDeductionClaimant:"spouse",taxDependentOf:[id,id],welfareMaintainer:"head",additionalMaintainedChildren:0});
+    expect(p.details[id+"Tax"]).toMatchObject({taxDependentCount:2,olderDependentCount:1,disabilityDeductionITYen:750000});
+    expect(p.details[other+"Tax"]).toMatchObject({taxDependentCount:0,olderDependentCount:0,disabilityDeductionITYen:0});
+    expect(p.details.benefits.specialChildAllowance.checks.slice(0,2)).toMatchObject([
+      {id,role:"claimant",limitYen:5606000},{id:other,role:"spouse",limitYen:6287000}]);
+    expect(p.details.benefits.additionalSupportedCount).toBe(0);
+  }
+});
+
+test("論文用では旧設定から扶養先・税扶養外加算を復元しない",()=>{
+  const clean=calc({children:[qualifying]});
+  for(const obsolete of [{taxDependentOf:"head",maintainedByRecipient:true},{taxDependentOf:"spouse",maintainedBy:"head"}]){
+    const stale=calc({children:[{...qualifying,...obsolete}]});
+    for(const [h,s] of [[601,600],[600,600],[600,601]]) expect(stale.evaluate(h,s)).toEqual(clean.evaluate(h,s));
+  }
+});
+
+test("132/841・600/1012の従前例で配偶者を受給資格者・全児童の扶養先として再判定",()=>{
+  const low=calc({children:[{...qualifying,age:8,taxDependentOf:"head"}],serviceAmountYen:37200}).evaluate(132,841);
+  expect(low.details.benefits.specialChildAllowance.checks[0]).toMatchObject({id:"spouse",role:"claimant",limitYen:4976000,assessmentIncomeYen:5889000,stopped:true});
+  const high=calc({children:[7,12,16].map(age=>({...qualifying,age,serviceUser:false,taxDependentOf:"spouse"}))}).evaluate(600,1012);
+  expect(high.details.benefits.specialChildAllowance.checks[0]).toMatchObject({id:"spouse",role:"claimant",limitYen:5986000,assessmentIncomeYen:6790000,stopped:true});
+  expect(high.details.benefits).toMatchObject({tcca:0,welfare:596160});
 });
 
 test.each([[1,0,0],[400,400,4600],[1000,1000,37200]])(

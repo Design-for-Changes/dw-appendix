@@ -105,16 +105,16 @@ test("実判定と表示内容：特児・児福・上限だけを抽出し、�
   }
   expect(changes(782,17)[0]).toMatchObject({id:"N01-1",before:expect.stringContaining("年額支給701,400円"),
     after:expect.stringMatching(/年額支給0円.*受給資格者（世帯主）：所得制限に該当（/)});
-  // 配偶者側ですでに停止。本人も追加で超過しても、特児の赤線がここへ延びない。
-  const prior=c.evaluate(739,900), next=c.evaluate(740,900);
-  expect([prior,next].map(p=>p.details.benefits.specialChildAllowance.stoppedBy.map(q=>q.id))).toEqual([["spouse"],["head","spouse"]]);
+  // 配偶者は高給与側の受給者としてすでに停止。他方の親もその限度を超えても、支給額の赤線は延びない。
+  const prior=c.evaluate(840,900), next=c.evaluate(841,900);
+  expect([prior,next].map(p=>p.details.benefits.specialChildAllowance.stoppedBy.map(q=>q.id))).toEqual([["spouse"],["spouse","head"]]);
   expect([prior,next].map(p=>p.details.benefits.tcca)).toEqual([0,0]);
-  expect(changes(740,900).map(d=>d.id)).not.toContain("N01-1");
-  const tail=buildSalarySurfaceGrid({evaluate:(x,y)=>c.evaluate(738+x,899+y)},{maxSalaryWan:3});
+  expect(changes(841,900).map(d=>d.id)).not.toContain("N01-1");
+  const tail=buildSalarySurfaceGrid({evaluate:(x,y)=>c.evaluate(839+x,899+y)},{maxSalaryWan:3});
   expect(tail.changeBySystem["N01-1"].points).toHaveLength(0);
   expect(tail.changeBySystem["N01-1"].lines).toHaveLength(0);
-  expect(changes(900,900)[0]).toMatchObject({id:"N01-2",before:expect.stringContaining("子1・生計維持者（配偶者）"),
-    after:expect.stringContaining("子1・生計維持者（世帯主）：所得制限に該当しない")});
+  // 同額で親が交代しても、児童全員の税扶養もその親に移る。手当額が同じなら制度線はない。
+  expect(changes(900,900)).toEqual([]);
   expect(changes(985,17)).toEqual([{id:"N02/N03",before:expect.stringMatching(/一般1.*4,600円.*279,600円/),
     after:expect.stringMatching(/一般2.*37,200円.*280,200円/)}]);
   expect(changes(207,17)).toEqual([]);
@@ -123,7 +123,7 @@ test("実判定と表示内容：特児・児福・上限だけを抽出し、�
 test("全制度について、各点の各軸で個別に再読した判定と格子上の制度印が一致し、欠測を越えない",()=>{
   const c=createRevisionCalculator(household);
   const empty={status:"insufficient"};
-  const windows=[[0,17],[110,17],[781,17],[899,899],[983,17],[1109,17],[17,200],[739,900]];
+  const windows=[[0,17],[110,17],[781,17],[899,899],[983,17],[1109,17],[17,200],[840,900]];
   for(const [h,s] of windows) {
     const evaluate=(x,y)=>x===2 && y===1 ? empty:c.evaluate(h+x,s+y);
     const g=buildSalarySurfaceGrid({evaluate},{maxSalaryWan:4});

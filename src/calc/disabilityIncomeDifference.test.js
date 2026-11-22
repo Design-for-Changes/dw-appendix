@@ -37,7 +37,10 @@ test("全児童を非該当とし、それ以外の年齢・親の役割・税�
   const base=createRevisionCalculator(expected);
   for(const [x,y] of [[0,1],[730,500],[920,850],[1500,1500]]){
     const p=c.evaluate(x,y);
-    expect(p.withoutYen).toBe(Math.round(base.evaluate(x,y).studyDisposableWan*10000));
+    const ref=base.evaluate(x,y),higher=x>=y?"head":"spouse";
+    expect(p.allowanceRecipient).toBe(higher);
+    expect(ref.details.roles.taxDependentOf).toEqual(cs.map(()=>higher));
+    expect(p.withoutYen).toBe(Math.round(ref.studyDisposableWan*10000));
     expect(p.differenceYen).toBe(p.taxSavingYen+p.extraBenefitsYen+p.insuranceSavingYen-p.extraServiceYen);
   }
 });

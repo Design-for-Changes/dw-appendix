@@ -39,13 +39,15 @@ export function validateRevisionHousehold(input) {
   if (!input || !Array.isArray(input.children) || input.children.length < 1 || input.children.length > 3) throw new RangeError("子どもは1～3人を指定してください。");
   const protocol = input.protocol ?? "v3";
   if (!["paper-2029","v3","legacy-v2"].includes(protocol)) throw new RangeError("算定仕様が不明です。");
+  const paper = protocol === "paper-2029";
+  const requestedRecipient = input.roles?.allowanceRecipient ?? (paper ? "highest-salary" : "head");
+  if (!(paper ? ["head","spouse","highest-salary"] : ["head","spouse"]).includes(requestedRecipient)) throw new RangeError("受給資格者の指定が不正です。");
   const roles = {
     spouseDeductionClaimant:input.roles?.spouseDeductionClaimant ?? "head",
-    allowanceRecipient:input.roles?.allowanceRecipient ?? "head",
+    allowanceRecipient:paper ? "highest-salary" : requestedRecipient,
     welfareMaintainer:input.roles?.welfareMaintainer ?? (protocol === "paper-2029" ? "highest-salary" : "both"),
   };
-  if (!["head","spouse","none"].includes(roles.spouseDeductionClaimant) ||
-      !["head","spouse"].includes(roles.allowanceRecipient)) throw new RangeError("申告者・受給資格者の指定が不正です。");
+  if (!["head","spouse","none"].includes(roles.spouseDeductionClaimant)) throw new RangeError("配偶者控除の申告者の指定が不正です。");
   if (!(protocol === "paper-2029" ? ["head","spouse","highest-salary"] : ["head","spouse","highest-salary","both"]).includes(roles.welfareMaintainer))
     throw new RangeError("障害児福祉手当の生計維持者の仮定が不正です。");
   if (protocol === "paper-2029" && input.insurance !== undefined)
@@ -58,10 +60,12 @@ export function validateRevisionHousehold(input) {
         typeof c.welfareEligible !== "boolean" || typeof c.serviceUser !== "boolean") throw new RangeError("子ども" + (i+1) + "の制度別条件が未指定です。");
     if (c.welfareEligible && c.tccaGrade === "not") throw new RangeError("法第2条第2項の重度障害児は同条第1項の障害児に含まれます。所得停止前の特児の障害等級を指定してください。");
     const individual = requireInteger(c.serviceAmountYen ?? serviceAmountYen, 0, MAX_SERVICE_YEN, "児童別利用額");
-    const taxDependentOf = c.taxDependentOf ?? "head";
-    const maintainedByRecipient = c.maintainedByRecipient ?? false;
+    const record = { age, tccaGrade:c.tccaGrade, taxStatus:c.taxStatus, welfareEligible:c.welfareEligible, serviceUser:c.serviceUser, serviceAmountYen:individual };
+    // 論文用は各給与点で全児童の税扶養先を定める。旧画面の固定扶養先・追加申告は引き継がない。
+    if (paper) return record;
+    const taxDependentOf = c.taxDependentOf ?? "head", maintainedByRecipient = c.maintainedByRecipient ?? false;
     if (!["head","spouse"].includes(taxDependentOf) || typeof maintainedByRecipient !== "boolean") throw new RangeError("児童の扶養関係の指定が不正です。");
-    return { age, tccaGrade:c.tccaGrade, taxStatus:c.taxStatus, welfareEligible:c.welfareEligible, serviceUser:c.serviceUser, serviceAmountYen:individual, taxDependentOf, maintainedByRecipient };
+    return {...record, taxDependentOf, maintainedByRecipient};
   });
   const insurance = input.insurance?.nationalEstimate?.childrenMode === "follow-parents" ? {
     ...input.insurance, nationalEstimate:{...input.insurance.nationalEstimate,children:children.map(c=>({age:c.age}))},
@@ -170,10 +174,10 @@ function revisionParentTax(person, partner, dependents, claimsSpouse, archived) 
 /**
  * N01の本人・配偶者・扶養義務者を個人ごとに判定し、対象児の等級別額を年換算する。
  * @param {Array<object>} children 無所得で在宅の児童。各手当は認定済みの障害要件を指定。
- * @param {object} claimant 主として児童の生計を維持すると認定された親の判定所得・扶養人数。税の申告者と別。
+ * @param {object} claimant 当該給与点で受給資格者とする親の判定所得・扶養人数。
  * @param {object} other 他方の親の判定所得・扶養人数。
  * @param {number} additionalSupportedCount 受給資格者の税扶養に数えていない前年末生計維持児童の人数。
- * @param {string} claimantId 受給資格者を表す head 又は spouse。所得が高い方への自動付替えはしない。
+ * @param {string} claimantId 当該点で解決済みの受給資格者（head又はspouse）。この人に法6条、他方の親に7条を適用する。
  * @returns {object} 各手当の支給額（円／年）、本人と扶養義務者の限度額・可否。
  */
 function revisionCashBenefits(children, claimant, other, additionalSupportedCount, claimantId, maintainerId) {
@@ -247,14 +251,15 @@ export function createRevisionCalculator(input) {
    */
   function evaluate(headWan, spouseWan) {
     const headWage = wageRecord(headWan), spouseWage = wageRecord(spouseWan);
-    // v3は給与点を動かしても、制度ごとの人的関係を付け替えない。旧v2の動作は明示指定時のみ。
+    // 法3条2項の「主として生計を維持する者」を本試算では給与収入の多い親で近似（同額は世帯主）。
+    // 論文用では子全員の税扶養・障害者控除も同じ親に帰属させる。配偶者控除の申告者は別設定。
     const higher = headWan >= spouseWan ? "head" : "spouse";
-    const recipient = archived ? higher : roles.allowanceRecipient;
+    const recipient = archived || steady2029 ? higher : roles.allowanceRecipient;
     const filing = archived ? higher : roles.spouseDeductionClaimant;
-    const taxDependentOf = children.map(c => archived ? higher : c.taxDependentOf);
+    const taxDependentOf = children.map(c => archived || steady2029 ? higher : c.taxDependentOf);
     const maintainerId = roles.welfareMaintainer === "highest-salary" ? higher : roles.welfareMaintainer;
     const assigned = {allowanceRecipient:recipient, spouseDeductionClaimant:filing, taxDependentOf,
-      ...(steady2029 ? {welfareMaintainer:maintainerId,welfareMaintainerAssumption:roles.welfareMaintainer} : {})};
+      ...(steady2029 ? {allowanceRecipientAssumption:"highest-salary",welfareMaintainer:maintainerId,welfareMaintainerAssumption:roles.welfareMaintainer} : {})};
     const fixedInsurance = steady2029 ? calculateHouseholdInsurance2029({headAnnualYen:headWage.salaryYen,spouseAnnualYen:spouseWage.salaryYen}) : null;
     if (fixedInsurance?.status === "excluded") return {status:"excluded", protocol, reasons:["夫婦とも給与0円の原点は試算対象外です。"], recipient,
       studyDisposableWan:null, disposableWan:null, breakdown:null, details:{insurance:fixedInsurance,roles:assigned}};
@@ -270,7 +275,9 @@ export function createRevisionCalculator(input) {
     const spouse = {...spouseWage, social:coverage.spouse.social, prevSocial:coverage.spouse.prevSocial};
     const ht = revisionParentTax(head,spouse,children.filter((_,i)=>taxDependentOf[i] === "head"),filing === "head", archived);
     const st = revisionParentTax(spouse,head,children.filter((_,i)=>taxDependentOf[i] === "spouse"),filing === "spouse", archived);
-    const additional = children.filter((c,i)=>taxDependentOf[i] !== recipient && c.maintainedByRecipient).length;
+    // 論文用では全児童が受給資格者の税扶養。税扶養外の維持児童として重複加算しない。
+    const additional = steady2029 ? 0 : children.filter((c,i)=>taxDependentOf[i] !== recipient && c.maintainedByRecipient).length;
+    if (steady2029) assigned.additionalMaintainedChildren = additional;
     const benefits = revisionCashBenefits(children,recipient === "head" ? ht : st,recipient === "head" ? st : ht, additional, recipient, maintainerId);
     const service = revisionServiceBurden(children,otherServiceMonthlyYen,[ht,st]);
     const salary = head.salaryYen+spouse.salaryYen, tax = ht.totalTaxYen+st.totalTaxYen, social = head.social+spouse.social;

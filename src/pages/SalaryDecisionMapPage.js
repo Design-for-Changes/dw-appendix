@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { createRevisionCalculator } from "../calc/revisionEngine";
-import { ChildFields, blankChild } from "./RevisionIncomePlane";
-import { useSessionParameter } from "./salarySimulatorSession";
+import { ChildFields } from "./RevisionIncomePlane";
+import { blankChild,usePaperHousehold } from "./paperHouseholdSession";
 import "./salary-decision-map.css";
 
-const ROLES={spouseDeductionClaimant:"head", allowanceRecipient:"head", welfareMaintainer:"highest-salary"};
 const SYSTEMS=[
   {id:"N01-1",label:"特別児童扶養手当",color:"#a72344",weight:7},
   {id:"N01-2",label:"障害児福祉手当",color:"#13498b",weight:4.5},
@@ -123,10 +122,8 @@ function MapResult({job,calculator,retry}) {
 
 /** Gと同じ世帯入力を同一タブで共有する。別条件の計算結果を使い回さない。 */
 export default function SalaryDecisionMapPage() {
-  const [children,setChildren]=useSessionParameter("children",[blankChild()]);
-  const [roles,setRoles]=useSessionParameter("roles",ROLES);
+  const {children,setChildren,roles,setRoles,inputs}=usePaperHousehold();
   const [job,setJob]=useState(null),[open,setOpen]=useState(true);
-  const inputs=useMemo(()=>({protocol:"paper-2029",roles,serviceAmountYen:0,children:children.map(c=>({taxDependentOf:"head",maintainedByRecipient:false,...c,serviceUser:c.serviceAmountYen>0}))}),[children,roles]);
   const {calculator,error}=useMemo(()=>{try{return {calculator:createRevisionCalculator(inputs)};}catch(e){return {error:e.message};}},[inputs]);
   const draw=()=>{setJob({inputs});setOpen(false);};
   return <section id="salary-decision-map" className="appendix-panel revision-simulator decision-page" aria-label="制度の変更点（2次元）">
@@ -137,7 +134,7 @@ export default function SalaryDecisionMapPage() {
         <label>配偶者控除・配偶者特別控除を申告する親<select value={roles.spouseDeductionClaimant} onChange={e=>{setJob(null);setRoles({...roles,spouseDeductionClaimant:e.target.value});}}><option value="head">世帯主</option><option value="spouse">配偶者</option><option value="none">どちらも申告しない</option></select></label>
         <label>障害児福祉手当の主たる生計維持者<select value={roles.welfareMaintainer} onChange={e=>{setJob(null);setRoles({...roles,welfareMaintainer:e.target.value});}}><option value="highest-salary">給与の高い親（同額なら世帯主）</option><option value="head">世帯主固定</option><option value="spouse">配偶者固定</option></select></label>
       </div>
-      {children.map((c,i)=><ChildFields key={i} index={i} child={c} recipient={roles.allowanceRecipient} update={d=>{setJob(null);setChildren(cs=>cs.map((v,j)=>i===j?{...v,...d}:v));}}/>)}
+      {children.map((c,i)=><ChildFields key={i} index={i} child={c} update={d=>{setJob(null);setChildren(cs=>cs.map((v,j)=>i===j?{...v,...d}:v));}}/>)}
       {error&&<p role="alert">{error}</p>}
       <button type="button" disabled={!!error || job?.inputs===inputs} onClick={draw}>変更点を描画</button>
     </details>

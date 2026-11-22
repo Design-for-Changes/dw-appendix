@@ -13,7 +13,7 @@ export function DifferenceAllCases(){
       <thead><tr><th scope="col">子どもの人数</th><th scope="col">最低差</th><th scope="col">最高差</th></tr></thead>
       <tbody>{allRanges.map(r=><tr key={r.children}><th scope="row">{r.children}人</th><td>{signed(r.minimumYen)}</td><td>{signed(r.maximumYen)}</td></tr>)}</tbody></table>
     <p>年間のサービス自己負担が、増える手当と軽くなる税額の合計を上回ると、差は負になります。最低差は、手当・税額の差がなく、月37,200円の世帯負担が12か月続く場合です。</p>
-    <p>3人世帯の最高差の一例は、世帯主600万円・配偶者1,012万円、子ども7・12・16歳です。3人とも特児1級・児福該当・税法上の同居特別障害者で、配偶者の税扶養、通所負担0円とすると、手当2,700,360円と税の軽減618,500円が加わります。特児の受給資格者はGの設定どおり世帯主です。</p>
+    <p>子ども3人の最高差の一例は、世帯主944万円・配偶者100万円、子ども7・10・12歳です。3人とも特児1級・児福該当・税法上の同居特別障害者とし、通所負担はなく、配偶者控除は申告しない設定です。給与の高い世帯主が特児の受給資格者となり、3人を税扶養に取ります。手当の増額2,700,360円と税負担の軽減598,700円の合計が差額です。</p>
     <p>給与は夫婦それぞれ0～1,500万円の1万円刻み（ともに0円を除く）。同じ計算になる設定をまとめ、最低差と最高差が実際に生じることを元のシミュレーターで照合しました。各金額はこのモデルで到達できる値で、世帯の実態分布ではありません。</p>
     <a href="https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/audit-difference-global-minimum.mjs">最低差の検算</a> ／ <a href="https://github.com/Design-for-Changes/dw-appendix/blob/main/scripts/audit-difference-global-maximum.mjs">最高差の検算</a>
   </details>;

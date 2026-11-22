@@ -10,6 +10,8 @@ const change = (el, value) => fireEvent.change(el, { target: { value } });
 const child = (i) => within(screen.getByRole("group", { name: "子ども" + i }));
 const combination = (i) => child(i).getByRole("combobox", { name: "障害の組み合わせ" });
 const serviceSlider = (i) => child(i).getByRole("slider",{name:/通所支援の月額負担/});
+const salaryNumber = (parent,scope=screen) => scope.getByRole("spinbutton",{name:parent+"の給与収入（万円／年）"});
+const salarySlider = (parent,scope=screen) => scope.getByRole("slider",{name:parent+"の給与収入（万円／年）"});
 const renderWithPoint = () => render(<RevisionIncomePlane />);
 const conditions = () => screen.getByText("世帯と子どもの条件",{selector:"summary"}).closest("details");
 const openConditions = () => { if (!conditions().open) fireEvent.click(conditions().querySelector("summary")); };
@@ -27,6 +29,40 @@ test("独立の整数給与2軸で両端を含み、格子と任意の1点は別
   expect(REVISION_INCOME_DESIGN.status).toBe("on-demand");
   expect([0, "1500", "1", 0.5, "1501", "", undefined, null].map(readSalaryWan)).toEqual([0, 1500, 1, null, null, null, null, null]);
   expect(salaryBounds(2800)).toEqual({ min: 1300, max: 1500 });
+});
+
+test.each([["G",false],["J",true]])("%s：給与入力と1万円刻みのスライダーを双方向に連動し、総額固定・空欄からの復帰も同じ点Pに反映",(_page,comparison)=>{
+  render(<RevisionIncomePlane comparison={comparison}/>);
+  const p=within(screen.getByRole("region",{name:"点P"}));
+  const [hn,sn]=["世帯主","配偶者"].map(parent=>salaryNumber(parent,p));
+  const [hr,sr]=["世帯主","配偶者"].map(parent=>salarySlider(parent,p));
+  const values=(head,spouse)=>{
+    expect(hn).toHaveValue(head);expect(sn).toHaveValue(spouse);
+    expect(hr).toHaveValue(String(head));expect(sr).toHaveValue(String(spouse));
+  };
+  for(const slider of [hr,sr]){
+    expect(slider).toHaveAttribute("min","0");expect(slider).toHaveAttribute("max","1500");expect(slider).toHaveAttribute("step","1");
+  }
+  values(200,0);
+  change(hn,"1200");change(sr,"800");values(1200,800);
+  const fixed=p.getByRole("checkbox",{name:/総額を固定/});fireEvent.click(fixed);
+  for(const input of [hn,sn,hr,sr]){
+    expect(input).toHaveAttribute("min","500");expect(input).toHaveAttribute("max","1500");
+  }
+  change(hr,"599");values(599,1401);
+  expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
+  change(sn,"1000");values(1000,1000);
+  expect(p.getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
+  change(hn,"");
+  expect(hn).toHaveValue(null);
+  expect(p.queryByText(/特児の受給資格者・子の税扶養/)).toBeNull();
+  expect(p.queryByText("可処分所得差（年額）")).toBeNull();
+  expect(p.queryByRole("link",{name:/この給与点の世帯条件/})).toBeNull();
+  change(hr,"901");values(901,1099);
+  expect(fixed).toBeChecked();
+  expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
+  if(comparison)expect(p.getByText("可処分所得差（年額）")).toBeVisible();
+  else expect(savedPoint()).toMatchObject({headSalaryWan:901,spouseSalaryWan:1099,result:{status:"calculated"}});
 });
 
 test("総額固定で配分を変え、入力範囲外の結果を残さない", () => {
@@ -86,8 +122,8 @@ test("同じタブで再表示すると子ども別の条件・通所額、申�
   change(serviceSlider(1),"1100"); change(serviceSlider(2),"3200");
   change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
   change(screen.getByLabelText("障害児福祉手当の主たる生計維持者"),"spouse");
-  change(screen.getByLabelText(/世帯主の給与収入/),"460");
-  change(screen.getByLabelText(/配偶者の給与収入/),"120");
+  change(salaryNumber("世帯主"),"460");
+  change(salaryNumber("配偶者"),"120");
   fireEvent.click(screen.getByRole("checkbox",{name:/総額を固定/}));
   drawGraph();
   const before=savedPoint();
@@ -99,8 +135,8 @@ test("同じタブで再表示すると子ども別の条件・通所額、申�
   expect(screen.getByLabelText("子どもの人数")).toHaveValue("2");
   expect(serviceSlider(1)).toHaveValue("1100"); expect(serviceSlider(2)).toHaveValue("3200");
   expect(screen.getByRole("checkbox",{name:/総額を固定/})).toBeChecked();
-  change(screen.getByLabelText(/配偶者の給与収入/),"121");
-  expect(screen.getByLabelText(/世帯主の給与収入/)).toHaveValue(459);
+  change(salaryNumber("配偶者"),"121");
+  expect(salaryNumber("世帯主")).toHaveValue(459);
 });
 
 test("世帯条件を変更したら古い図は消え、元の条件に戻しても描画ボタンを押すまで格子を作らない", () => {
@@ -113,7 +149,7 @@ test("世帯条件を変更したら古い図は消え、元の条件に戻し�
   drawGraph();
   const drawn=graph();
   expect(drawn).toBeVisible();
-  change(screen.getByLabelText(/世帯主の給与収入/),"450");
+  change(salaryNumber("世帯主"),"450");
   expect(graph()).toBe(drawn);
   openConditions();
   change(serviceSlider(2),"2300");
@@ -202,8 +238,8 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   expect(screen.queryByLabelText("世帯の当年の国保支払額（円／年）")).not.toBeInTheDocument();
   expect(child(2).queryByLabelText(/税の扶養親族として申告する親/)).toBeNull();
   expect(child(2).queryByLabelText(/追加申告/)).toBeNull();
-  change(screen.getByLabelText(/世帯主の給与収入/),"350");
-  change(screen.getByLabelText(/配偶者の給与収入/),"500");
+  change(salaryNumber("世帯主"),"350");
+  change(salaryNumber("配偶者"),"500");
   let p=savedPoint();
   expect(p.inputs.protocol).toBe("paper-2029");
   expect(p.inputs).not.toHaveProperty("insurance");
@@ -217,7 +253,7 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   const taxRow=within(totals).getByText("税額",{selector:"th"}).closest("tr");
   expect(taxRow.cells[2]).toHaveTextContent(p.result.details.spouseTax.incomeTaxYen.toLocaleString("ja-JP"));
   expect(taxRow.cells[3]).toHaveTextContent(Math.round(p.result.breakdown.taxWan*10000).toLocaleString("ja-JP")+"円");
-  change(screen.getByLabelText(/配偶者の給与収入/),"350");
+  change(salaryNumber("配偶者"),"350");
   expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",taxDependentOf:["head","head"],welfareMaintainer:"head"});
   expect(savedPoint().result.details.benefits.additionalSupportedCount).toBe(0);
   expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
@@ -225,12 +261,12 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
   expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"spouse",spouseDeductionClaimant:"none"});
   for(const w of ["1","129","130"]) {
-    change(screen.getByLabelText(/配偶者の給与収入/),w);
+    change(salaryNumber("配偶者"),w);
     expect(savedPoint().result.details.insurance.spouse.status).toBe("employee");
   }
-  change(screen.getByLabelText(/配偶者の給与収入/),"0");
+  change(salaryNumber("配偶者"),"0");
   expect(savedPoint().result.details.insurance.spouse.status).toBe("dependent");
-  change(screen.getByLabelText(/世帯主の給与収入/),"0");
+  change(salaryNumber("世帯主"),"0");
   expect(savedPoint().result).toMatchObject({status:"excluded",studyDisposableWan:null,breakdown:null});
   expect(screen.getByText("この給与点は試算対象外")).toBeVisible();
 });
@@ -242,8 +278,8 @@ test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]]
     window.sessionStorage.setItem(key+"children",JSON.stringify([{age:8,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:0,taxDependentOf,maintainedByRecipient:true}]));
     const {unmount}=renderWithPoint();
     expect(child(1).queryByRole("checkbox",{name:/追加申告/})).toBeNull();
-    change(screen.getByLabelText(/世帯主の給与収入/),newHeadHigher?"600":"400");
-    change(screen.getByLabelText(/配偶者の給与収入/),"500");
+    change(salaryNumber("世帯主"),newHeadHigher?"600":"400");
+    change(salaryNumber("配偶者"),"500");
     const actual=newHeadHigher?"head":"spouse";
     const p=savedPoint();
     expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual]});
@@ -258,13 +294,13 @@ test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]]
 test("差額ページの点Pも、その給与点で計算に用いた受給資格者・税扶養先を表示する",()=>{
   render(<RevisionIncomePlane comparison/>);
   const p=within(screen.getByRole("region",{name:"点P"}));
-  change(p.getByLabelText(/世帯主の給与収入/),"132");
-  change(p.getByLabelText(/配偶者の給与収入/),"841");
+  change(salaryNumber("世帯主",p),"132");
+  change(salaryNumber("配偶者",p),"841");
   expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
-  change(p.getByLabelText(/世帯主の給与収入/),"841");
+  change(salaryNumber("世帯主",p),"841");
   expect(p.getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
-  change(p.getByLabelText(/世帯主の給与収入/),"0");
-  change(p.getByLabelText(/配偶者の給与収入/),"0");
+  change(salaryNumber("世帯主",p),"0");
+  change(salaryNumber("配偶者",p),"0");
   expect(p.queryByText(/特児の受給資格者・子の税扶養/)).toBeNull();
 });
 
@@ -279,7 +315,7 @@ test("児童別の通所スライダーは0円なら利用なし、正額なら�
   setChildCount(2);
   expect(screen.queryByRole("checkbox",{name:/通所支援を利用|児童ごとに通所の月額を指定/})).not.toBeInTheDocument();
   expect(screen.queryByRole("slider",{name:/利用児1人当たり/})).not.toBeInTheDocument();
-  change(screen.getByLabelText(/世帯主の給与収入/),"1500");
+  change(salaryNumber("世帯主"),"1500");
   const first=serviceSlider(1), second=serviceSlider(2);
   for(const slider of [first,second]){
     expect(slider).toHaveAttribute("min","0"); expect(slider).toHaveAttribute("max","37200");
@@ -300,7 +336,7 @@ test("児童別の通所スライダーは0円なら利用なし、正額なら�
   expect(savedChildren().map(c=>c.serviceUser)).toEqual([false,false]);
   change(first,"1100");change(second,"2200");
   check(3300,0,37200,3300);
-  change(screen.getByLabelText(/世帯主の給与収入/),"400");check(3300,0,4600,3300);
+  change(salaryNumber("世帯主"),"400");check(3300,0,4600,3300);
   change(second,"10000");check(11100,0,4600,4600);
   change(child(2).getByLabelText("年齢"),"4");check(1100,0,4600,1100);
   expect(child(2).getByText(/通所は無償/)).toBeVisible();

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { REVISION_INCOME_DESIGN as design, readSalaryWan, salaryBounds } from "../data/revisionIncomeDesign";
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import { createDisabilityIncomeComparison } from "../calc/disabilityIncomeDifference";
@@ -39,6 +39,7 @@ export function ChildFields({ index, child, update }) {
 
 /** 世帯条件ごとに同じ計算器で選択点と立体格子を計算する。 */
 export default function RevisionIncomePlane({comparison=false}) {
+  const pointId=useId();
   const {children,setChildren,roles,setRoles,inputs}=usePaperHousehold();
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
@@ -90,7 +91,16 @@ export default function RevisionIncomePlane({comparison=false}) {
     </details>
     {drawn && <RevisionSurface inputs={inputs} calculator={calculator} head={point ? salary[0] : null} spouse={point ? salary[1] : null} point={point} fixedTotal={fixedTotal} onSelectSalary={selectSalary} comparison={comparison} />}
     <section className="revision-point" aria-label="点P"><h3>点P</h3>
-      <div className="revision-fields">{design.salary.axes.map((name, i) => <label key={name}>{name}（万円／年）<input type="number" min={min} max={max} step="1" value={income[i]} onChange={(e) => changeIncome(i, e.target.value)} /></label>)}</div>
+      <div className="point-salary-fields">{design.salary.axes.map((name,i)=>{
+        const id=pointId+"-salary-"+i, caption=name+"（万円／年）";
+        return <div className="point-salary-field" key={name}>
+          <label id={id+"-label"} htmlFor={id}>{caption}</label>
+          <input id={id} type="number" min={min} max={max} step="1" value={income[i]} onChange={e=>changeIncome(i,e.target.value)}/>
+          <input type="range" aria-labelledby={id+"-label"} min={min} max={max} step="1"
+            value={Math.max(min,Math.min(max,salary[i]??min))} aria-valuetext={salary[i]===null || salary[i]<min || salary[i]>max?"未設定":fmt(salary[i])+"万円／年"}
+            onChange={e=>changeIncome(i,e.target.value)}/>
+        </div>;
+      })}</div>
       <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与収入総額を固定して夫婦間の配分を変える</label>
       <p aria-live="polite">{incomesValid ? `世帯の給与収入総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
       {recipient&&<p>特児の受給資格者・子の税扶養：{PARENT_NAME[recipient]}</p>}

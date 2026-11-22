@@ -12,6 +12,10 @@
 .point-salary-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr)); max-width:66rem; gap:.55rem 1.75rem; margin-bottom:.65rem; }
 .point-salary-field { display:grid; grid-template-columns:6rem minmax(0,1fr); align-items:center; gap:.15rem .75rem; }
 .point-salary-field label { grid-column:1/-1; }
+.difference-extra{margin:1.5rem 0}
+.difference-extra h3{margin:0 0 .5rem}
+.difference-map-views{display:inline-flex;gap:.25rem;align-items:center;margin:.25rem 0}
+.difference-map-views button[aria-pressed="true"]{background:#204f53;color:white}
 .point-salary-field input[type="number"], .point-salary-field input[type="range"] { width:100%; box-sizing:border-box; margin-inline:0; }
 .revision-simulator button { border: 1px solid #2b695d; background: #f2faf6; border-radius: .3rem; padding: .4rem .8rem; cursor: pointer; }
 .revision-simulator button:disabled { opacity: .65; cursor: default; }

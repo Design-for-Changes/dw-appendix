@@ -42,7 +42,7 @@ test("給付が変わる隣接給与で座標と実際の区分を表示する�
   fireEvent.keyDown(plot,{key:"ArrowRight"});
   expect(within(plot.parentElement.querySelector("figcaption")).getByText("特別児童扶養手当：支給 → 停止")).toBeVisible();
   expect(plot.parentElement.querySelector("figcaption")).toHaveTextContent(`（${x-1}, 200）→（${x}, 200）万円`);
-  expect(screen.queryByText("可処分所得",{exact:true})).toBeNull();
+  expect(plot).not.toHaveTextContent("縦軸：世帯の可処分所得");
 });
 
 test("途中で条件を変更したらworkerを止め、古い計算結果が遅れて返っても表示しない",async()=>{
@@ -68,7 +68,7 @@ test("配偶者の増収により児福が停止する境界では、先に停�
   expect(after.details.benefits.welfare).toBe(0);
   const seg=[379.5,y-.5,380.5,y-.5];
   finish([{id:"N01-1",segments:[]},{id:"N01-2",segments:[seg]},{id:"N02/N03",segments:[]}]);
-  const plot=screen.getByRole("img");
+  const plot=screen.getByRole("img",{name:/横軸：世帯主.*縦軸：配偶者/});
   fireEvent.keyDown(plot,{key:"ArrowRight"});
   expect(within(plot).queryByText("特別児童扶養手当：支給 → 停止")).toBeNull();
   expect(within(plot).getByText("障害児福祉手当：支給 → 停止")).toBeVisible();
@@ -77,10 +77,32 @@ test("配偶者の増収により児福が停止する境界では、先に停�
 
 test("サービスの実負担が1,000円のままでも、負担上限の変更を表示する",async()=>{
   render(<SalaryDecisionMapPage/>);
-  fireEvent.change(screen.getByRole("slider"),{target:{value:"1000"}});
+  fireEvent.change(screen.getByRole("slider",{name:/通所支援の月額負担/}),{target:{value:"1000"}});
   const h=await draw(),calc=createRevisionCalculator(h);
   expect([811,812].map(x=>calc.evaluate(x,200).details.service.monthly)).toEqual([1000,1000]);
   finish([{id:"N01-1",segments:[]},{id:"N01-2",segments:[]},{id:"N02/N03",segments:[[811.5,199.5,811.5,200.5]]}]);
-  const plot=screen.getByRole("img"); fireEvent.keyDown(plot,{key:"ArrowRight"});
+  const plot=screen.getByRole("img",{name:/横軸：世帯主.*縦軸：配偶者/}); fireEvent.keyDown(plot,{key:"ArrowRight"});
   expect(within(plot).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
+});
+
+test("水平の児福境界を選ぶと縦の断面に移り、906→907万円の下落・後退・回復を同じGデータで表示する",async()=>{
+  render(<SalaryDecisionMapPage/>);
+  fireEvent.change(screen.getByRole("combobox",{name:"障害の組み合わせ"}),{target:{value:"1:yes:special"}});
+  fireEvent.change(screen.getByRole("slider",{name:/通所支援の月額負担/}),{target:{value:"20000"}});
+  await draw();
+  finish([{id:"N01-1",segments:[]},{id:"N01-2",segments:[[599.5,906.5,600.5,906.5]]},{id:"N02/N03",segments:[]}]);
+  const map=screen.getByRole("img",{name:/横軸：世帯主.*縦軸：配偶者/});
+  fireEvent.keyDown(map,{key:"ArrowRight"});
+  fireEvent.keyDown(map,{key:"Enter"});
+  expect(screen.getByRole("combobox",{name:"断面の横軸"})).toHaveValue("spouse");
+  expect(screen.getByRole("spinbutton",{name:/世帯主の固定給与/})).toHaveValue(600);
+  const guide=screen.getByTestId("income-section-guide");
+  expect(guide.getAttribute("x1")).toBe(guide.getAttribute("x2"));
+  expect(screen.getByText(/↓ 下落\s*191,468円/)).toBeVisible();
+  expect(screen.getByText(/← 後退\s*28万円/)).toBeVisible();
+  expect(screen.getByText(/→ 回復\s*30万円/)).toBeVisible();
+  fireEvent.change(screen.getByRole("spinbutton",{name:/世帯主の固定給与/}),{target:{value:""}});
+  expect(screen.queryByTestId("income-section-guide")).not.toBeInTheDocument();
+  expect(screen.getByText(/固定給与は0～1,500万円/)).toBeVisible();
+  expect(worker.postMessage).toHaveBeenCalledTimes(1);
 });

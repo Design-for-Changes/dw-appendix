@@ -27,7 +27,7 @@ const pages = [
   { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
   { letter: "G", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
   { letter: "H", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
-  { letter: "I", title: "制度の変更点（2次元）", hash: "#salary-decision-map", region: "制度の変更点" },
+  { letter: "I", title: "制度境界と可処分所得の断面（2次元）", hash: "#salary-decision-map", region: "制度の変更点" },
   { letter: "J", title: "障害の有無による可処分所得差（3D）", hash: "#disability-income-difference", region: "障害の有無による可処分所得差" },
 ];
 

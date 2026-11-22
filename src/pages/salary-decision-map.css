@@ -9,6 +9,9 @@
 .decision-figure text.decision-callout-title{font-size:14px;font-weight:650}
 .decision-figure text.decision-callout-label{font-size:14px}
 .decision-grid{stroke:#dce4e5;stroke-width:1;vector-effect:non-scaling-stroke}
+.decision-section-options{display:flex;flex-wrap:wrap;gap:.55rem 1rem;align-items:end;margin:1rem 0}
+.decision-section-options input[type="range"]{align-self:end;margin-bottom:.4rem;width:min(20rem,100%)}
+.decision-legend i.decision-slice-key{border-top:2px dashed #3e4147;height:0}
 .decision-figure figcaption{font-size:.97rem;line-height:1.7;min-height:2rem;font-variant-numeric:tabular-nums}
 .decision-figure figcaption span{margin-inline-start:1.2rem}
 .decision-caption-selected{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}

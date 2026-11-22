@@ -7,7 +7,7 @@ function paymentCode(yen) {
   return !Number.isSafeInteger(yen) || yen < 0 ? 0 : yen > 0 ? 2 : 1;
 }
 /** 給与点での二つの手当の支給状態と、利用中のサービスの世帯上限を一つの整数に格納する。 */
-function decisionCodes(point) {
+export function decisionCodes(point) {
   if (point?.status !== "calculated") return 0;
   const {benefits, service} = point.details ?? {};
   let cap = 0;
@@ -23,6 +23,11 @@ function decisionCodes(point) {
 function transition(previous, current, shift) {
   const a = (previous >> shift) & 3, b = (current >> shift) & 3;
   return a && b && a !== b ? (a << 2) | b : 0;
+}
+
+/** 隣接する給与点の有効な制度区分の変化を、境界図と断面図で共通の制度IDに戻す。 */
+export function changedSalaryDecisionSystems(previous,current) {
+  return IDS.filter((_,i)=>transition(previous,current,2*i)!==0);
 }
 
 /**

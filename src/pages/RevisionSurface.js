@@ -5,6 +5,8 @@ import RevisionDiscussion from "./RevisionDiscussion";
 import SalarySurfaceMesh from "./SalarySurfaceMesh";
 import { REVISION_INCOME_DESIGN as design } from "../data/revisionIncomeDesign";
 import { DifferenceExtrema } from "./IncomeDifferenceReadout";
+import IncomeDifferenceBars from "./IncomeDifferenceBars";
+import IncomeDifferenceHeatmap from "./IncomeDifferenceHeatmap";
 
 const MAX = 1500;
 const yenNumber = (v) => v.toLocaleString("ja-JP", { maximumFractionDigits: 2 });
@@ -14,6 +16,7 @@ const valueOf = (point) => point?.studyDisposableWan ?? null;
 /** 同一の世帯条件では給与カーソルを移動しても格子を再計算しない。 */
 export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null, comparison=false }) {
   const [result, setResult] = useState(null);
+  const [extraView,setExtraView]=useState("bars");
   useEffect(() => {
     let active = true, worker;
     function fail() { if (active) setResult({inputs, error:"3Dグラフの計算を開始できませんでした。"}); }
@@ -33,12 +36,22 @@ export function RevisionSurface({ inputs, head, spouse, point, calculator, onSel
     return () => { active=false; worker?.terminate(); };
   }, [inputs,comparison]);
   const state = result?.inputs === inputs ? result : null;
-  return <figure id={comparison?"income-difference-plot":"salary-surface-plot"} className="revision-surface" aria-label={comparison?"夫婦の給与収入と障害の有無による可処分所得差の3Dグラフ":"夫婦の給与収入と世帯の可処分所得の3Dグラフ"}>
+  return <><figure id={comparison?"income-difference-plot":"salary-surface-plot"} className="revision-surface" aria-label={comparison?"夫婦の給与収入と障害の有無による可処分所得差の3Dグラフ":"夫婦の給与収入と世帯の可処分所得の3Dグラフ"}>
     {state?.surface ? <>{comparison && <DifferenceExtrema surface={state.surface} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal}/>}
       <SalarySurfaceMesh surface={state.surface} calculator={comparison?null:calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={comparison?(point?.status==="calculated"?point.differenceYen/10000:null):valueOf(point)} /></>
       : state?.error ? <p role="status">{state.error}</p>
       : <p className="revision-surface-loading" role="status">1万円刻みで計算中：{state?.percent ?? 0}%</p>}
-  </figure>;
+  </figure>
+    {comparison&&state?.surface&&<section className="difference-extra" aria-label="可処分所得差の分布">
+      <h3>可処分所得差の分布</h3>
+      <div className="difference-map-views" role="group" aria-label="差額分布の表示形式">
+        <button type="button" aria-pressed={extraView==="bars"} onClick={()=>setExtraView("bars")}>柱状図</button>
+        <button type="button" aria-pressed={extraView==="map"} onClick={()=>setExtraView("map")}>平面図</button>
+      </div>
+      {extraView==="bars"?<IncomeDifferenceBars surface={state.surface} head={head} spouse={spouse} selectedZ={point?.status==="calculated"?point.differenceYen/10000:null} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal}/>:
+        <IncomeDifferenceHeatmap surface={state.surface} head={head} spouse={spouse} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal}/>}
+    </section>}
+  </>;
 }
 
 // 立体の粗い格子で失われる段差を、実際に評価した全1,501点の折れ線と対象制度の印で区別する。

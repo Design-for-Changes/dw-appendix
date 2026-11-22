@@ -20,7 +20,7 @@ const APPENDIX_PAGES = [
   { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
   { mode: "scenarios", letter: "G", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
   { mode: "eligibility", letter: "H", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
-  { mode: "decisionmap", letter: "I", label: "制度の変更点（2次元）", hash: "#salary-decision-map" },
+  { mode: "decisionmap", letter: "I", label: "制度境界と可処分所得の断面（2次元）", hash: "#salary-decision-map" },
   { mode: "difference", letter: "J", label: "障害の有無による可処分所得差（3D）", hash: "#disability-income-difference" },
 ];
 

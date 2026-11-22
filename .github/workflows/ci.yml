@@ -34,3 +34,8 @@ jobs:
         run: npm test -- --watch=false --runInBand
         env:
           CI: "true"
+
+      - name: Check attainable bounds of the disability-income difference
+        run: |
+          node --experimental-default-type=module scripts/audit-difference-global-minimum.mjs
+          node --experimental-default-type=module scripts/audit-difference-global-maximum.mjs

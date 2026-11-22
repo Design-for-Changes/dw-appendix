@@ -9,7 +9,7 @@ function mockWebGL() {
   for (const name of ("createProgram createShader createBuffer fenceSync getUniformLocation deleteSync useProgram " +
     "bindBuffer deleteBuffer deleteProgram deleteShader shaderSource compileShader attachShader linkProgram " +
     "bufferData enableVertexAttribArray vertexAttribPointer enable disable clearColor uniform1i uniform1f " +
-    "uniform2f uniform3fv uniformMatrix3fv viewport clear polygonOffset drawElements depthMask flush").split(" ")) gl[name]=jest.fn();
+    "uniform2f uniform3fv uniformMatrix3fv viewport clear polygonOffset drawElements drawArrays blendFuncSeparate depthMask flush").split(" ")) gl[name]=jest.fn();
   for (const name of ["createProgram","createShader","createBuffer","fenceSync"]) gl[name].mockImplementation(()=>({}));
   gl.getUniformLocation.mockImplementation((_, name)=>name);
   gl.getProgramParameter=()=>true; gl.getError=()=>gl.NO_ERROR; gl.clientWaitSync=()=>0;
@@ -44,4 +44,27 @@ test("凡例の単独選択は共通線の実際の描画色を一色にし、�
     expect(legend.getByRole("button",{name:services.label})).toBeDisabled();
     result.unmount();
   } finally { context.mockRestore(); }
+});
+
+test.each([false,true])("JのWebGL描画は符号・0面だけを描き、Gの制度境界用バッファを作らない（全点同額=%s）",async flat=>{
+  const gl=mockWebGL(), context=jest.spyOn(HTMLCanvasElement.prototype,"getContext").mockReturnValue(gl);
+  const sel=jest.fn(), max=flat?0:.0001, min=flat?0:-.0001;
+  const surface={kind:"disability-difference",width:3,
+    heights:Float32Array.from([NaN,min,0,min,0,max,0,max,max]),min,max,validCount:8,
+    minimum:{headWan:flat?1:2,spouseWan:flat?0:0,differenceYen:flat?0:-1},
+    maximum:{headWan:2,spouseWan:1,differenceYen:flat?0:1}};
+  if(!flat) surface.heights[2]=min;
+  try{
+    const result=render(<SalarySurfaceMesh surface={surface} head={1} spouse={1} selectedZ={0} onSelectSalary={sel}/>);
+    for(const text of ["負","差なし（0）","正"]) expect(within(screen.getByRole("group",{name:"可処分所得差の符号"})).getByText(text)).toBeInTheDocument();
+    expect(screen.queryByRole("group",{name:"福祉制度の境界線"})).not.toBeInTheDocument();
+    await waitFor(()=>expect(gl.drawArrays).toHaveBeenCalled());
+    expect(gl.createBuffer).toHaveBeenCalledTimes(2); // 高さ・面インデックスのみ
+    expect(gl.uniform1i.mock.calls.filter(([id])=>id==="zeroPlane").map(([,v])=>v).slice(-2)).toEqual([0,1]);
+    expect(gl.uniform1i.mock.calls.some(([id])=>id==="ink")).toBe(false);
+    expect(screen.getByText("可処分所得差",{selector:"svg text"})).toBeInTheDocument();
+    expect(screen.getByText("0.0001",{selector:"svg text"})).toBeInTheDocument();
+    if(flat) expect(screen.getByText("最低＝最高")).toBeInTheDocument();
+    result.unmount();
+  }finally{context.mockRestore();}
 });

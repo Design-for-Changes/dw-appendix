@@ -8,6 +8,8 @@ import ResearchDataAppendix from "./ResearchDataAppendix";
 import CalculationReferenceAppendix from "./CalculationReferenceAppendix";
 import RevisionScenariosAppendix from "./RevisionScenariosAppendix";
 import ChildEligibilityEvidence from "./ChildEligibilityEvidence";
+import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
+import RevisionIncomePlane from "./RevisionIncomePlane";
 
 const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
@@ -18,6 +20,8 @@ const APPENDIX_PAGES = [
   { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
   { mode: "scenarios", letter: "G", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
   { mode: "eligibility", letter: "H", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
+  { mode: "decisionmap", letter: "I", label: "制度の変更点（2次元）", hash: "#salary-decision-map" },
+  { mode: "difference", letter: "J", label: "障害の有無による可処分所得差（3D）", hash: "#disability-income-difference" },
 ];
 
 function viewModeForHash(hash) {
@@ -1336,7 +1340,7 @@ export default function AppendixCliffMap() {
   };
 
   return (
-    <main className={"App appendix-page" + (viewMode==="scenarios" ? " appendix-page-simulator" : "")}>
+    <main className={"App appendix-page" + (["scenarios","decisionmap","difference"].includes(viewMode) ? " appendix-page-simulator" : "")}>
       <section className="appendix-hero">
         <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
         <h1>障害福祉における給付・負担の制度間相互作用と全体最適</h1>
@@ -1382,7 +1386,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {viewMode === "decisionmap" ? <SalaryDecisionMapPage /> : viewMode === "difference" ? <RevisionIncomePlane comparison /> : viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix /> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}

@@ -60,7 +60,17 @@ function framing(surface,low,high) {
 // Keep one physical focal length for both dimensions and a fixed vertical lens shift.
 export function makeScene([w,h],matrix,surface) {
   const distance=CAMERA_DISTANCE;
-  const low=100*Math.floor(Math.min(0,surface.min)/100),high=Math.max(low+100,100*Math.ceil(surface.max/100));
+  let low=100*Math.floor(Math.min(0,surface.min)/100),high=Math.max(low+100,100*Math.ceil(surface.max/100));
+  if (surface.kind==="disability-difference") {
+    // Jは差額（万円）。実額のGと違い100万円を最小表示幅としない。
+    // 円未満の刻みは計算値にない。符号が片方だけでも0基準面は必ず見せる。
+    const lo=Math.min(0,surface.min), hi=Math.max(0,surface.max);
+    const target=Math.max(.0001,(hi-lo)/5), power=10**Math.floor(Math.log10(target));
+    const step=([1,2,5,10].find(v=>v*power>=target)??10)*power;
+    low=lo===0?0:Math.floor(lo/step)*step;
+    high=hi===0?0:Math.ceil(hi/step)*step;
+    if (low===high) {low=-.0001;high=.0001;} // 全点同額：1円ずつの余白で0面を中央に。
+  }
   const b=framing(surface,low,high);
   const side=Math.min(42,.053*w), topPad=Math.min(26,.06*h), bottomPad=Math.min(40,.08*h);
   const focalPixels=Math.max(1,Math.min(.885*w/b.floorWidth,(w/2-side)/Math.max(-b.left,b.right),

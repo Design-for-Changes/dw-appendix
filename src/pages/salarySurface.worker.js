@@ -1,10 +1,26 @@
 /* global globalThis */
 import { createRevisionCalculator } from "../calc/revisionEngine.js";
 import { buildSalarySurfaceGrid } from "../calc/salarySurfaceGrid.js";
+import { buildDisabilityDifferenceSurface, createDisabilityIncomeComparison } from "../calc/disabilityIncomeDifference.js";
+import { buildSalaryDecisionMap } from "../calc/salaryDecisionMap.js";
 
 globalThis.onmessage = ({data}) => {
-  if (data?.type !== "start") return;
+  if (data?.type !== "start" && data?.type !== "decision-map") return;
   try {
+    if(data.type==="decision-map"){
+      const map=buildSalaryDecisionMap(createRevisionCalculator(data.household),{
+        onProgress:percent=>globalThis.postMessage({type:"progress",percent}),
+      });
+      globalThis.postMessage({type:"complete",map});
+      return;
+    }
+    if (data.comparison === true) {
+      const surface = buildDisabilityDifferenceSurface(createDisabilityIncomeComparison(data.inputs), {
+        onProgress:(done,total)=>globalThis.postMessage({type:"progress",done,total}),
+      });
+      globalThis.postMessage({type:"complete", ...surface}, [surface.heights.buffer]);
+      return;
+    }
     const calculator = createRevisionCalculator(data.inputs);
     const result = buildSalarySurfaceGrid(calculator, {
       onProgress: (done, total) => globalThis.postMessage({type:"progress", done, total}),

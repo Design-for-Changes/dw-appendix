@@ -88,7 +88,61 @@ void main() {
   color=vec4(base*light,1.0);
 }`;
 
+// J passes the signed difference itself to the fragment shader. In particular,
+// 0 yen is never decoded from a normalized color near a floating-point midpoint.
+const differenceVertex = `#version 300 es
+precision highp float;
+precision highp int;
+layout(location=0) in float height;
+uniform int size;
+uniform int zeroPlane;
+uniform vec2 rangeZ;
+uniform mat3 view;
+uniform vec2 scale;
+uniform float lensY;
+out float difference;
+out vec3 position;
+void main(){
+  vec2 xy;
+  difference=height;
+  if(zeroPlane!=0){
+    xy=vec2(gl_VertexID & 1, (gl_VertexID >> 1) & 1)*2.-1.;
+    difference=0.;
+  }else{
+    xy=2.*vec2(gl_VertexID % size, gl_VertexID / size)/float(size-1)-1.;
+  }
+  float z=(2.*(difference-rangeZ.x)/(rangeZ.y-rangeZ.x)-1.)*${HALF_Z};
+  position=vec3(xy,z);
+  vec3 camera=view*position;
+  float depth=${CAMERA_DISTANCE.toFixed(1)}+camera.z;
+  gl_Position=vec4(scale*camera.xy+vec2(0.,lensY*depth),2.*camera.z,depth);
+}`;
+const differenceFragment = `#version 300 es
+precision highp float;
+precision highp int;
+in float difference;
+in vec3 position;
+uniform int zeroPlane;
+uniform vec2 rangeZ;
+out vec4 color;
+void main(){
+  if(zeroPlane!=0){
+    vec2 edge=(1.-abs(position.xy))/max(fwidth(position.xy),vec2(.000001));
+    color=vec4(.30,.36,.39, mix(.075,.70,1.-smoothstep(0.,1.5,min(edge.x,edge.y))));
+    return;
+  }
+  vec3 neutral=vec3(.96,.97,.96);
+  float scale=max(abs(rangeZ.x),abs(rangeZ.y));
+  float intensity=.42+.58*sqrt(clamp(abs(difference)/scale,0.,1.));
+  vec3 pigment=difference<0.?vec3(.76,.17,.23):vec3(.03,.46,.44);
+  vec3 base=difference==0.?neutral:mix(neutral,pigment,intensity);
+  vec3 normal=cross(dFdx(position),dFdy(position));
+  float lambert=abs(dot(normal/max(length(normal),.00000001),normalize(vec3(-.55,-.45,.72))));
+  color=vec4(base*(.87+.13*lambert),1.);
+}`;
+
 function createRenderer(canvas, surface) {
+  const difference=surface.kind==="disability-difference";
   const gl = canvas.getContext("webgl2", {alpha:true, antialias:false, depth:true});
   if (!gl) throw Error("WebGL 2を利用できないため、立体図は表示できません。");
   const shaders = [], buffers = [], program = gl.createProgram();
@@ -103,7 +157,7 @@ function createRenderer(canvas, surface) {
     shaders.forEach(s => gl.deleteShader(s));
   };
   try {
-    for (const [type, source] of [[gl.VERTEX_SHADER,vertexSource],[gl.FRAGMENT_SHADER,fragmentSource]]) {
+    for (const [type, source] of [[gl.VERTEX_SHADER,difference?differenceVertex:vertexSource],[gl.FRAGMENT_SHADER,difference?differenceFragment:fragmentSource]]) {
       const s = gl.createShader(type);
       shaders.push(s); gl.shaderSource(s, source); gl.compileShader(s); gl.attachShader(program,s);
     }
@@ -121,8 +175,8 @@ function createRenderer(canvas, surface) {
     gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,1,gl.FLOAT,false,0,0);
     const faceIndex=bind(gl.ELEMENT_ARRAY_BUFFER,indices);
     const indexBuffer=data=>({count:data.length, buffer:data.length?bind(gl.ELEMENT_ARRAY_BUFFER,data):null});
-    const systems=SURFACE_SYSTEMS.map(s=>({...s,rgb:salaryInkRGB(s.color)}));
-    const groups=salaryInkGeometry(surface,systems).map(({mask,points,lines,markers})=>{
+    const systems=difference?[]:SURFACE_SYSTEMS.map(s=>({...s,rgb:salaryInkRGB(s.color)}));
+    const groups=difference?[]:salaryInkGeometry(surface,systems).map(({mask,points,lines,markers})=>{
       const members=systems.filter(s=>s.bit & mask);
       return {mask,colors:new Float32Array(members.flatMap(s=>s.rgb)),number:members.length,
         points:indexBuffer(points),lines:indexBuffer(lines),markers:indexBuffer(markers)};
@@ -134,6 +188,7 @@ function createRenderer(canvas, surface) {
     const ink=gl.getUniformLocation(program,"ink"), pointSize=gl.getUniformLocation(program,"pointSize");
     const inkCount=gl.getUniformLocation(program,"inkCount"), inkColors=gl.getUniformLocation(program,"inkColors[0]");
     const pixelRatio=gl.getUniformLocation(program,"pixelRatio"), lensY=gl.getUniformLocation(program,"lensY");
+    const zeroPlane=difference?gl.getUniformLocation(program,"zeroPlane"):null;
     const drawIndices=(mode,{buffer,count:n})=>{
       if(buffer) { gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,buffer); gl.drawElements(mode,n,gl.UNSIGNED_INT,0); }
     };
@@ -152,6 +207,19 @@ function createRenderer(canvas, surface) {
       gl.uniformMatrix3fv(orientation,false,[m[0],m[3],m[6],m[1],m[4],m[7],m[2],m[5],m[8]]);
       gl.uniform2f(scale,2*scene.focalPixels/scene.w,2*scene.focalPixels/scene.h);
       gl.uniform1f(lensY,1-2*scene.centerY/scene.h);
+      if(difference) {
+        gl.uniform1i(zeroPlane,0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,faceIndex);
+        gl.drawElements(gl.TRIANGLE_STRIP,count,gl.UNSIGNED_INT,0);
+        // Draw the zero plane behind positive relief or in front of a depression
+        // according to the same depth buffer. A flat zero plateau stays neutral.
+        gl.uniform1i(zeroPlane,1);
+        gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false); gl.drawArrays(gl.TRIANGLE_STRIP,0,4); gl.depthMask(true);
+        gl.disable(gl.BLEND);
+        fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0); gl.flush();
+        return true;
+      }
       gl.uniform1f(pointSize,1.8*dpr);
       gl.uniform1i(ink,0);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,faceIndex);
@@ -183,9 +251,10 @@ function createRenderer(canvas, surface) {
 }
 
 const pointsAttr = pts=>pts.map(p=>p.join(",")).join(" ");
-function zTicks(scene) {
+function zTicks(scene,difference=false) {
   const target=(scene.high-scene.low)/(scene.w<420?3:5), order=10**Math.floor(Math.log10(target));
-  const step=[1,2,5,10].reduce((a,b)=>Math.abs(a*order-target)<Math.abs(b*order-target)?a:b)*order;
+  const nearest=[1,2,5,10].reduce((a,b)=>Math.abs(a*order-target)<Math.abs(b*order-target)?a:b)*order;
+  const step=difference?Math.max(.0001,nearest):nearest;
   const values=[];
   for(let i=Math.ceil(scene.low/step); i<=Math.floor(scene.high/step); i++) values.push(i===0?0:i*step);
   return values;
@@ -197,35 +266,39 @@ function ReferencePlanes({scene}) {
   </svg>;
 }
 
-function Axes({scene,cursor,surface}) {
+function Axes({scene,cursor,surface,extremes}) {
   const {w,h,low,high,project:P}=scene, max=surface.width-1;
+  const difference=surface.kind==="disability-difference", zName=difference?"可処分所得差":"可処分所得";
   const axisTicks=(axis,at,values,outward)=>{
     const a=at(0),b=at(1),m=at(.5),out=outward(.5);
     const len=Math.max(4,Math.hypot(out[0]-m[0],out[1]-m[1]));
     const nx=(out[0]-m[0])/len,ny=(out[1]-m[1])/len;
-    const vertical=axis==="可処分所得";
+    const vertical=axis===zName;
     const lm=at(w<520?.33:.47);
     const labelX=vertical ? clamp(b[0],44,w-44) : clamp(lm[0]+nx*38,42,w-42);
     const labelY=vertical ? clamp(b[1]-13,14,h-4) : clamp(lm[1]+ny*36+5,14,h-4);
     return <g key={axis} className="salary-mesh-axis"><line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}/>
       {values.map(([t,value])=>{const [x,y]=at(t);return <g key={t}><line x1={x} y1={y} x2={x+nx*4} y2={y+ny*4}/>
-        <text style={vertical?{textAnchor:"end"}:undefined} x={vertical?x-6:clamp(x+nx*15,19,w-19)} y={clamp(y+ny*14+3,12,h-4)}>{fmt(value)}</text></g>;})}
+        <text style={vertical?{textAnchor:"end"}:undefined} x={vertical?x-6:clamp(x+nx*15,19,w-19)} y={clamp(y+ny*14+3,12,h-4)}>{vertical&&difference?value.toLocaleString("ja-JP",{maximumFractionDigits:4}):fmt(value)}</text></g>;})}
       <text className="salary-mesh-axis-name" x={labelX} y={labelY}>{axis}</text>
     </g>;
   };
   const fractions=w<410?[0,.5,1]:[0,1/3,2/3,1], ticks=fractions.map(t=>[t,max*t]);
   return <svg aria-hidden="true" viewBox={'0 0 '+w+' '+h}>
-    {axisTicks("世帯主給与",t=>P(2*t-1,-1,0),ticks,t=>P(2*t-1,-1.2,0))}
+    {axisTicks("世帯主給与",t=>P(2*t-1,-1,0),difference?ticks.slice(1):ticks,t=>P(2*t-1,-1.2,0))}
     {axisTicks("配偶者給与",t=>P(-1,2*t-1,0),ticks.slice(1),t=>P(-1.2,2*t-1,0))}
-    {axisTicks("可処分所得",t=>P(-1,-1,low+(high-low)*t),zTicks(scene).filter(z=>z!==0).map(z=>[(z-low)/(high-low),z]),t=>P(-1.2,-1.2,low+(high-low)*t))}
+    {axisTicks(zName,t=>P(-1,-1,low+(high-low)*t),zTicks(scene,difference).filter(z=>difference||z!==0).map(z=>[(z-low)/(high-low),z]),t=>P(-1.2,-1.2,low+(high-low)*t))}
     <text className="salary-mesh-unit" x={w-12} y="20" textAnchor="end">万円／年</text>
+    {extremes?.map(({label,px,py})=><g key={label} className="salary-mesh-extreme"><circle cx={px} cy={py} r="4" />
+      <text className="salary-mesh-unit" x={clamp(px-9,55,w-8)} y={clamp(py+15,14,h-2)} textAnchor="end">{label}</text></g>)}
     {cursor && <g aria-label="点P"><circle cx={cursor.px} cy={cursor.py} r="6" fill="#b9460c" stroke="white" strokeWidth="2"/><circle cx={cursor.px} cy={cursor.py} r="2" fill="#fff"/><text x={cursor.px+9} y={cursor.py-6} className="salary-mesh-unit">P</text></g>}
   </svg>;
 }
 
 export default function SalarySurfaceMesh({surface,head,spouse,selectedZ,calculator,onSelectSalary,fixedTotal=null}) {
   const canvas=useRef(null), frame=useRef(null), renderer=useRef(null), drag=useRef(null);
-  const [size,setSize]=useState([640,410]), [view,setView]=useSessionParameter("camera",INITIAL_VIEW), [version,setVersion]=useState(0);
+  const difference=surface?.kind==="disability-difference";
+  const [size,setSize]=useState([640,410]), [view,setView]=useSessionParameter(difference?"differenceCamera":"camera",INITIAL_VIEW), [version,setVersion]=useState(0);
   const [state,setState]=useState(null), [painted,setPainted]=useState(null);
   const [hit,setHit]=useState(null);
   const [preferredSystem,setFocusSystem]=useSessionParameter("focusSystem",null);
@@ -265,12 +338,22 @@ export default function SalarySurfaceMesh({surface,head,spouse,selectedZ,calcula
   const error=state?.surface===surface && state.error;
   const cursor=useMemo(()=>painted?.surface===surface && Number.isFinite(selectedZ)
     ? visibleSalaryCursor(surface,painted?.scene,head,spouse) : null,[painted,surface,head,spouse,selectedZ]);
+  const extremes=useMemo(()=>{
+    if (!difference || painted?.surface!==surface) return [];
+    const {minimum,maximum}=surface;
+    const specs=minimum && maximum && minimum.differenceYen===maximum.differenceYen
+      ? [["最低＝最高",minimum]] : [["最低",minimum],["最高",maximum]];
+    return specs.flatMap(([label,p])=>{
+      const anchor=p && visibleSalaryCursor(surface,painted.scene,p.headWan,p.spouseWan);
+      return anchor?[{label,...anchor}]:[];
+    });
+  },[difference,surface,painted]);
   const inspected=hit && hit.surface===surface && hit.focus===focusSystem && hit.x===head && hit.y===spouse ? hit : null;
   function selectBoundary(e) {
     const d=drag.current;
     if(d?.id!==e.pointerId) return;
     drag.current=null;
-    if(d.moved || !calculator || painted?.surface!==surface || !ok || error) return;
+    if(difference || d.moved || !calculator || painted?.surface!==surface || !ok || error) return;
     const rect=e.currentTarget.getBoundingClientRect();
     const i=pickSalaryAtPointer(surface,painted.scene,e.clientX-rect.left,e.clientY-rect.top,focusSystem,fixedTotal,cursor);
     if(i===null) {setHit(null);return;}
@@ -279,9 +362,12 @@ export default function SalarySurfaceMesh({surface,head,spouse,selectedZ,calcula
     if(events.length) onSelectSalary?.(x,y);
     setHit(events.length?{surface,focus:focusSystem,x,y,z:surface.heights[i],events}:null);
   }
-  return <div className="salary-mesh">
+  return <div className={"salary-mesh"+(difference?" salary-mesh-difference":"")}>
     {!ok && <p role="status">この範囲に算定できた給与点がないため、立体図を表示できません。</p>}
-    {ok && <>{!error && <div className="salary-mesh-legend" role="group" aria-label="福祉制度の境界線">
+    {ok && <>{!error && difference && <div className="salary-difference-legend" role="group" aria-label="可処分所得差の符号">
+      <span><i className="loss"/>負</span><span><i className="zero"/>差なし（0）</span><span><i className="gain"/>正</span>
+    </div>}
+    {!error && !difference && <div className="salary-mesh-legend" role="group" aria-label="福祉制度の境界線">
       <span className="salary-mesh-legend-title">福祉制度の境界線</span>
       <button type="button" aria-pressed={focusSystem===null} onClick={()=>setFocusSystem(null)}>すべて</button>
       {SURFACE_SYSTEMS.map(({id,label,color})=>{
@@ -301,9 +387,9 @@ export default function SalarySurfaceMesh({surface,head,spouse,selectedZ,calcula
         if(!d.moved && Math.hypot(e.clientX-d.startX,e.clientY-d.startY)<3)return;
         d.moved=true; const dx=e.clientX-d.x,dy=e.clientY-d.y; d.x=e.clientX;d.y=e.clientY;rotate(dx*.55,dy*.55);}}
       onLostPointerCapture={()=>{drag.current=null;}} onPointerUp={selectBoundary} onPointerCancel={()=>{drag.current=null;}}>
-      {!error && painted?.surface===surface && <ReferencePlanes scene={painted.scene}/>}
+      {!error && !difference && painted?.surface===surface && <ReferencePlanes scene={painted.scene}/>}
       <canvas ref={canvas} aria-hidden="true"/>
-      {!error && painted?.surface===surface && <Axes scene={painted.scene} cursor={cursor} surface={surface}/>}
+      {!error && painted?.surface===surface && <Axes scene={painted.scene} cursor={cursor} surface={surface} extremes={extremes}/>}
       {error && <p className="salary-mesh-error" role="status">{error}</p>}
     </div>{inspected && <SalaryBoundaryDetail events={inspected.events}/>}</>}
   </div>;

@@ -4,6 +4,7 @@ import { scanPaperChangePoints } from "../calc/paperChangePoints";
 import RevisionDiscussion from "./RevisionDiscussion";
 import SalarySurfaceMesh from "./SalarySurfaceMesh";
 import { REVISION_INCOME_DESIGN as design } from "../data/revisionIncomeDesign";
+import { DifferenceExtrema } from "./IncomeDifferenceReadout";
 
 const MAX = 1500;
 const yenNumber = (v) => v.toLocaleString("ja-JP", { maximumFractionDigits: 2 });
@@ -11,7 +12,7 @@ const outcomeLabel = design.outcome.axis;
 const valueOf = (point) => point?.studyDisposableWan ?? null;
 
 /** 同一の世帯条件では給与カーソルを移動しても格子を再計算しない。 */
-export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null }) {
+export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null, comparison=false }) {
   const [result, setResult] = useState(null);
   useEffect(() => {
     let active = true, worker;
@@ -27,13 +28,14 @@ export function RevisionSurface({ inputs, head, spouse, point, calculator, onSel
         if (data.type === "error") { fail(); worker.terminate(); }
       };
       worker.onerror = () => { fail(); worker.terminate(); };
-      worker.postMessage({type:"start",inputs});
+      worker.postMessage(comparison ? {type:"start",inputs,comparison:true} : {type:"start",inputs});
     }).catch(fail);
     return () => { active=false; worker?.terminate(); };
-  }, [inputs]);
+  }, [inputs,comparison]);
   const state = result?.inputs === inputs ? result : null;
-  return <figure id="salary-surface-plot" className="revision-surface" aria-label="夫婦の給与収入と世帯の可処分所得の3Dグラフ">
-    {state?.surface ? <SalarySurfaceMesh surface={state.surface} calculator={calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={valueOf(point)} />
+  return <figure id={comparison?"income-difference-plot":"salary-surface-plot"} className="revision-surface" aria-label={comparison?"夫婦の給与収入と障害の有無による可処分所得差の3Dグラフ":"夫婦の給与収入と世帯の可処分所得の3Dグラフ"}>
+    {state?.surface ? <>{comparison && <DifferenceExtrema surface={state.surface} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal}/>}
+      <SalarySurfaceMesh surface={state.surface} calculator={comparison?null:calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={comparison?(point?.status==="calculated"?point.differenceYen/10000:null):valueOf(point)} /></>
       : state?.error ? <p role="status">{state.error}</p>
       : <p className="revision-surface-loading" role="status">1万円刻みで計算中：{state?.percent ?? 0}%</p>}
   </figure>;

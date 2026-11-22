@@ -1,12 +1,18 @@
 /** @jest-environment node */
 /* global globalThis */
 import { buildSalarySurfaceGrid } from "../calc/salarySurfaceGrid.js";
+import { buildDisabilityDifferenceSurface } from "../calc/disabilityIncomeDifference.js";
 import "./salarySurface.worker.js";
 
 jest.mock("../calc/salarySurfaceGrid.js", () => ({buildSalarySurfaceGrid:jest.fn()}));
+jest.mock("../calc/disabilityIncomeDifference.js", () => ({
+  ...jest.requireActual("../calc/disabilityIncomeDifference.js"),buildDisabilityDifferenceSurface:jest.fn(),
+}));
 beforeEach(() => {
   const {buildSalarySurfaceGrid: build} = jest.requireActual("../calc/salarySurfaceGrid.js");
   buildSalarySurfaceGrid.mockImplementation((calculator, options) => build(calculator, {...options, maxSalaryWan:2}));
+  const {buildDisabilityDifferenceSurface:diff}=jest.requireActual("../calc/disabilityIncomeDifference.js");
+  buildDisabilityDifferenceSurface.mockImplementation((calculator,options)=>diff(calculator,{...options,maxSalaryWan:2}));
 });
 
 const originalPost = globalThis.postMessage;
@@ -50,4 +56,16 @@ test("対象外のメッセージは無視し、入力不正は完成と区別�
   expect(send).not.toHaveBeenCalled();
   globalThis.onmessage({data:{type:"start", inputs:{children:[]}}});
   expect(send.mock.calls).toEqual([[{type:"error", message:expect.stringMatching(/子ども/)}]]);
+});
+
+test("JではGの高さ・制度線を返さず、同一給与の差額格子・符号・最低最高を返す",()=>{
+  const send=jest.fn();globalThis.postMessage=send;
+  globalThis.onmessage({data:{type:"start",comparison:true,inputs:{protocol:"paper-2029",children:[{
+    age:8,tccaGrade:"not",welfareEligible:false,taxStatus:"none",serviceUser:false,serviceAmountYen:0,
+  }],serviceAmountYen:0}}});
+  const [message,transfers]=send.mock.calls.at(-1);
+  expect(message).toMatchObject({type:"complete",kind:"disability-difference",validCount:8,negativeCount:0,
+    minimum:{differenceYen:0,count:8},maximum:{differenceYen:0,count:8}});
+  expect(buildSalarySurfaceGrid).not.toHaveBeenCalled();
+  expect(transfers).toEqual([message.heights.buffer]);
 });

@@ -2,6 +2,18 @@
 import { INITIAL_VIEW, makeScene, rotateView } from "./salarySurfaceCamera.js";
 
 const viewport = [760, 420], surface = {min:-48, max:937};
+test.each([
+  [-.0001,0], [0,.0001], [-.0013,.0064], [-12.3,-.2], [5,8], [0,0],
+])("Jの範囲：差 %s～%s 万円と0面を含み、小さな差を100万円軸に潰さない",(min,max)=>{
+  const data={kind:"disability-difference",min,max};
+  const {low,high,project}=makeScene(viewport,INITIAL_VIEW,data);
+  expect(low).toBeLessThanOrEqual(Math.min(0,min));
+  expect(high).toBeGreaterThanOrEqual(Math.max(0,max));
+  expect(high).toBeGreaterThan(low);
+  expect(high-low).toBeLessThanOrEqual(2*Math.max(.0001,Math.max(max,0)-Math.min(min,0)) + 1e-10);
+  expect(project(0,0,0).every(Number.isFinite)).toBe(true);
+  if(min===max && max===0)expect(low).toBe(-high);
+});
 const faceOn = [1,0,0, 0,1,0, 0,0,-1]; // increasing world Z approaches the viewer
 const row = (m, i) => Array.from(m).slice(3*i, 3*i+3);
 const dot = (a, b) => a.reduce((v, n, i) => v+n*b[i], 0);

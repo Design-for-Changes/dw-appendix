@@ -19,6 +19,8 @@ const upstream=git(['rev-parse','--verify','refs/remotes/origin/main']).stdout?.
 const published=new Map();
 
 function category(file){
+  if(/disabilityIncomeDifference/.test(file))return '障害の有無による可処分所得差';
+  if(/salaryDecisionMap/.test(file))return '二給与平面での制度変更点';
   if(/paperChangePoints|paperEducationAssessment|paperMedicalCoverage/.test(file))return '考察専用・制度区分と代替助成（収支に算入しない）';
   if(/householdInsurance2029/.test(file))return '主試算・夫婦別の社会保険料';
   if(/paperSalaryTaxInputs2029/.test(file))return '主試算・給与所得と所得控除';

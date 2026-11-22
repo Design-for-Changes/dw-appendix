@@ -16,3 +16,11 @@
 .salary-mesh .salary-mesh-axis text { text-anchor: middle; }
 .salary-mesh .salary-mesh-axis .salary-mesh-axis-name { font-weight: 650; font-size: 15px; }
 .salary-mesh-error { position: absolute; inset: 0; display: grid; place-content: center; margin: 0; padding: 1rem; background: #f7faf9; color: #5b3930; text-align: center; }
+.salary-difference-legend { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem 1rem; padding:.5rem .9rem; border-bottom:1px solid #dce4e2; font-size:.875rem; }
+.salary-difference-legend span { display:inline-flex; align-items:center; gap:.35rem; }
+.salary-difference-legend i { width:1rem; height:.72rem; box-sizing:border-box; border-radius:.12rem; }
+.salary-difference-legend .loss { background:#c22b3b; }
+.salary-difference-legend .zero { background:#f1f4f2; border:1px solid #69777c; }
+.salary-difference-legend .gain { background:#08756f; }
+.salary-mesh-difference .salary-mesh-stage { height:var(--salary-plot-height,clamp(430px,65vh,820px)); }
+.salary-mesh-extreme circle { fill:#253743; stroke:white; stroke-width:1.5; }

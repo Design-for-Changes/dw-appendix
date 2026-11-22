@@ -1,0 +1,14 @@
+.income-difference-extrema {padding:.25rem 1rem .75rem;border-bottom:1px solid #cad7d4}
+.income-difference-extrema p,.income-difference-range p {margin:.45rem 0}
+.income-difference-range,.income-difference-totals,.income-difference-breakdown {display:flex;flex-wrap:wrap;gap:.8rem 2rem}
+.income-difference-range>div {flex:1 1 18rem;padding:.5rem 0}
+.income-difference-range>div+div {border-inline-start:1px solid #d5dfde;padding-inline-start:1.5rem}
+.income-difference-range strong,.income-difference-totals dd {font-variant-numeric:tabular-nums}
+.income-difference-totals,.income-difference-breakdown {margin:.6rem 0}
+.income-difference-totals dt,.income-difference-breakdown dt {font-size:.95rem}
+.income-difference-totals dd,.income-difference-breakdown dd {margin:.25rem 0;font-weight:650}
+.income-difference-net {border-inline-start:3px solid #34605a;padding-inline-start:1rem}
+.income-difference-all table {border-collapse:collapse;margin:.8rem 0;text-align:right;font-variant-numeric:tabular-nums}
+.income-difference-all caption {text-align:left;margin-bottom:.45rem}
+.income-difference-all th,.income-difference-all td {padding:.35rem .9rem;border-bottom:1px solid #cad7d4}
+@media(max-width:640px){.income-difference-range>div+div{border-inline-start:0;padding-inline-start:0}}

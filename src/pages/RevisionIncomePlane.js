@@ -1,20 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { REVISION_INCOME_DESIGN as design, readSalaryWan, salaryBounds } from "../data/revisionIncomeDesign";
 import { createRevisionCalculator } from "../calc/revisionEngine";
+import { createDisabilityIncomeComparison } from "../calc/disabilityIncomeDifference";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { RevisionSurface } from "./RevisionSurface";
 import { useSessionParameter } from "./salarySimulatorSession";
 import HouseholdCalculationTrace from "./HouseholdCalculationTrace";
+import { DifferenceAllCases, IncomeDifferencePoint } from "./IncomeDifferenceReadout";
 import { CHILD_ELIGIBILITY_OPTIONS, childEligibilityId } from "../data/childEligibilityOptions";
 import "./revision-simulator.css";
 
 const fmt = (v) => Number.isFinite(v) ? v.toLocaleString("ja-JP", { maximumFractionDigits: 2 }) : "未算定";
-const blankChild = () => ({age:8, tccaGrade:"not", welfareEligible:false, taxStatus:"none", serviceAmountYen:0});
+export const blankChild = () => ({age:8, tccaGrade:"not", welfareEligible:false, taxStatus:"none", serviceAmountYen:0});
 const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
 const designUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(design, null, 2));
 
-function ChildFields({ index, child, update, recipient }) {
+export function ChildFields({ index, child, update, recipient }) {
   return <fieldset className="revision-child"><legend>子ども{index + 1}</legend>
     <div className="revision-fields">
       <label>年齢<select value={child.age} onChange={(e) => update({ age: Number(e.target.value) })}>{range(17).map((n) => <option key={n} value={n}>{n}歳</option>)}</select></label>
@@ -36,12 +38,12 @@ function ChildFields({ index, child, update, recipient }) {
 
 
 /** 世帯条件ごとに同じ計算器で選択点と立体格子を計算する。 */
-export default function RevisionIncomePlane() {
+export default function RevisionIncomePlane({comparison=false}) {
   const [children, setChildren] = useSessionParameter("children", [blankChild()]);
   const [roles, setRoles] = useSessionParameter("roles", {spouseDeductionClaimant:"head", allowanceRecipient:"head", welfareMaintainer:"highest-salary"});
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
-  const [lastDrawnKey,setLastDrawnKey] = useSessionParameter("lastDrawnKey", null);
+  const [lastDrawnKey,setLastDrawnKey] = useSessionParameter(comparison?"differenceDrawnKey":"lastDrawnKey", null);
   const salary = income.map(readSalaryWan);
   const { min, max } = salaryBounds(fixedTotal);
   const incomesValid = salary.every((v) => v !== null && v >= min && v <= max);
@@ -51,9 +53,9 @@ export default function RevisionIncomePlane() {
     const configured = children.map(c => ({taxDependentOf:"head", maintainedByRecipient:false, ...c, serviceUser:c.serviceAmountYen > 0}));
     try {
       const inputs = { protocol:"paper-2029", roles, children: configured, serviceAmountYen: 0 };
-      return { calculator: createRevisionCalculator(inputs), inputs, error: null };
+      return { calculator: comparison?createDisabilityIncomeComparison(inputs):createRevisionCalculator(inputs), inputs, error: null };
     } catch (err) { return { calculator: null, error: err.message }; }
-  }, [roles, children]);
+  }, [roles, children, comparison]);
   const inputKey=useMemo(()=>inputs ? JSON.stringify(inputs) : null,[inputs]);
   const drawn=inputKey !== null && lastDrawnKey === inputKey;
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
@@ -75,7 +77,9 @@ export default function RevisionIncomePlane() {
   function updateChild(i, delta) {
     setChildren(prev=>prev.map((c,j)=>j===i?{...c,...delta}:c));
   }
-  return <section id="salary-surface" className="revision-simulator" aria-label="夫婦の給与収入と世帯の可処分所得">
+  return <section id={comparison?"disability-income-difference":"salary-surface"} className="revision-simulator" aria-label={comparison?"障害の有無による可処分所得差":"夫婦の給与収入と世帯の可処分所得"}>
+    {comparison && <p>差額は、設定した世帯の年間可処分所得から、給与・子どもの人数・年齢・扶養関係が同じで、障害関係の手当・控除・サービス自己負担がない世帯の年間可処分所得を引いた額です。</p>}
+    {comparison && <DifferenceAllCases/>}
     <details className="revision-conditions" open={conditionsOpen} onToggle={e=>setConditionsOpen(e.currentTarget.open)}>
       <summary>世帯と子どもの条件</summary>
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
@@ -87,12 +91,13 @@ export default function RevisionIncomePlane() {
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
       <button type="button" disabled={!inputs || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
     </details>
-    {drawn && <RevisionSurface inputs={inputs} calculator={calculator} head={point ? salary[0] : null} spouse={point ? salary[1] : null} point={point} fixedTotal={fixedTotal} onSelectSalary={selectSalary} />}
+    {drawn && <RevisionSurface inputs={inputs} calculator={calculator} head={point ? salary[0] : null} spouse={point ? salary[1] : null} point={point} fixedTotal={fixedTotal} onSelectSalary={selectSalary} comparison={comparison} />}
     <section className="revision-point" aria-label="点P"><h3>点P</h3>
       <div className="revision-fields">{design.salary.axes.map((name, i) => <label key={name}>{name}（万円／年）<input type="number" min={min} max={max} step="1" value={income[i]} onChange={(e) => changeIncome(i, e.target.value)} /></label>)}</div>
       <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与収入総額を固定して夫婦間の配分を変える</label>
       <p aria-live="polite">{incomesValid ? `世帯の給与収入総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
-    {point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
+    {comparison && point && <IncomeDifferencePoint point={point}/>}
+    {!comparison && point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
       {point.status !== "calculated" ? <><span>{point.status==="excluded"?"この給与点は試算対象外":"この給与点は未算定"}</span><ul>{point.reasons.map((r,i)=><li key={i}>{r}</li>)}</ul></> : <span>{fmt(point.studyDisposableWan)}<small> 万円／年</small></span>}
       </div>
       {point.breakdown && <HouseholdCalculationTrace point={point} inputs={inputs}/>}

@@ -16,8 +16,8 @@ const APPENDIX_PAGES = [
   { mode: "rules", letter: "C", label: "所得区分・判定方法（船橋市例）", hash: "#income-assessment" },
   { mode: "eligibility", letter: "D", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
   { mode: "scenarios", letter: "E", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
+  { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
 ];
-const FUNCTION_REFERENCE={mode:"functions",letter:"F",label:"関数資料",hash:"#calculation-functions"};
 
 const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",difference:"#disability-income-difference"};
 function graphForHash(hash){
@@ -1328,7 +1328,7 @@ export default function AppendixCliffMap() {
     window.addEventListener("hashchange", followHash);
     return () => window.removeEventListener("hashchange", followHash);
   }, [setLastGraph]);
-  const activePage = viewMode==="functions"?FUNCTION_REFERENCE:APPENDIX_PAGES.find((page) => page.mode === viewMode);
+  const activePage = APPENDIX_PAGES.find((page) => page.mode === viewMode);
   const selectViewMode = (mode) => {
     setViewMode(mode);
     const hash = mode==="scenarios" ? GRAPH_HASH[graphView] : APPENDIX_PAGES.find((page) => page.mode === mode).hash;
@@ -1371,7 +1371,6 @@ export default function AppendixCliffMap() {
        viewMode === "eligibility" ? <ChildEligibilityEvidence/> :
        viewMode === "laws" ? <ResearchDataAppendix/> :
        viewMode === "rules" ? <IncomeAssessmentAppendix/> : <MunicipalSourcesAppendix/>}
-      <footer><a href={FUNCTION_REFERENCE.hash} aria-current={viewMode==="functions"?"page":undefined}>Web Appendix F　関数資料</a></footer>
     </main>
   );
 }

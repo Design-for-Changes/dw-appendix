@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import AppendixCliffMap from "./AppendixCliffMap";
 
 let mockReferencePagesLoading = false;
@@ -17,14 +17,15 @@ jest.mock("./ResearchDataAppendix", () => () => mockReferencePagesLoading
   : <section aria-label="法令検索">表A2</section>);
 jest.mock("./RevisionScenariosAppendix", () => ({graphView,onGraphViewChange}) => <section aria-label="モデル条件">{graphView}<button onClick={()=>onGraphViewChange("boundaries")}>2Dへ</button></section>);
 
+const F = { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" };
 const pages = [
   { letter: "A", title: "法令検索・採否", hash: "#law-screening", region: "法令検索" },
   { letter: "B", title: "調査対象・参照資料", hash: "#municipal-sources", region: "参照資料" },
   { letter: "C", title: "所得区分・判定方法（船橋市例）", hash: "#income-assessment", region: "所得判定詳細" },
   { letter: "D", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
   { letter: "E", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
+  F,
 ];
-const F={letter:"F",title:"関数資料",hash:"#calculation-functions"};
 const simulator=pages.find(p=>p.hash==="#revision-scenarios");
 
 beforeEach(() => {
@@ -34,14 +35,13 @@ beforeEach(() => {
 });
 afterEach(() => { window.history.replaceState(null, "", "/"); });
 
-test("関数一覧はメインタブに出さず、本文末尾のFリンクから開く", async() => {
+test("Eの本文末尾に関数資料を重複表示せず、上部メニューからFを開く", () => {
   render(<AppendixCliffMap />);
-  const footerLink=screen.getByRole("link",{name:/Web Appendix F\s+関数資料/});
-  expect(footerLink.closest("footer")).toBe(document.querySelector("main").lastElementChild);
-  expect(footerLink).toHaveAttribute("href",F.hash);
-  fireEvent.click(footerLink);
-  await waitFor(()=>expectSelectedPage(F));
-  expect(footerLink).toHaveAttribute("aria-current","page");
+  expectSelectedPage(simulator);
+  expect(screen.queryByRole("link", { name: /関数資料/ })).not.toBeInTheDocument();
+  fireEvent.click(pageButton(F));
+  expect(window.location.hash).toBe(F.hash);
+  expectSelectedPage(F);
   expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeInTheDocument();
   expect(screen.queryByRole("region", { name: "表示ケース" })).not.toBeInTheDocument();
   fireEvent.click(pageButton(simulator));
@@ -99,7 +99,7 @@ test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Eを開
   expect(screen.queryByRole("region",{name:"表示ケース"})).toBeNull();
 });
 
-test("メニューはA・B・C・D・Eのみで、各グラフはEに属する", () => {
+test("上部メニューはA〜Fの順で関数資料がシミュレーターの直後に並ぶ", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(

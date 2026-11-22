@@ -61,6 +61,7 @@ function pageButton(page) {
 }
 
 function expectSelectedPage(page) {
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("障害児世帯における給付・負担のモデル世帯による試算と制度上の課題");
   const navigation = screen.getByRole("navigation", { name: "表示内容" });
   const heading = screen.getByRole("heading", {
     level: 2,

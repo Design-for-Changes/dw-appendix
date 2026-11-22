@@ -34,7 +34,7 @@ const TABLE1_REFERENCES = new Map([
     {
       id: "N03",
       effect: "現物給付",
-      summary: "障害児通所支援・障害児入所支援等",
+      summary: "障害児通所支援",
     },
   ],
   [

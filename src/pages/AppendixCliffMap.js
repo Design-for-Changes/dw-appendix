@@ -60,7 +60,7 @@ export default function AppendixCliffMap() {
     <main className="App appendix-page">
       <section className="appendix-hero">
         <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
-        <h1>障害福祉における給付・負担の制度間相互作用と全体最適</h1>
+        <h1>障害児世帯における給付・負担のモデル世帯による試算と制度上の課題</h1>
         <p className="appendix-hero-subtitle">Web Appendix</p>
       </section>
 

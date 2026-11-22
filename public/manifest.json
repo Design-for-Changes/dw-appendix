@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Web Appendix",
+  "name": "Web Appendix｜障害児世帯における給付・負担のモデル世帯による試算と制度上の課題",
+  "lang": "ja",
   "icons": [
     {
       "src": "favicon.ico",

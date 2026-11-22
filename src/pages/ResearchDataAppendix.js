@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const TABLE_TITLE = "表A2　e-Gov法令検索による抽出結果と採否";
 const DATA_SCHEMA = "2.1.0";
-export const DATA_REVISION = "d83d61be993e41bb2be0f3505deed707cac779ca6bbff9dad25183a89fb8bf21";
+export const DATA_REVISION = "1ce06e7f2914165d3b01e85e481210f2982c5705ea181d1658d7a3fc37b01e9e";
 
 async function readLawData(response) {
   const text = await response.text();

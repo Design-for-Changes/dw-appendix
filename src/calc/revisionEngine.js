@@ -3,7 +3,7 @@ import { calculateSpecialChildAllowance, salaryOnlySpecialChildIncome } from "./
 import { calculateDisabledChildWelfareAllowance, calculateWelfareSalaryAssessment } from "./disabledChildWelfareAllowance.js";
 import { calculateHouseholdInsurance2029 } from "./householdInsurance2029.js";
 import { calculatePaperSalaryTaxInputs2029, PAPER_SALARY_POLICY_2029 } from "./paperSalaryTaxInputs2029.js";
-import { calcServiceAssessmentLevyYen, getChildDayServiceCapYen } from "./serviceBurdenLimits.js";
+import { calcServiceAssessmentLevyYen, getChildDayServiceCapYen, isFreeDayServiceAge, MAX_SERVICE_YEN } from "./serviceBurdenLimits.js";
 import { calculateSocialInsuranceComponents } from "./socialInsurance.js";
 import { calculateHouseholdCoverage } from "./revisionCoverage.js";
 import { calcBasicIncomeTaxDeductionR8FinalWan } from "./taxDescriptions.js";
@@ -14,7 +14,6 @@ import { getIncomeTaxParts, getResidentTaxParts } from "./taxes.js";
 const WAN = 10000;
 const AGE_OF_PARENTS = 45;
 const MAX_WAGE = 1500;
-const MAX_SERVICE_YEN = 37200;
 // 国税庁 No.1195、地方税法上の配偶者特別控除。各行は高所得側の合計所得が
 // 900万円以下、950万円以下、1,000万円以下の順。帯の上端は「以下」。
 export const REVISION_SPOUSE_DEDUCTION_TABLE = [
@@ -220,10 +219,10 @@ function revisionServiceBurden(children, otherServiceMonthlyYen, adults) {
   const levy = adults.reduce((sum,t)=>sum+t.serviceLevyYen,0);
   const cap = getChildDayServiceCapYen(levy, adults.some(t=>t.serviceTaxable));
   // 各児入力は多子軽減等を適用した後・上限前。3～5歳は年度当初年齢に基づく無償対象通所のみを仮定。
-  const day = children.reduce((sum,c)=>sum + (c.serviceUser && (c.age < 3 || c.age > 5) ? c.serviceAmountYen : 0),0);
+  const day = children.reduce((sum,c)=>sum + (c.serviceUser && !isFreeDayServiceAge(c.age) ? c.serviceAmountYen : 0),0);
   const monthly = Math.min(day+otherServiceMonthlyYen,cap);
   // 就学前無償だけの利用を除く。利用料0円という入力も「利用していない」ことは意味しない。
-  const hasCapApplicableServiceUse=otherServiceMonthlyYen>0 || children.some(c=>c.serviceUser && (c.age<3 || c.age>5));
+  const hasCapApplicableServiceUse=otherServiceMonthlyYen>0 || children.some(c=>c.serviceUser && !isFreeDayServiceAge(c.age));
   return {annual:monthly*12, monthly, dayMonthlyBeforeCapYen:day, otherServiceMonthlyYen, householdCapYen:cap,
     assessmentLevyYen:levy, hasCapApplicableServiceUse};
 }

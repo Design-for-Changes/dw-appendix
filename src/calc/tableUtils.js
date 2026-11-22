@@ -33,26 +33,3 @@ export function rowAtKeyInt(arr, key, xInt) {
   }
   return best;
 }
-
-/**
- * 整数キーの前後行から指定値を線形補間する。
- * @remarks 表参照。単位: 表のy値の単位。式・境界条件・丸めは移動前の実装を維持。
- * @param {*} arr 判定対象・区分または補助値（呼出側の定義に従う）
- * @param {*} xKey 判定対象・区分または補助値（呼出側の定義に従う）
- * @param {*} xVal 判定対象・区分または補助値（呼出側の定義に従う）
- * @param {*} yKey 判定対象・区分または補助値（呼出側の定義に従う）
- * @returns {*} number。単位: 表のy値の単位
- */
-export function interpTableValue(arr, xKey, xVal, yKey) {
-  const x = Number(xVal);
-  if (!Number.isFinite(x) || !arr || arr.length === 0) return 0;
-  const lo = Math.floor(x);
-  const hi = Math.ceil(x);
-  const r0 = rowAtKeyInt(arr, xKey, lo);
-  const r1 = rowAtKeyInt(arr, xKey, hi);
-  const y0 = Number(r0?.[yKey]) || 0;
-  const y1 = Number(r1?.[yKey]) || 0;
-  if (hi === lo) return y0;
-  const t = (x - lo) / (hi - lo);
-  return y0 + (y1 - y0) * t;
-}

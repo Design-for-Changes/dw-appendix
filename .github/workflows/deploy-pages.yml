@@ -33,6 +33,11 @@ jobs:
       - name: Check household tax boundaries before publishing
         run: node --experimental-default-type=module scripts/audit-current-surface.mjs --tax-only
 
+      - name: Check G extrema data against the current E calculator
+        run: |
+          node --experimental-default-type=module scripts/generate-pattern-salary-envelopes.mjs --check
+          node --experimental-default-type=module scripts/audit-all-patterns.mjs
+
       - name: Build
         run: npm run build
         env:

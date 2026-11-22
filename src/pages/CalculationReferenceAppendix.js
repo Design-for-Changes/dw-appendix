@@ -31,14 +31,16 @@ const currentFlow = [
   ["disposable","夫婦の給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
   ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
   ["level","選んだ下落直前の可処分所得 → 給与平面の同水準線","隣接する給与点のうち一方だけが基準額以上になる境界を両軸で結ぶ。未算定点はまたがない。","src/calc/salaryLevelContour.js:buildSalaryLevelContour"],
+  ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最低差・最高差と夫婦の給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
 ];
 const discussionFlow = [
+  ["E「制度境界のみ」：各給与点の所得区分 → 制度別の境界線","夫婦各1万円刻みの隣接する給与点を比較し、各制度の区分が切り替わる位置だけを結ぶ。支出額や可処分所得の下落幅は用いない。","src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier","src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier","src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap"],
   ["隣接する給与点の判定区分 → 制度別・判定対象者別の変化点","収支が下がったか否かを問わず、判定区分が変わった点を抽出する。判定できない区間をまたいで変化を推定しない。","src/calc/paperChangePoints.js:scanPaperChangePoints"],
   ["就学奨励費（N04）：所定の月収入額・月需要額 → 支弁区分","特別支援学校小学部の通常判定に必要な測定値が揃う場合だけ区分を判定する。支給額を推定せず、主試算の収支に加えない。","src/calc/paperEducationAssessment.js:assessPaperEducationClass"],
   ["船橋市の医療費助成（M01）・子ども医療：各制度の要件 → 適用状況","同一医療保険単位の所得割・障害要件等によるM01の判定と、年齢や診療条件等による子ども医療の判定を分ける。窓口の実支払額は推定しない。","src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage"],
 ];
 
-/** 計算処理→関数の説明→ソース、および対応する処理への逆リンクを表示する。 */
+/** 計算処理と各関数の説明を、ページ内で相互に参照できるようにする。 */
 export default function CalculationReferenceAppendix({ catalog = functionCatalog }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
@@ -111,9 +113,9 @@ export default function CalculationReferenceAppendix({ catalog = functionCatalog
     <h3 id="calculation-flow-discussion" tabIndex={-1}>考察：給与の増加で、どの制度の判定が変わるか</h3>
     <div className="appendix-table-wrap"><table className="appendix-table"><caption>収支の下落幅とは別に調べる制度上の変化点</caption>
       <thead><tr><th scope="col">入力 → 出力</th><th scope="col">判定内容</th><th scope="col">担当する関数</th></tr></thead>
-      <tbody>{discussionFlow.map(([values,rule,id])=><tr key={id}><th scope="row">{values}</th><td data-label="判定内容">{rule}</td><td data-label="関数">{internalLink("calculation-function-"+id,id.split(":")[1])}</td></tr>)}</tbody>
+      <tbody>{discussionFlow.map(([values,rule,...ids])=><tr key={ids[0]}><th scope="row">{values}</th><td data-label="判定内容">{rule}</td><td data-label="関数">{ids.map(id=><div key={id}>{internalLink("calculation-function-"+id,id.split(":")[1])}</div>)}</td></tr>)}</tbody>
     </table></div>
-    <CalculationCallMap catalog={catalog} entries={entries} detailLink={(f) => internalLink(functionAnchor(f), "関数の説明とソース")} />
+    <CalculationCallMap catalog={catalog} entries={entries} detailLink={(f) => internalLink(functionAnchor(f), "関数の説明")} />
     <h3 id="calculation-flow-example" tabIndex={-1}>値を追う：住民税から通所支援の年間負担まで</h3>
     <p>住民税額は利用料ではなく、世帯の月額上限を判定するために使う。</p>
     <ol className="ccm-steps" aria-label="通所支援の計算順">
@@ -151,19 +153,19 @@ export default function CalculationReferenceAppendix({ catalog = functionCatalog
     <div className="appendix-table-wrap">
       <table className="appendix-table function-catalog-table">
         <caption>ソースコードの注記と関数の対応</caption>
-        <thead><tr><th scope="col">区分・対応する処理</th><th scope="col">関数・クラス名</th><th scope="col">計算・処理内容</th><th scope="col">入力</th><th scope="col">返却値</th><th scope="col">ソース</th></tr></thead>
+        <thead><tr><th scope="col">区分・対応する処理</th><th scope="col">関数・クラス名</th><th scope="col">計算・処理内容</th><th scope="col">入力</th><th scope="col">返却値</th><th scope="col">定義箇所</th></tr></thead>
         <tbody>{rows.map((f) => {
           const flows = FLOW.filter((flow) => flow.functions.includes(f.id));
           const parent = parentEntry(f);
           return <tr key={f.id} id={functionAnchor(f)} tabIndex={-1}>
             <td data-label="区分・対応する処理">{f.category}<small>{f.role}</small>
-              <div className="function-backlinks">{discussionFlow.some(row=>row[2]===f.id) ? internalLink("calculation-flow-discussion","↩ 考察：制度の変化点") : f.file.includes("revisionEngine") || currentFlow.some(row=>row.slice(3).includes(f.id)) ? internalLink("calculation-flow-current","↩ 新稿の計算式") : flows.length ? flows.map((flow) => internalLink(flowAnchor(flow), `↩ ${flow.name}`)) : internalLink("calculation-flow", "↩ 計算処理との対応")}</div>
+              <div className="function-backlinks">{discussionFlow.some(row=>row.slice(2).includes(f.id)) ? internalLink("calculation-flow-discussion","↩ 考察：制度の変化点") : f.file.includes("revisionEngine") || currentFlow.some(row=>row.slice(3).includes(f.id)) ? internalLink("calculation-flow-current","↩ 新稿の計算式") : flows.length ? flows.map((flow) => internalLink(flowAnchor(flow), `↩ ${flow.name}`)) : internalLink("calculation-flow", "↩ 計算処理との対応")}</div>
             </td>
             <th scope="row"><code>{f.qualifiedName}</code>{parent && <small>内包元：{internalLink(functionAnchor(parent), parent.qualifiedName)}</small>}</th>
             <td data-label="計算・処理内容">{f.description}</td>
             <td data-label="入力">{f.params.length ? f.params.map((p) => <p key={p}>{p}</p>) : <code>{f.signature}</code>}</td>
-            <td data-label="返却値">{f.returns || "ソースのreturnを参照"}</td>
-            <td data-label="ソース">{f.localSource && <details><summary>この版の実装を読む</summary><pre className="ccm-source">{f.localSource}</pre></details>}{f.sourceUrl ? <a href={f.sourceUrl} target="_blank" rel="noreferrer">{f.file}:{f.line}</a> : <small>{f.file}:{f.line}（ローカル版）</small>}</td>
+            <td data-label="返却値">{f.returns || "記載なし"}</td>
+            <td data-label="定義箇所"><small>{f.file}:{f.line}</small></td>
           </tr>;
         })}</tbody>
       </table>

@@ -1,0 +1,15 @@
+.policy-boundaries { color:#20333d; margin-top:1rem; }
+.policy-boundaries > p { margin:.65rem 0; line-height:1.7; }
+.policy-boundaries > p a { margin-left:.55rem; }
+.policy-options { display:flex; flex-wrap:wrap; gap:.75rem; }
+.policy-options fieldset { border:1px solid #b9ccca; border-radius:5px; padding:.45rem .8rem .7rem; margin:0; }
+.policy-options legend { font-weight:650; padding:0 .25rem; }
+.policy-options label { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin:.35rem 0; }
+.policy-options select,.policy-options input[type=number] { font:inherit; border:1px solid #97aaaa; border-radius:4px; padding:.25rem; }
+.policy-options input[type=number] { width:9em; }
+.policy-draw { margin:.65rem 0; padding:.38rem .7rem; font:inherit; }
+.policy-layer-list { display:flex; flex-wrap:wrap; gap:.35rem .85rem; list-style:none; padding:0; }
+.policy-layer-list label { display:inline-flex; align-items:center; gap:.3rem; }
+.policy-layer-list i { width:1.4rem; height:4px; }
+.policy-boundary-figure g[tabindex] { cursor:pointer; }
+.policy-boundary-figure g[tabindex]:focus-visible { outline:2px dashed #405068; }

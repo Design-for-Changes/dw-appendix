@@ -65,12 +65,9 @@
 .revision-fee-row { display:grid; grid-template-columns:minmax(7rem, auto) minmax(5rem,16rem) auto; align-items:center; gap:.4rem; margin:.3rem 0 .7rem; }
 .revision-fee-row input[type="range"] { width:100%; }
 .revision-fee-row output { font-variant-numeric:tabular-nums; }
-.revision-surface figcaption, .revision-slice h4 { font-weight: 700; font-size: 1.05rem; }
+.revision-surface figcaption { font-weight: 700; font-size: 1.05rem; }
 .revision-surface svg { display: block; width: 100%; height: auto; max-width: 43rem; }
 .revision-surface svg text { font: 14px sans-serif; fill: #213d49; }
-.revision-slice { margin: 1rem 0; }
-.revision-slice-result table { font-variant-numeric: tabular-nums; }
-.revision-slice-result caption { text-align: left; }
 .revision-simulator details[open] > summary { margin-bottom: .5rem; }
 .revision-archive { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #b6c6c4; }
 @media (max-width: 35rem) {

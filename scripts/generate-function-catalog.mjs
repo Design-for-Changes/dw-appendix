@@ -1,24 +1,21 @@
 #!/usr/bin/env node
-/** 計算ソースのJSDocから、公開用の関数一覧とソース行リンクを生成する。 */
+/** 計算ソースから、説明・引数・戻り値・直接呼出を記録した公開用の関数資料を生成する。 */
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-import {spawnSync} from 'node:child_process';
 import {extractCallEdges} from './function-call-edges.mjs';
 const require=createRequire(import.meta.url);
 const {parse}=require('@babel/parser');
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')&&!f.endsWith('.test.js')).map(f=>'src/calc/'+f),'scripts/generate-appendix-data.mjs','scripts/generate-revision-scenarios.mjs'].sort();
+const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith('.js')&&!f.endsWith('.test.js')).map(f=>'src/calc/'+f),
+  'scripts/generate-appendix-data.mjs','scripts/generate-revision-scenarios.mjs','scripts/generate-pattern-salary-envelopes.mjs'].sort();
 const apiNames=new Set(['createRevisionCalculator','calculateHouseholdInsurance2029','calculatePaperSalaryTaxInputs2029','calculateSpecialChildAllowance','calculateDisabledChildWelfareAllowance','scanPaperChangePoints','assessFunabashiMedicalCoverage','assessPaperEducationClass','calculateHouseholdCoverage','estimateFunabashiNational','annualEmployeePremiums','buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
-// 公開済みファイルと同じ内容であることを確認してから、不変のコミットへリンクする。
-// 未公開の改定中ファイルでは誤った main の行を示さず、この資料に実装そのものを収録する。
-const git=(args)=>spawnSync('git',args,{cwd:ROOT,encoding:'utf8'});
-const upstream=git(['rev-parse','--verify','refs/remotes/origin/main']).stdout?.trim();
-const published=new Map();
-
 function category(file){
+  if(/allPatternsComparison|generate-pattern-salary-envelopes/.test(file))return '全パターンの可処分所得差';
+  if(/policyOnlyBoundaries|policyAdditionalBands/.test(file))return '制度ごとの所得区分の境界';
+  if(/paperSalaryBands/.test(file))return '二給与格子と配偶者所得区分';
   if(/disabilityIncomeDifference/.test(file))return '障害の有無による可処分所得差';
   if(/salaryDecisionMap/.test(file))return '二給与平面での制度変更点';
   if(/salaryIncomeSection/.test(file))return '給与断面での下落・後退・回復';
@@ -60,10 +57,7 @@ const functions=[];const sources=[];
 const modules=new Map(), symbolByNode=new WeakMap();
 for(const file of files){
   const code=fs.readFileSync(path.join(ROOT,file),'utf8');
-  const ref=upstream&&git(['show',upstream+':'+file]);
-  const commit=ref?.status===0 && ref.stdout===code ? upstream : null;
-  if(commit) published.set(file,commit);
-  sources.push({file,sha256:crypto.createHash('sha256').update(code).digest('hex'),publishedCommit:commit});
+  sources.push({file,sha256:crypto.createHash('sha256').update(code).digest('hex')});
   const ast=parse(code,{sourceType:'module',plugins:['jsx']});
   modules.set(file,{ast,code});
   const exported=new Set();
@@ -95,8 +89,6 @@ for(const file of files){
         role:apiNames.has(name)&&scope.length===0?'計算エントリ':isExport?'内部モジュール間':'内部関数',
         signature:`${name}(${(declaration.params||[]).map(p=>code.slice(p.start,p.end).replace(/\s+/g,' ')).join(', ')})`,
         ...doc,
-        localSource:code.slice(declaration.start,declaration.end),
-        sourceUrl:commit ? `https://github.com/Design-for-Changes/dw-appendix/blob/${commit}/${file}#L${node.loc.start.line}` : null,
       });
       childScope=[...scope,name];
     }
@@ -115,16 +107,13 @@ const missing=functions.filter(f=>!f.description);
 if(missing.length){console.error('関数のJSDoc概要が未記載:\n'+missing.map(f=>`${f.file}:${f.line} ${f.qualifiedName}`).join('\n'));process.exit(1);}
 const revision=crypto.createHash('sha256').update(JSON.stringify(sources)).digest('hex');
 const catalog={
-  schemaVersion:3,revision,
-  scope:'src/calcと表示データ・条件生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証スクリプトは対象外。',
+  schemaVersion:4,revision,
+  scope:'src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。',
   callScope:'対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。',
   unitNote:'金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。',
   functionCount:functions.filter(f=>f.kind==='function').length,
   classCount:functions.filter(f=>f.kind==='class').length,
-  sources,functions,calls:extractCallEdges(modules,symbolByNode).map(e=>{
-    const file=e.from.slice(0,e.from.indexOf(':')), commit=published.get(file);
-    return {...e,sourceUrl:commit ? `https://github.com/Design-for-Changes/dw-appendix/blob/${commit}/${file}#L${e.line}` : null};
-  }),
+  sources,functions,calls:extractCallEdges(modules,symbolByNode),
 };
 const output=path.join(ROOT,'src/data/calculation-function-catalog.json');
 fs.mkdirSync(path.dirname(output),{recursive:true});

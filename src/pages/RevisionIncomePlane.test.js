@@ -33,7 +33,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
     expect(subscribe).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("boundary-plot")).not.toBeInTheDocument();
     expect(screen.queryByTestId("difference-plot")).not.toBeInTheDocument();
-    fireEvent.click(tab(/制度境界/));
+    fireEvent.click(tab("制度境界・下落・同水準線（2D）"));
     const boundary=screen.getByTestId("boundary-plot");expect(boundary).toBeVisible();
     expect(initial).not.toBeVisible();
     expect(screen.queryByRole("region",{name:"点P"})).toBeNull();

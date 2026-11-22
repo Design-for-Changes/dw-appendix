@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import {ArchivedCliffCalculation} from "./AppendixCliffMap";
+import {ArchivedCliffCalculation} from "./ArchivedCliffCalculation";
 import { computeOptimalModel } from "../calc/optimalModel";
 
 let mockCase;

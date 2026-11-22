@@ -10,14 +10,16 @@ const flowTable = () => screen.getByRole("table", { name: "入力から計算・
 beforeEach(() => window.history.replaceState(null, "", "/#calculation-functions"));
 afterEach(() => window.history.replaceState(null, "", "/"));
 
-test("独立資料は初期表示され、現行の関数とソース・JSONを保持する", () => {
+test("独立資料は関数の定義箇所とJSONを残し、コードへのリンクと実装の展開欄を出さない", () => {
   render(<CalculationReferenceAppendix />);
   expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeVisible();
   const table = listTable();
   expect(within(table).getAllByRole("rowheader")).toHaveLength(catalog.functions.length);
   expect(within(table).getAllByRole("columnheader")).toHaveLength(6);
   const entry = catalog.functions.find((f) => f.name === "computeOptimalModel");
-  expect(within(table).getByRole("link", { name: `${entry.file}:${entry.line}` })).toHaveAttribute("href", entry.sourceUrl);
+  expect(within(table).getByText(`${entry.file}:${entry.line}`,{exact:true})).toBeInTheDocument();
+  expect(document.querySelector('a[href*="github.com/"][href*="/blob/"]')).toBeNull();
+  expect(screen.queryByText("この版の実装を読む")).toBeNull();
   const download = screen.getByRole("link", { name: "関数一覧JSON" });
   expect(download).toHaveAttribute("download", "calculation-function-catalog.json");
   expect(JSON.parse(decodeURIComponent(download.getAttribute("href").split(",").slice(1).join(",")))).toEqual(catalog);
@@ -61,10 +63,15 @@ test("新稿計算表と受け渡し図から適切な関数と実引数に到�
   expect(flowTable()).toHaveTextContent("医療費助成");
   const discussion=screen.getByRole("table",{name:"収支の下落幅とは別に調べる制度上の変化点"});
   expect(discussion).toHaveTextContent("収支が下がったか否かを問わず");
-  for(const label of ["scanPaperChangePoints","assessPaperEducationClass","assessFunabashiMedicalCoverage"]){
+  for(const label of ["scanPaperChangePoints","assessPaperEducationClass","assessFunabashiMedicalCoverage","createPolicyOnlyClassifier","createAdditionalPolicyClassifier","buildPolicyOnlyMap"]){
     const target=targetFor(within(discussion).getByRole("link",{name:label}));
     expect(target).toBeInTheDocument();
     expect(targetFor(within(target).getByRole("link",{name:"↩ 考察：制度の変化点"}))).toBe(document.getElementById("calculation-flow-discussion"));
+  }
+  const extrema=within(current).getByRole("row",{name:/G：Eの給与点別/});
+  for(const name of ["groupCells","compareAllPatterns","comparePatternEnvelopes"]){
+    const target=targetFor(within(extrema).getByRole("link",{name}));
+    expect(targetFor(within(target).getByRole("link",{name:"↩ 新稿の計算式"}))).toBe(document.getElementById("calculation-flow-current"));
   }
   for(const link of within(current).getAllByRole("link")) expect(targetFor(link)).toBeInTheDocument();
   for(const link of within(screen.getByRole("list",{name:"通所支援の計算順"})).getAllByRole("link")) expect(targetFor(link)).toBeInTheDocument();

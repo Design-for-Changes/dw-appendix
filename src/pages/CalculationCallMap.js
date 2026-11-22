@@ -27,7 +27,7 @@ export default function CalculationCallMap({ catalog, entries, detailLink }) {
             {edges.map((e) => <div className="ccm-args" key={e.line + ":" + e.column}>
               <code>{entries.get(e.to)?.name}({e.arguments.join(", ")})</code>
               {e.resultUse && <small>返り値：{e.resultUse}</small>}
-              {e.sourceUrl ? <a href={e.sourceUrl} target="_blank" rel="noreferrer">呼出箇所：{e.line}行</a> : <small>呼出箇所：{e.line}行（ローカル版）</small>}
+              <small>呼出箇所：{e.line}行</small>
             </div>)}</details>
         </li>)}</ul>}
     </section>;
@@ -42,7 +42,7 @@ export default function CalculationCallMap({ catalog, entries, detailLink }) {
       {column(neighbours[0], 0)}<span className="ccm-arrow" aria-hidden="true">→</span>
       <section className="ccm-node" aria-live="polite"><small>選択中の関数</small><h4><code>{focus.name}</code></h4>
         <p>{focus.description}</p><p><b>入力</b><br/><code>{focus.signature}</code></p>
-        <p><b>返り値</b><br/>{focus.returns || "下の実装ソースを参照"}</p>
+        <p><b>返り値</b><br/>{focus.returns || "記載なし"}</p>
         {detailLink(focus)}</section>
       <span className="ccm-arrow" aria-hidden="true">→</span>{column(neighbours[1], 1)}
     </div>

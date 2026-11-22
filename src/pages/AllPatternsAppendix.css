@@ -1,0 +1,32 @@
+.all-patterns { color: #1c3035; }
+.all-patterns-count { margin-bottom: .85rem; }
+.all-patterns select, .all-patterns button {
+  background: white; color: #20383b; border: 1px solid #97aaaa; border-radius: 4px;
+  padding: .32rem .5rem; font: inherit;
+}
+.all-patterns button:not(:disabled) { cursor: pointer; }
+.all-patterns button:disabled { color: #747e7e; border-color: #d4dddd; }
+.all-patterns-conditions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.all-patterns-conditions fieldset { min-width: 0; flex: 1 1 15rem; max-width: 28rem; margin: 0;
+  padding: .45rem .8rem .6rem; border: 1px solid #c8d6d7; border-radius: 5px; }
+.all-patterns-conditions legend { font-weight: 700; padding: 0 .3rem; }
+.all-patterns-fee { display: grid; align-items: center; grid-template-columns: minmax(5rem, 1fr) auto;
+  gap: .25rem .7rem; margin-top: .45rem; }
+.all-patterns-fee label { grid-column: 1 / -1; font-size: .875rem; }
+.all-patterns-fee input { width: 100%; margin: 0; accent-color: #246459; }
+.all-patterns-fee output { font-variant-numeric: tabular-nums; }
+.all-patterns-summary, .all-patterns-pagination { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; }
+.all-patterns-summary { justify-content: space-between; margin: 1.25rem 0 .35rem; }
+.all-patterns-summary h3 { margin: 0; }
+.all-patterns-summary small { font-size: .875rem; font-weight: normal; }
+.all-patterns-scroll { overflow-x: auto; }
+.all-patterns-table { width: 100%; border-collapse: collapse; font-size: .875rem;
+  font-variant-numeric: tabular-nums; line-height: 1.4; }
+.all-patterns-table caption { text-align: left; padding: .2rem 0 .6rem; color: #42585c; }
+.all-patterns-table th, .all-patterns-table td { padding: .38rem .46rem; border-bottom: 1px solid #cfdbdc; }
+.all-patterns-table thead th { text-align: center; background: #eaf2f0; white-space: nowrap; }
+.all-patterns-table thead tr:first-child th:not(:first-child), .all-patterns-table .all-patterns-amount { border-left: 1px solid #b6c8c9; }
+.all-patterns-table tbody tr:nth-child(even) { background: #f7f9f9; }
+.all-patterns-table tbody td, .all-patterns-table tbody th { text-align: right; white-space: nowrap; }
+.all-patterns-table td.all-patterns-profile { text-align: left; }
+.all-patterns-table .all-patterns-amount { font-weight: 700; }

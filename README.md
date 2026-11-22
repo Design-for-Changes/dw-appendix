@@ -12,7 +12,7 @@ Web Appendix。障害児世帯モデルで、世帯主の給与に対する可�
 可処分所得を計算する。制度の所得制限や負担区分によって可処分所得が不連続に低下する
 地点を「崖」として表示する静的Webアプリケーションである。
 
-D・Eは医療費助成・就学奨励費を含む旧条件の参考計算。[G：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。医療費と就学奨励費はGの年間収支には算入しない。
+[E：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。[制度境界のみ（2D）](https://design-for-changes.github.io/dw-appendix/#system-boundaries)では、医療費助成や就学奨励費等を年額の収支に加えず、所得区分の境界を示す。[G：全パターン比較](https://design-for-changes.github.io/dw-appendix/#all-patterns)は、障害要件の組み合わせごとに、対照世帯との年間の可処分所得差の最低点・最高点を示す。
 
 ## 再現性
 - `src/calc/computePoint.js`：給与点ごとの計算を組み合わせる入口。税・社会保険・手当・医療・教育の計算は同ディレクトリのモジュールに分離。
@@ -32,6 +32,8 @@ npm start
 npm run build
 npm run verify
 ```
+
+本番ビルドは GitHub Pages と同じ `/dw-appendix/` に配置する。別のパスで配信する場合は、ビルド時に `PUBLIC_URL` をその絶対パスに指定する（例：ルート配信は `PUBLIC_URL=/ npm run build`）。
 
 e-Gov法令API Version 2から法令抽出母集団を再取得する場合は、次を実行する。
 
@@ -54,9 +56,9 @@ npm run fetch:egov-screening
 法令ごとの理由・根拠条文・原文リンクは `public/data/research/egov-law-screening.json` に収録する。
 自治体の参照資料は `public/data/research/municipal-source-list.json`。26市の基本資料に加え、実際に参照したPDF・個別制度案内・要綱を掲載し、市別の類型該当や○×表は公開しない。
 
-表A3は計算の流れからページ内の関数説明へ移動でき、関数説明から対応する処理・ソースへ辿れる。名前付き関数の引数・返却値・所在を検索でき、各関数への直接URLも利用できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。クラスは使用していない。
+表A3は計算の流れと関数説明を相互に参照できる。名前付き関数の引数・返却値・定義箇所を検索できる。`npm run generate:functions`でコメントと構文木から生成し、`npm run verify:functions`でソースのハッシュ・所在と照合する。
 
-Gの計算入口は `src/calc/revisionEngine.js`（`paper-2029`）。住民税の境界は `node --experimental-default-type=module scripts/audit-current-surface.mjs --tax-only`、全給与格子から図への受け渡しは同じコマンドから `--tax-only` を外して照合できる。H（`#child-eligibility-evidence`）は児童別の障害要件の根拠資料。
+Eの計算入口は `src/calc/revisionEngine.js`（`paper-2029`）。住民税の境界は `node --experimental-default-type=module scripts/audit-current-surface.mjs --tax-only`、全給与格子から図への受け渡しは同じコマンドから `--tax-only` を外して照合できる。D（`#child-eligibility-evidence`）は児童別の障害要件の根拠資料。
 
 ## ドキュメント
 - `docs/calculation-update-20261115.md`：制度式の更新、旧条件と改稿条件の区別、残る原典確認。

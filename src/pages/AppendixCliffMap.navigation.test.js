@@ -25,6 +25,7 @@ const pages = [
   { letter: "D", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
   { letter: "E", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
   F,
+  { letter: "G", title: "全パターン比較", hash: "#all-patterns", region: "全パターンの可処分所得差" },
 ];
 const simulator=pages.find(p=>p.hash==="#revision-scenarios");
 
@@ -99,7 +100,7 @@ test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Eを開
   expect(screen.queryByRole("region",{name:"表示ケース"})).toBeNull();
 });
 
-test("上部メニューはA〜Fの順で関数資料がシミュレーターの直後に並ぶ", () => {
+test("上部メニューはA〜Gの順で関数資料と全パターン比較が並ぶ", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(
@@ -107,7 +108,7 @@ test("上部メニューはA〜Fの順で関数資料がシミュレーターの
   );
 });
 
-test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをE内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
+test.each([["#salary-decision-map","boundaries"],["#system-boundaries","systems"],["#disability-income-difference","difference"]])("直リンク%sをE内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap/>);
   expect(pageButton(simulator)).toHaveAttribute("aria-pressed","true");

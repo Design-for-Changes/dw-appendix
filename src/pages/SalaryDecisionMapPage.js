@@ -2,6 +2,7 @@ import {useMemo} from "react";
 import {UNKNOWN_PLANE_NET_YEN} from "../calc/salaryPlaneRecovery";
 import {useSessionParameter} from "./salarySimulatorSession";
 import {useSalaryLevelContour} from "./salaryLevelContourState";
+import SalaryPlaneAxes,{WIDTH,HEIGHT,LEFT,RIGHT,TOP,BOTTOM,xPlot,yPlot,toSalaryPlanePath as toPath} from "./SalaryPlaneAxes";
 import "./salary-decision-map.css";
 
 const SYSTEMS=[
@@ -10,18 +11,13 @@ const SYSTEMS=[
   {id:"N02/N03",label:"通所等の負担上限",color:"#13764f",weight:2.5},
 ];
 const DROP="#302339",LEVEL="#a54d00";
-const WIDTH=1032,HEIGHT=720,LEFT=83,RIGHT=998,TOP=28,BOTTOM=639;
 const yen=n=>n.toLocaleString("ja-JP");
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-const xPlot=(v,max)=>LEFT+v/max*(RIGHT-LEFT),yPlot=(v,max)=>BOTTOM-v/max*(BOTTOM-TOP);
 
 // 縦の半目盛は世帯主給与の1万円増、横の半目盛は配偶者給与の1万円増を表す。
 export function endpointsForBoundary([a,b,c,d],x,y){
   if(a===c){const fixed=clamp(Math.round(y),Math.ceil(b),Math.floor(d));return [[Math.floor(a),fixed],[Math.ceil(a),fixed]];}
   const fixed=clamp(Math.round(x),Math.ceil(a),Math.floor(c));return [[fixed,Math.floor(b)],[fixed,Math.ceil(b)]];
-}
-function toPath(segments,max){
-  return segments.map(([a,b,c,d])=>"M"+xPlot(a,max).toFixed(3)+" "+yPlot(b,max).toFixed(3)+"L"+xPlot(c,max).toFixed(3)+" "+yPlot(d,max).toFixed(3)).join("");
 }
 function describeBoundary(calculator,from,to){
   const a=calculator.evaluate(...from),b=calculator.evaluate(...to);
@@ -86,7 +82,6 @@ function DecisionFigure({map,grid,calculator,household}){
     if(step===0)return;
     const [a,b,c,d]=geometry.lines[i];select(i,(a+c)/2,(b+d)/2);
   }
-  const ticks=Array.from({length:7},(_,i)=>i*max/6);
   return <figure className="decision-figure" aria-label="夫婦の給与収入と制度の変更点">
     <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}
       <li><i style={{background:DROP}}/>制度切替時の可処分所得の下落</li>
@@ -94,12 +89,7 @@ function DecisionFigure({map,grid,calculator,household}){
     </ul>
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
       <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。下落を選ぶと、その直前の可処分所得以上と未満の境界を表示します。</desc>
-      <rect x={LEFT} y={TOP} width={RIGHT-LEFT} height={BOTTOM-TOP} fill="white"/>
-      {ticks.map(t=><g key={t}><line x1={xPlot(t,max)} x2={xPlot(t,max)} y1={TOP} y2={BOTTOM} className="decision-grid"/><line x1={LEFT} x2={RIGHT} y1={yPlot(t,max)} y2={yPlot(t,max)} className="decision-grid"/>
-        <text x={xPlot(t,max)} y={BOTTOM+29} textAnchor="middle">{yen(t)}</text><text x={LEFT-12} y={yPlot(t,max)+5} textAnchor="end">{yen(t)}</text></g>)}
-      <path d={`M${LEFT} ${TOP}V${BOTTOM}H${RIGHT}`} stroke="#3b505a" fill="none"/>
-      <text className="decision-axis" x={(LEFT+RIGHT)/2} y={HEIGHT-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
-      <text className="decision-axis" transform={`translate(21 ${(TOP+BOTTOM)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+      <SalaryPlaneAxes max={max}/>
       {geometry.systems.map(s=><path key={s.id} data-system={s.id} d={s.path} fill="none" stroke={s.color} strokeWidth={s.weight} vectorEffect="non-scaling-stroke"/>)}
       <path data-outcome="drop" d={geometry.dropPath} fill="none" stroke={DROP} strokeWidth="1.4" vectorEffect="non-scaling-stroke"/>
       {levelPath&&<path data-outcome="level" d={levelPath} fill="none" stroke={LEVEL} strokeWidth="2.5" strokeDasharray="6 3" vectorEffect="non-scaling-stroke"/>}

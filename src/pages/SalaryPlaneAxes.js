@@ -1,0 +1,20 @@
+// Coordinates on both E salary planes are independent annual salaries in 万円.
+export const WIDTH=1032, HEIGHT=720, LEFT=83, RIGHT=998, TOP=28, BOTTOM=639;
+export const xPlot=(v,max)=>LEFT+v/max*(RIGHT-LEFT), yPlot=(v,max)=>BOTTOM-v/max*(BOTTOM-TOP);
+export function toSalaryPlanePath(segments,max,digits=3) {
+  return segments.map(([a,b,c,d])=>"M"+xPlot(a,max).toFixed(digits)+" "+yPlot(b,max).toFixed(digits)+
+    "L"+xPlot(c,max).toFixed(digits)+" "+yPlot(d,max).toFixed(digits)).join("");
+}
+export default function SalaryPlaneAxes({max}) {
+  const ticks=Array.from({length:7},(_,i)=>i*max/6);
+  return <>
+    <rect x={LEFT} y={TOP} width={RIGHT-LEFT} height={BOTTOM-TOP} fill="white"/>
+    {ticks.map(t=><g key={t}><line x1={xPlot(t,max)} x2={xPlot(t,max)} y1={TOP} y2={BOTTOM} className="decision-grid"/>
+      <line x1={LEFT} x2={RIGHT} y1={yPlot(t,max)} y2={yPlot(t,max)} className="decision-grid"/>
+      <text x={xPlot(t,max)} y={BOTTOM+29} textAnchor="middle">{t.toLocaleString("ja-JP")}</text>
+      <text x={LEFT-12} y={yPlot(t,max)+5} textAnchor="end">{t.toLocaleString("ja-JP")}</text></g>)}
+    <path d={`M${LEFT} ${TOP}V${BOTTOM}H${RIGHT}`} stroke="#3b505a" fill="none"/>
+    <text className="decision-axis" x={(LEFT+RIGHT)/2} y={HEIGHT-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
+    <text className="decision-axis" transform={`translate(21 ${(TOP+BOTTOM)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+  </>;
+}

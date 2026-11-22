@@ -15,7 +15,6 @@
 .ccm-steps li { position: relative; flex: 1 1 10rem; padding: .65rem; border-top: 3px solid #50768d; background: #f2f6f8; }
 .ccm-steps li:not(:last-child)::after { content: "→"; position: absolute; right: -1.1rem; top: .7rem; }
 .ccm-steps b,.ccm-steps small { display: block; }
-.ccm-source { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 24rem; overflow-y: auto; max-width: min(40rem,80vw); }
 @media(max-width:850px){
  .ccm-map { grid-template-columns: 1fr; }
  .ccm-arrow { transform: rotate(90deg); margin: 0 auto; }

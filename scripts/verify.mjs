@@ -36,7 +36,7 @@ function loadJSON(p) {
 }
 
 function loadTables() {
-  // useStaticTables.js が実行時にfetchするのと同じ静的テーブルをNode側で読み込む
+  // 旧版の再現に使う給与所得控除・基礎控除・社会保険料の静的表を読む。
   return {
     emp: loadJSON(path.join(DATA_DIR, "emp_deduction.json")),
     basicIT: loadJSON(path.join(DATA_DIR, "basic_it.json")),

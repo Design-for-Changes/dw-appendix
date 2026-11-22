@@ -4,32 +4,22 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {spawnSync} from 'node:child_process';
 import {extractCallEdges} from './function-call-edges.mjs';
 const require=createRequire(import.meta.url);
 const {parse}=require('@babel/parser');
 const traverse=require('@babel/traverse').default;
 const data=JSON.parse(fs.readFileSync('src/data/calculation-function-catalog.json','utf8'));
-assert.equal(data.schemaVersion,3);
+assert.equal(data.schemaVersion,4);
 assert.equal(new Set(data.functions.map(f=>f.id)).size,data.functions.length);
 assert.equal(data.functionCount,data.functions.filter(f=>f.kind==='function').length);
 assert.equal(data.classCount,data.functions.filter(f=>f.kind==='class').length);
 assert.ok(data.functionCount>40);
 const sources=new Map(), actualArguments=new Map();
-const published=new Map();
-const expectedUrl=(file,line)=>published.has(file)
-  ? `https://github.com/Design-for-Changes/dw-appendix/blob/${published.get(file)}/${file}#L${line}` : null;
 for(const item of data.sources){
-  assert.ok(/^src\/calc\/[^/]+\.js$|^scripts\/generate-(appendix-data|revision-scenarios)\.mjs$/.test(item.file));
+  assert.ok(/^src\/calc\/[^/]+\.js$|^scripts\/generate-(appendix-data|revision-scenarios|pattern-salary-envelopes)\.mjs$/.test(item.file));
   assert.ok(!item.file.endsWith('.test.js'));
   const text=fs.readFileSync(item.file,'utf8');
-  if(item.publishedCommit!==null){
-    assert.match(item.publishedCommit,/^[a-f0-9]{40}$/);
-    const ref=spawnSync('git',['show',item.publishedCommit+':'+item.file],{encoding:'utf8'});
-    assert.equal(ref.status,0,item.file);
-    assert.equal(ref.stdout,text,item.file+' pinned content');
-    published.set(item.file,item.publishedCommit);
-  }
+  assert.deepEqual(Object.keys(item).sort(),['file','sha256']);
   assert.equal(crypto.createHash('sha256').update(text).digest('hex'),item.sha256,item.file);
   sources.set(item.file,text.split('\n'));
   const ast=parse(text,{sourceType:'module',plugins:['jsx']});
@@ -42,8 +32,7 @@ for(const f of data.functions){
   assert.ok(f.description&&f.signature&&f.category,f.id);
   assert.ok(sources.has(f.file),f.file);
   assert.ok(sources.get(f.file)[f.line-1].includes(f.name),f.id+' source line');
-  assert.equal(f.sourceUrl,expectedUrl(f.file,f.line));
-  assert.ok(f.localSource?.length,f.id+' embedded source');
+  assert.ok(!('sourceUrl' in f) && !('localSource' in f),f.id);
   assert.ok(f.endLine>=f.line);
 }
 for(const name of ['buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','calcM01Detail','calcN04Detail','explainCliffCauses','compactBreakdown'])assert.ok(data.functions.some(f=>f.name===name),name);
@@ -53,12 +42,12 @@ const sites=new Set();
 for(const e of data.calls){
   const from=ids.get(e.from);
   assert.ok(from && ids.has(e.to),e.from+' -> '+e.to);
-  assert.ok(from.line<=e.line && e.line<=from.endLine,e.sourceUrl);
-  const line=sources.get(from.file)[e.line-1];
-  assert.ok(e.column>0 && e.column<=line.length && line[e.column-1].trim(),e.sourceUrl);
-  assert.equal(e.sourceUrl,expectedUrl(from.file,e.line));
-  assert.ok(Array.isArray(e.arguments) && e.arguments.every(a=>typeof a==='string'),e.sourceUrl);
   const site=from.file+':'+e.line+':'+e.column;
+  assert.ok(from.line<=e.line && e.line<=from.endLine,site);
+  const line=sources.get(from.file)[e.line-1];
+  assert.ok(e.column>0 && e.column<=line.length && line[e.column-1].trim(),site);
+  assert.ok(!('sourceUrl' in e),site);
+  assert.ok(Array.isArray(e.arguments) && e.arguments.every(a=>typeof a==='string'),site);
   assert.deepEqual(e.arguments,actualArguments.get(site),'source arguments '+site);
   assert.ok(!sites.has(site),'duplicate '+site);
   sites.add(site);
@@ -69,7 +58,7 @@ function matching(from,to) {
 assert.deepEqual(matching('src/calc/computePoint.js:computeSeries','src/calc/computePoint.js:computePoint').map(e=>e.arguments),[['ctx','x']]);
 const revised = 'src/calc/revisionEngine.js:';
 assert.deepEqual(matching(revised+'createRevisionCalculator.evaluate',revised+'revisionServiceBurden').map(e=>e.resultUse),['service に格納']);
-assert.ok(ids.get(revised+'createRevisionCalculator.evaluate').localSource.includes('revisionCashBenefits('));
+assert.deepEqual(matching(revised+'createRevisionCalculator.evaluate',revised+'revisionCashBenefits').map(e=>e.resultUse),['benefits に格納']);
 assert.ok(matching('src/calc/computePoint.js:computeSeries','src/calc/household.js:buildHousehold').length);
 assert.ok(matching('scripts/generate-appendix-data.mjs:detectCliffs','src/calc/cliffCauseAnalysis.js:explainCliffCauses').length);
 // Exercise lexical shadowing, immutable aliases, re-exports, and two calls on one line.

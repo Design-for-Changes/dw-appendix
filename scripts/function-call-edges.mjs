@@ -98,7 +98,6 @@ export function extractCallEdges(modules, symbolByNode) {
       calls.push({
         from, to, line, column: column + 1, resultUse,
         arguments: p.node.arguments.map(arg => code.slice(arg.start, arg.end)),
-        sourceUrl: `https://github.com/Design-for-Changes/dw-appendix/blob/main/${file}#L${line}`,
       });
     }});
   }

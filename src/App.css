@@ -9,9 +9,6 @@
   margin: 0 auto;
   padding: 20px 0 48px;
 }
-@media (min-width: 641px) {
-  .appendix-page-simulator { width:96%; }
-}
 
 .appendix-hero {
   padding: clamp(14px, 3vw, 28px) 0 10px;

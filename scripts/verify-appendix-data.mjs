@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GENERATED_DIR = path.join(ROOT, "public", "generated", "appendix");
 const SUMMARY_PATH = path.join(GENERATED_DIR, "summary.json.gz");
 const FIXTURES_PATH = path.join(ROOT, "fixtures", "cases.json");
-const PAGE_PATH = path.join(ROOT, "src", "pages", "AppendixCliffMap.js");
+const PAGE_PATH = path.join(ROOT, "src", "pages", "ArchivedCliffCalculation.js");
 const DISPLAY_TO_FIXTURE = { case1: "P1", case2: "P2", case3: "P3" };
 const EXPECTED_ADDITIONAL_NEED_WAN = {
   case1: 51.492,

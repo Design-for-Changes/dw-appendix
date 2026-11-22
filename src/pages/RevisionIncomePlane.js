@@ -4,10 +4,12 @@ import { createRevisionCalculator } from "../calc/revisionEngine";
 import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { RevisionSurface } from "./RevisionSurface";
 import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
+import PolicyBoundariesOnly from "./PolicyBoundariesOnly";
 import {useSalaryGraphDataset} from "./salaryGraphDataset";
 import { useSessionParameter } from "./salarySimulatorSession";
 import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
 import HouseholdCalculationTrace from "./HouseholdCalculationTrace";
+import ChildDayFeeSlider from "./ChildDayFeeSlider";
 import { CHILD_ELIGIBILITY_OPTIONS, childEligibilityId } from "../data/childEligibilityOptions";
 import "./revision-simulator.css";
 
@@ -20,6 +22,7 @@ const designUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JS
 const GRAPH_VIEWS = [
   ["income","可処分所得（3D）"],
   ["boundaries","制度境界・下落・同水準線（2D）"],
+  ["systems","制度境界のみ（2D）"],
   ["difference","可処分所得差"],
 ];
 
@@ -32,12 +35,8 @@ export function ChildFields({ index, child, update }) {
         update({tccaGrade, welfareEligible, taxStatus});
       }}>{CHILD_ELIGIBILITY_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select></label>
     </div>
-    <div className="revision-fee-row">
-      <label htmlFor={"day-fee-"+index}>通所支援の月額負担（多子軽減後・世帯上限前）</label>
-      <input id={"day-fee-"+index} type="range" min="0" max="37200" step="1" value={child.serviceAmountYen}
-        aria-valuetext={fmt(child.serviceAmountYen)+"円／月"} onChange={e=>update({serviceAmountYen:Number(e.target.value)})}/>
-      <output htmlFor={"day-fee-"+index}>{fmt(child.serviceAmountYen)}円{child.serviceAmountYen>0 && child.age>=3 && child.age<=5 ? " → 通所は無償" : ""}</output>
-    </div>
+    <ChildDayFeeSlider id={"day-fee-"+index} className="revision-fee-row" age={child.age}
+      value={child.serviceAmountYen} onChange={v=>update({serviceAmountYen:v})}/>
   </fieldset>;
 }
 
@@ -75,7 +74,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
   const inputKey=useMemo(()=>calculator ? JSON.stringify(inputs) : null,[calculator,inputs]);
   const drawn=inputKey !== null && lastDrawnKey === inputKey;
   // 給与格子は世帯条件ごとに一度だけ走査し、各図は同じ結果を使う。
-  const datasetState=useSalaryGraphDataset(inputs,drawn);
+  const datasetState=useSalaryGraphDataset(inputs,drawn && view!=="systems");
   // 未訪問の図は先回りで描画せず、一度開いた図は非表示状態のまま保持する。
   const [visited,setVisited]=useState([]);
   useEffect(()=>{
@@ -110,7 +109,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
       {children.map((c, i) => <ChildFields key={i} index={i} child={c} update={delta=>updateChild(i,delta)} />)}
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
-      <button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
+      {view!=="systems"&&<button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>}
     </details>
     <div className="revision-graph-tabs" role="tablist" aria-label="グラフの切り替え">
       {GRAPH_VIEWS.map(([id,label],index)=><button key={id} id={pointId+"-tab-"+id} type="button" role="tab"
@@ -118,7 +117,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
         onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
     </div>
     {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
-      {plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
+      {id==="systems" ? view==="systems"&&<PolicyBoundariesOnly inputs={inputs}/> : plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
         id==="difference"?<RevisionSurface {...sharedPlot} comparison/>:
         <RevisionSurface {...sharedPlot} {...{calculator,point,head,spouse,fixedTotal}} onSelectSalary={selectSalary}/>)}
     </div>)}

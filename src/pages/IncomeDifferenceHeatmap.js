@@ -1,5 +1,6 @@
 import {useEffect,useMemo,useRef,useState} from "react";
 import "./IncomeDifferenceHeatmap.css";
+import {DifferenceExtrema} from "./IncomeDifferenceReadout";
 import {DIFFERENCE_PALETTE,differenceHeatmapPixels} from "./prepareSalaryGraphDrawing.js";
 
 const W=1000,H=625,L=99,R=974,T=20,B=554;
@@ -54,7 +55,7 @@ function ExtremeOverlay({surface,sx,sy,valid}){
 }
 
 /** 各給与点の差をそのまま描く。指示点の金額は表示用Float32ではなく共有格子の円額を優先する。 */
-export default function IncomeDifferenceHeatmap({surface,differenceYen}){
+export default function IncomeDifferenceHeatmap({surface,grid,lookupPair,differenceYen=grid?.differenceYen}){
   const canvas=useRef(null),[failed,setFailed]=useState(false),[hover,setHover]=useState(null);
   const {width,heights}=surface,max=width-1;
   const stepTicks=useMemo(()=>ticks(max),[max]),bound=boundOf(surface);
@@ -90,7 +91,7 @@ export default function IncomeDifferenceHeatmap({surface,differenceYen}){
     <div className="diff-map-frame">
       <canvas ref={canvas} width={width} height={width} role="img" tabIndex="0" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入。色は障害の有無による可処分所得差"
         onPointerMove={e=>{const q=readPosition(e);setHover(old=>old?.[0]===q?.[0]&&old?.[1]===q?.[1]?old:q);}}
-        onPointerLeave={()=>setHover(null)} onClick={e=>setHover(readPosition(e))} onKeyDown={key}/>
+        onClick={e=>setHover(readPosition(e))} onKeyDown={key}/>
       <svg className="diff-map-axes" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" preserveAspectRatio="none">
         <rect x={L} y={T} width={R-L} height={B-T} fill="none" stroke="#6e8084"/>
         {stepTicks.map(x=><g key={x}><path d={`M${sx(x)} ${B}v6 M${L} ${sy(x)}h-6`} stroke="#486468"/>
@@ -108,6 +109,7 @@ export default function IncomeDifferenceHeatmap({surface,differenceYen}){
       </div>:<span><i style={{background:rgb(ZERO)}}/>0</span>}
       <span><i style={{background:rgb(MISS)}}/>算定外</span>
     </div>
-    {shown&&<div className="diff-map-readout">世帯主 {fmt(shown[0])}万円／配偶者 {fmt(shown[1])}万円　差 {signed(differenceYen?.[shown[1]*width+shown[0]]??Math.round(heights[shown[1]*width+shown[0]]*10000))}円／年</div>}
+    <DifferenceExtrema surface={surface} grid={grid} lookupPair={lookupPair} shown={shown&&{headWan:shown[0],spouseWan:shown[1],
+      differenceYen:differenceYen?.[shown[1]*width+shown[0]]}}/>
   </figure>;
 }

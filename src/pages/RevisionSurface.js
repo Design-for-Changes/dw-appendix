@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SalarySurfaceMesh from "./SalarySurfaceMesh";
-import { DifferenceExtrema } from "./IncomeDifferenceReadout";
+import {createDisabilityIncomeComparison} from "../calc/disabilityIncomeDifference";
 import IncomeDifferenceHeatmap from "./IncomeDifferenceHeatmap";
 
 const valueOf = (point) => point?.studyDisposableWan ?? null;
@@ -9,6 +9,11 @@ const valueOf = (point) => point?.studyDisposableWan ?? null;
 export function RevisionSurface({ inputs, head, spouse, point, calculator, onSelectSalary, fixedTotal=null, comparison=false, datasetState }) {
   const [result, setResult] = useState(null);
   const shared=datasetState!==undefined;
+  const lookupPair=useMemo(()=>{
+    if(shared||!comparison)return null;
+    let model;
+    return (headWan,spouseWan)=>(model??=createDisabilityIncomeComparison(inputs)).evaluate(headWan,spouseWan);
+  },[inputs,comparison,shared]);
   useEffect(() => {
     // nullも親が管理する「未描画」。タブの初回表示・再表示・進捗通知で二重計算しない。
     if(shared)return undefined;
@@ -35,8 +40,7 @@ export function RevisionSurface({ inputs, head, spouse, point, calculator, onSel
   const pending=state?.error ? <p role="status">{state.error}{typeof state.retry==="function" && <button type="button" onClick={state.retry}>再計算</button>}</p>
     : shared && !datasetState ? null : <p className="revision-surface-loading" role="status">1万円刻みで計算中：{state?.percent ?? 0}%</p>;
   if(comparison)return <section id="income-difference-plot" aria-label="可処分所得差の分布">{state?.surface?<>
-    <IncomeDifferenceHeatmap surface={state.surface} differenceYen={datasetState?.grid?.differenceYen}/>
-    <DifferenceExtrema surface={state.surface}/>
+    <IncomeDifferenceHeatmap surface={state.surface} grid={datasetState?.grid} lookupPair={lookupPair}/>
   </>:pending}</section>;
   return <figure id="salary-surface-plot" className="revision-surface" aria-label="夫婦の給与収入と世帯の可処分所得の3Dグラフ">
     {state?.surface?<SalarySurfaceMesh surface={state.surface} calculator={calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={valueOf(point)}/>:pending}

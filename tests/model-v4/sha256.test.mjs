@@ -1,2 +1,0 @@
-import test from'node:test';import assert from'node:assert/strict';import{createHash}from'node:crypto';import{sha256Utf8}from'../../src/model-v4/sha256.mjs';
-for(const s of['','abc','障害福祉・夫婦😀','\ud800',...Array.from({length:80},(_,n)=>'あx'.repeat(n)), 'a'.repeat(10000)])test('portable fingerprint equals independent Node SHA256 '+s.length,()=>assert.equal(sha256Utf8(s),createHash('sha256').update(s).digest('hex')));

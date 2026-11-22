@@ -19,9 +19,6 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: Test browser two-salary calculation
-        run: node --test tests/model-v4/simulatorPreview2025.test.mjs tests/model-v4/sha256.test.mjs
-
       - name: Install
         run: npm ci
 

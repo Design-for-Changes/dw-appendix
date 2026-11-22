@@ -37,7 +37,7 @@ test("給与点だけの移動では格子を再計算せず、世帯変更で�
   }
 });
 
-test("Jでは旧3D図を残し、同じ計算結果で追加の柱状図と平面図を切り替える",async()=>{
+test("差額タブには2D色分布だけを表示し、3D面・柱状図・表示形式切替を設けない",async()=>{
   const original=global.Worker;global.Worker=jest.fn();
   const worker={postMessage:jest.fn(),terminate:jest.fn()};createWorker.mockReset().mockReturnValue(worker);
   try{
@@ -46,10 +46,9 @@ test("Jでは旧3D図を残し、同じ計算結果で追加の柱状図と平�
     await waitFor(()=>expect(worker.postMessage).toHaveBeenCalledTimes(1));
     const e={headWan:1,spouseWan:0,differenceYen:50000,count:1};
     act(()=>worker.onmessage({data:{type:"complete",width:2,heights:new Float32Array([NaN,5,6,7]),min:5,max:7,validCount:3,negativeCount:0,minimum:e,maximum:{...e,differenceYen:70000}}}));
-    expect(screen.getByText("1/0/5")).toBeVisible();
-    expect(screen.getByText("追加柱状図 3点")).toBeVisible();
-    fireEvent.click(screen.getByRole("button",{name:"平面図"}));
-    expect(screen.getByText("1/0/5")).toBeVisible();
+    expect(screen.queryByTestId("mesh")).toBeNull();
+    expect(screen.queryByText(/追加柱状図/)).toBeNull();
+    expect(screen.queryByRole("button",{name:"平面図"})).toBeNull();
     expect(screen.getByText("追加平面図 3点")).toBeVisible();
     expect(worker.postMessage).toHaveBeenCalledTimes(1);
   }finally{if(original===undefined)delete global.Worker;else global.Worker=original;}
@@ -75,9 +74,8 @@ test("共有計算では未描画・進捗・失敗でも個別ワーカーを�
     expect(retry).toHaveBeenCalledTimes(1);
     first.unmount(); // 別タブへ。完了後に再マウントする。
     const second=render(view(complete,true));
-    expect(screen.getByTestId("mesh")).toHaveAttribute("data-width","3");
-    expect(screen.getByText("1/0/5")).toBeVisible();
-    expect(screen.getByText("追加柱状図 8点")).toBeVisible();
+    expect(screen.queryByTestId("mesh")).toBeNull();
+    expect(screen.getByText("追加平面図 8点")).toBeVisible();
     second.rerender(view(complete));
     expect(screen.getByTestId("mesh")).toHaveAttribute("data-width","2");
     expect(screen.getByText("1/0/105")).toBeVisible();

@@ -1,4 +1,4 @@
-// Reproduce the lower bound for Appendix J from the current model (not an observed population).
+// Reproduce the lower bound for Appendix D from the current model (not an observed population).
 // Run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/audit-difference-global-minimum.mjs
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
@@ -15,10 +15,9 @@ const floorYen=-12*maxMonthly;
 const fields=(p,age=10,fee=maxMonthly)=>({age,tccaGrade:p.tccaGrade,welfareEligible:p.welfareEligible,
   taxStatus:p.taxStatus,serviceUser:fee>0,serviceAmountYen:fee});
 const plain=profiles.find(p=>p.tccaGrade==="not"&&!p.welfareEligible&&p.taxStatus==="none");
-const roles={spouseDeductionClaimant:"head",welfareMaintainer:"highest-salary"};
-const household=(children,other={})=>({protocol,roles,children,serviceAmountYen:0,...other});
+const household=children=>({protocol,children,serviceAmountYen:0});
 const witness={headWan:0,spouseWan:1500,age:10,profile:plain.id,taxDependentOf:"spouse",servicePerUserMonthlyYen:maxMonthly,
-  allowanceRecipient:"spouse",welfareMaintainer:roles.welfareMaintainer};
+  allowanceRecipient:"spouse",welfareMaintainer:"spouse",spouseDeductionClaimant:"spouse"};
 
 // For fixed wages and tax-filing relationships, only the two disability deductions change the taxes:
 // the tax exemption limit depends on the number of dependants, not their disability classifications.
@@ -32,41 +31,38 @@ const witness={headWan:0,spouseWan:1500,age:10,profile:plain.id,taxDependentOf:"
 // spouse's income bracket/claim status matter. No Cartesian product of unneeded programme settings.
 function taxAudit(){
   const limits=[620000,...REVISION_SPOUSE_DEDUCTION_TABLE.map(([wan])=>wan*UNIT)];
-  function partnerRepresentatives(claim){
-    const byKey=new Map(), threshold=claim?limits:[620000];
+  function partnerRepresentatives(){
+    const byKey=new Map();
     for(let salary=0;salary<=maxSalary;salary++){
       const {salaryIncomeYen}=calculatePaperSalaryTaxInputs2029({annualSalaryYen:salary*UNIT,eligibleForIncomeAdjustment:true});
       // Joint origin is not allowed. If a class also has a positive representative,
       // retain the positive wage so that the parent with 0 salary is checked too.
-      const key=threshold.findIndex(limit=>salaryIncomeYen<=limit);
+      const key=limits.findIndex(limit=>salaryIncomeYen<=limit);
       if(!byKey.has(key) || byKey.get(key)===0)byKey.set(key,salary);
     }
     return [...byKey.values()];
   }
-  const reps=[partnerRepresentatives(false),partnerRepresentatives(true)];
+  const partnerWages=partnerRepresentatives();
   let individualTaxComparisons=0, taxProfiles=0;
   for(let count=1;count<=3;count++)for(let older=0;older<=count;older++){
-    for(const [claim,partnerWages] of reps.entries()){
-      const spec=children=>household(children,{roles:{...roles,spouseDeductionClaimant:claim?"head":"none"}});
       const children=Array.from({length:count},(_,i)=>fields(plain,i<older?17:10,0));
-      const baseline=createRevisionCalculator(spec(children));
+      const baseline=createRevisionCalculator(household(children));
       const baselineTax=partnerWages.map(b=>Int32Array.from({length:maxSalary+1},(_,a)=>baseline.evaluate(a,b).details.headTax.totalTaxYen));
       for(let ordinary=0;ordinary<=count;ordinary++)for(let special=0;special<=count-ordinary;special++){
         if(ordinary+special===0)continue; // identical tax inputs; no difference even for zero dependants
-        const variant=createRevisionCalculator(spec(children.map((c,i)=>({...c,
+        const variant=createRevisionCalculator(household(children.map((c,i)=>({...c,
           taxStatus:i<ordinary?"ordinary":i<ordinary+special?"special":"none"}))));
         taxProfiles++;
         // Tax deductions are assigned only to the higher earner (the head on an exact tie).
         // The low earner's tax inputs remain identical on both sides of the comparison.
         for(const [index,b] of partnerWages.entries())for(let a=Math.max(1,b);a<=maxSalary;a++){
           const t=variant.evaluate(a,b).details.headTax.totalTaxYen;
-          assert.ok(t<=baselineTax[index][a],`Tax burden increased: ${[a,b,count,older,ordinary,special,claim]}`);
+          assert.ok(t<=baselineTax[index][a],`Tax burden increased: ${[a,b,count,older,ordinary,special]}`);
           individualTaxComparisons++;
         }
       }
-    }
   }
-  return {taxProfiles,partnerWagesWithoutSpouseDeduction:reps[0],partnerWagesWithSpouseDeduction:reps[1],individualTaxComparisons};
+  return {taxProfiles,partnerWages,individualTaxComparisons};
 }
 
 // Attain the lower bound with a valid dropdown selection. Service use does not automatically
@@ -77,6 +73,8 @@ for(const {children:n,minimumYen} of published){
   const d=createRevisionCalculator(h).evaluate(witness.headWan,witness.spouseWan).details;
   assert.deepEqual(d.roles.taxDependentOf,Array(n).fill("spouse"));
   assert.equal(d.roles.allowanceRecipient,"spouse");
+  assert.equal(d.roles.welfareMaintainer,"spouse");
+  assert.equal(d.roles.spouseDeductionClaimant,"spouse");
   const p=createDisabilityIncomeComparison(h).evaluate(witness.headWan,witness.spouseWan);
   assert.deepEqual([p.taxSavingYen,p.insuranceSavingYen,p.extraBenefitsYen,p.extraServiceYen,p.differenceYen],
     [0,0,0,12*maxMonthly,floorYen]);
@@ -106,5 +104,5 @@ assert.deepEqual(counts,[1,2,3].map(n=>profiles.length**n));
 // Given the nonnegative savings checked above, negative iff charge > savings + extra benefits;
 // charge=0 cannot produce a negative value. The cap, not the number of children, bounds the annual loss.
 const tax=taxAudit();
-console.log(JSON.stringify({scope:"Appendix J paper-2029; salary grid, not population",floorYen,
+console.log(JSON.stringify({scope:"Appendix D paper-2029; salary grid, not population",floorYen,
   perChildProfiles:profiles.length,orderedFamilyCounts:counts,witness,negativeAtPoint,atFloorAtPoint,tax},null,2));

@@ -13,7 +13,7 @@ function exactYen(value){
 /**
  * 固定した家族条件につき、x＝世帯主給与、y＝配偶者給与を1万円刻みで一度だけ走査する。
  * 各点で必要な実世帯・対照世帯の計算を一度ずつ（条件が同一なら計一度）行い、すべての図に共用する。
- * @param {object} inputs Gの世帯条件。給与範囲の既定は両軸0～1,500万円、原点は除外。
+ * @param {object} inputs モデル世帯の条件。給与範囲の既定は両軸0～1,500万円、原点は除外。
  * @param {object} options maxSalaryWan、onProgress(done,total)、createCalculator（関数の検証用）。
  */
 export function buildSalaryGraphDataset(inputs,{maxSalaryWan=1500,onProgress,createCalculator}={}){

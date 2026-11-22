@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import AppendixCliffMap from "./AppendixCliffMap";
 
 let mockReferencePagesLoading = false;
 
 jest.mock("../hooks/useAppendixData", () => ({
-  useAppendixData: () => ({ data: [], ready: false, selectedPoint: null }),
+  useAppendixData: () => {throw new Error("現行ページから旧系列を取得してはならない");},
 }));
 jest.mock("./IncomeAssessmentAppendix", () => () => mockReferencePagesLoading
   ? <p role="status">所得判定資料を読み込んでいます。</p>
@@ -21,12 +21,11 @@ const pages = [
   { letter: "A", title: "法令検索・採否", hash: "#law-screening", region: "法令検索" },
   { letter: "B", title: "調査対象・参照資料", hash: "#municipal-sources", region: "参照資料" },
   { letter: "C", title: "所得区分・判定方法（船橋市例）", hash: "#income-assessment", region: "所得判定詳細" },
-  { letter: "D", title: "現行制度", hash: "#current" },
-  { letter: "E", title: "調整モデル（探索例）", hash: "#optimal" },
-  { letter: "F", title: "関数資料", hash: "#calculation-functions", region: "表A3　計算処理・関数一覧" },
-  { letter: "G", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
-  { letter: "H", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
+  { letter: "D", title: "モデル世帯シミュレーター", hash: "#revision-scenarios", region: "モデル条件" },
+  { letter: "E", title: "障害要件の組み合わせ", hash: "#child-eligibility-evidence", region: "障害要件の組み合わせ" },
 ];
+const F={letter:"F",title:"関数資料",hash:"#calculation-functions"};
+const simulator=pages.find(p=>p.letter==="D");
 
 beforeEach(() => {
   mockReferencePagesLoading = false;
@@ -35,20 +34,24 @@ beforeEach(() => {
 });
 afterEach(() => { window.history.replaceState(null, "", "/"); });
 
-test("関数一覧は独立したWeb Appendix Fに表示し、Dには含めない", () => {
-  window.history.replaceState(null, "", "/#calculation-functions");
+test("関数一覧はメインタブに出さず、本文末尾のFリンクから開く", async() => {
   render(<AppendixCliffMap />);
-  expectSelectedPage(pages.find((page) => page.letter === "F"));
+  const footerLink=screen.getByRole("link",{name:/Web Appendix F\s+関数資料/});
+  expect(footerLink.closest("footer")).toBe(document.querySelector("main").lastElementChild);
+  expect(footerLink).toHaveAttribute("href",F.hash);
+  fireEvent.click(footerLink);
+  await waitFor(()=>expectSelectedPage(F));
+  expect(footerLink).toHaveAttribute("aria-current","page");
   expect(screen.getByRole("heading", { name: "表A3　計算処理・関数一覧" })).toBeInTheDocument();
   expect(screen.queryByRole("region", { name: "表示ケース" })).not.toBeInTheDocument();
-  fireEvent.click(pageButton(pages[3]));
+  fireEvent.click(pageButton(simulator));
   expect(screen.queryByRole("heading", { name: "表A3　計算処理・関数一覧" })).not.toBeInTheDocument();
 });
 
 test.each(["#calculation-flow-medical", "#calculation-function-list", "#calculation-function-src%2Fcalc%2FoptimalModel.js%3AcomputeOptimalModel"])("%sの直接URLでもFを選択する", (hash) => {
   window.history.replaceState(null, "", "/" + hash);
   render(<AppendixCliffMap />);
-  expectSelectedPage(pages[5]);
+  expectSelectedPage(F);
 });
 
 function pageButton(page) {
@@ -88,13 +91,15 @@ test.each(pages)("$hashの直接リンクで$letterの見出し・番号・押�
   }
 });
 
-test("空hashは従来の現行制度を表示し、ページ番号はDになる", () => {
+test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Dを開く", hash => {
+  window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap />);
-  expectSelectedPage(pages[3]);
-  expect(window.location.hash).toBe("");
+  expectSelectedPage(simulator);
+  expect(window.location.hash).toBe(hash ? simulator.hash : "");
+  expect(screen.queryByRole("region",{name:"表示ケース"})).toBeNull();
 });
 
-test("メニューはAからHに並び、各グラフはGに属する", () => {
+test("メニューはA・B・C・D・Eのみで、各グラフはDに属する", () => {
   render(<AppendixCliffMap />);
   const buttons = within(screen.getByRole("navigation", { name: "表示内容" })).getAllByRole("button");
   expect(buttons.map((button) => button.textContent.trim())).toEqual(
@@ -102,13 +107,13 @@ test("メニューはAからHに並び、各グラフはGに属する", () => {
   );
 });
 
-test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをG内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
+test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("既存の直リンク%sをD内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap/>);
-  expect(pageButton(pages[6])).toHaveAttribute("aria-pressed","true");
+  expect(pageButton(simulator)).toHaveAttribute("aria-pressed","true");
   expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent(view);
-  fireEvent.click(pageButton(pages[5]));
-  fireEvent.click(pageButton(pages[6]));
+  fireEvent.click(pageButton(pages[0]));
+  fireEvent.click(pageButton(simulator));
   expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent(view);
   expect(window.location.hash).toBe(hash);
   fireEvent.click(screen.getByRole("button",{name:"2Dへ"}));
@@ -122,9 +127,9 @@ test("タブ切替でURL・共通見出し・押下状態が同時に更新さ�
     expect(window.location.hash).toBe(page.hash);
     expectSelectedPage(page);
   });
-  fireEvent.click(pageButton(pages[3]));
-  expect(window.location.hash).toBe("#current");
-  expectSelectedPage(pages[3]);
+  fireEvent.click(pageButton(simulator));
+  expect(window.location.hash).toBe(simulator.hash);
+  expectSelectedPage(simulator);
 });
 
 test.each(pages.slice(0, 3))("$letterの資料読込前でも共通見出しが表示される", (page) => {

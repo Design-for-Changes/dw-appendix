@@ -10,7 +10,7 @@ function uncalculated(status,reasons) {
 /**
  * 同一の給与・家族構成・扶養申告先の2世帯を比較。対照世帯では全児童の障害要件と
  * 障害福祉サービスの利用のみを解除し、通常の税、社会保険料、児童手当は両世帯とも計算する。
- * @param {object} inputs Gのモデル世帯条件（子ども1～3人、各人の税扶養・利用額等）。
+ * @param {object} inputs シミュレーターのモデル世帯条件（子ども1～3人、各人の税扶養・利用額等）。
  * @returns {object} 比較用の evaluate(世帯主給与万円,配偶者給与万円) と対照世帯の設定。
  */
 export function createDisabilityIncomeComparison(inputs,{createCalculator=createRevisionCalculator}={}) {
@@ -44,7 +44,7 @@ export function createDisabilityIncomeComparison(inputs,{createCalculator=create
     return {status:"calculated",reasons:[],allowanceRecipient:da.roles.allowanceRecipient,differenceYen,withYen,withoutYen,taxSavingYen,extraBenefitsYen,
       extraServiceYen,insuranceSavingYen};
   }
-  /** Gの世帯収支・制度判定と、対照世帯との差を、同じ二給与の評価結果から返す。 */
+  /** モデル世帯の収支・制度判定と、対照世帯との差を、同じ二給与の評価結果から返す。 */
   function evaluatePair(headWan,spouseWan) {
     if(headWan===0 && spouseWan===0) {
       const reasons=["夫婦とも給与0円の原点は試算対象外です。"];

@@ -1,6 +1,7 @@
 import { createRevisionCalculator, classifyRevisionFalls } from "./revisionEngine";
 import { paperComparisonInputs } from "./paperComparison";
 import { getResidentTaxParts } from "./taxes";
+import { calculatePaperSalaryTaxInputs2029 } from "./paperSalaryTaxInputs2029";
 
 // 本稿の計算経路だけを検証する。期待値を税・手当モジュールで再計算しない。
 // 船橋市の特児表および千葉県の手当表（令和8年度の手当額を固定する比較）:
@@ -12,6 +13,41 @@ const sibling = {age:8, tccaGrade:"not", welfareEligible:false, taxStatus:"none"
 const family = {children:[qualifying,sibling]};
 const calc = (extra={}) => createRevisionCalculator({...paperComparisonInputs(family,3100),...extra});
 const annualYen = (wan) => Math.round(wan*10000);
+
+describe("Gの給与点ごとの自動判定（旧研究条件の明示指定とは区別）",()=>{
+  const automatic=createRevisionCalculator({protocol:"paper-2029",serviceAmountYen:0,children:[qualifying]});
+  test.each([
+    [131,131,"head","ordinary",380000], [132,132,"head","special",380000],
+    [600,131,"head","ordinary",380000], [131,600,"spouse","ordinary",380000],
+    [132,600,"spouse","special",380000], [202,600,"spouse","special",30000],
+    [203,600,"spouse","none",0], [203,203,"head","none",0],
+    [131,1210,"spouse","ordinary",130000], [131,1211,"spouse","none",0],
+  ])("給与 %i・%i 万円：%s の配偶者等控除 %s（%i 円）、児福の受給者は子",(a,b,higher,kind,it)=>{
+    const {details}=automatic.evaluate(a,b), lower=higher==="head"?"spouse":"head";
+    expect(details.roles).toMatchObject({spouseDeductionClaimant:higher,allowanceRecipient:higher,taxDependentOf:[higher],welfareMaintainer:higher});
+    for(const period of ["current","previous"]){
+      expect(details[higher+"Tax"].spouseDeduction[period]).toMatchObject({kind,it});
+      expect(details[lower+"Tax"].spouseDeduction[period]).toMatchObject({kind:"none",it:0,lt:0});
+    }
+    expect(details.benefits.specialChildAllowance.checks.slice(0,2)).toMatchObject([
+      {role:"claimant",id:higher},{role:"spouse",id:lower}]);
+    expect(details.benefits.welfareChildren[0].checks).toMatchObject([
+      {role:"recipient",id:"child1",incomeYen:0},{role:"maintainer",id:higher}]);
+  });
+  test("全給与格子で低給与側のみが配偶者等控除の所得要件を満たす点はない",()=>{
+    // 国税庁 No.1191・1195。給与のみ、2人に同じ給与所得算式を使う本試算の範囲。
+    const incomes=Array.from({length:1501},(_,w)=>calculatePaperSalaryTaxInputs2029({
+      annualSalaryYen:w*10000,eligibleForIncomeAdjustment:true}).salaryIncomeYen);
+    const eligible=(own,partner)=>own<=10000000 && partner<=1330000;
+    let counterexamples=0;
+    for(let a=0;a<incomes.length;a++) for(let b=0;b<incomes.length;b++){
+      if(a===b) continue;
+      const high=incomes[Math.max(a,b)], low=incomes[Math.min(a,b)];
+      if(eligible(low,high) && !eligible(high,low))counterexamples++;
+    }
+    expect(counterexamples).toBe(0);
+  });
+});
 
 describe("所得割の非課税限度直上の減額（地方税法附則3条の3第2・5項）",()=>{
   // 給与のみ。限度1,470,000円、課税標準362,000円、人的控除差100,000円。

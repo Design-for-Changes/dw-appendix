@@ -1,6 +1,17 @@
 import {fireEvent,render,screen,within} from "@testing-library/react";
 import SalaryDecisionMapPage,{endpointsForBoundary} from "./SalaryDecisionMapPage";
 import {createRevisionCalculator} from "../calc/revisionEngine";
+import {useSalaryLevelContour} from "./salaryLevelContourState";
+
+jest.mock("./salaryLevelContourState",()=>({useSalaryLevelContour:jest.fn()}));
+// This view test supplies a contour explicitly. Its numerical construction and worker cache
+// are exercised separately; no Worker or script URL should be opened while selecting a line.
+beforeEach(()=>{
+  sessionStorage.clear();
+  useSalaryLevelContour.mockImplementation((_grid,levelYen)=>levelYen==null?
+    {status:"idle",segments:[],levelYen:null}:
+    {status:"ready",segments:[[580,940,590,940]],levelYen});
+});
 
 function inputsFor(child={}) {
   return {protocol:"paper-2029",serviceAmountYen:0,
@@ -9,15 +20,15 @@ function inputsFor(child={}) {
 }
 function draw(child){
   const inputs=inputsFor(child),calculator=createRevisionCalculator(inputs);
-  const props={inputs,calculator,head:600,spouse:200,fixedTotal:null,onSelectSalary:jest.fn()};
+  const props={inputs,calculator};
   const view=render(<SalaryDecisionMapPage {...props} datasetState={{type:"progress",percent:40}}/>);
-  function finish(segments={},outcomeLines) {
+  function finish(segments={},outcomeLines,grid) {
     const layers=["N01-1","N01-2","N02/N03"].map(id=>({id,segments:segments[id]||[]}));
     const empty=()=>({drop:[],recovery:[],dropMasks:[],recoveryDropIndex:[]});
     const map={maxSalaryWan:1500,validCount:2253000,layers,outcomeLines:outcomeLines??{head:empty(),spouse:empty()}};
-    view.rerender(<SalaryDecisionMapPage {...props} datasetState={{type:"complete",map}}/>);
+    view.rerender(<SalaryDecisionMapPage {...props} datasetState={{type:"complete",map,grid}}/>);
   }
-  return {calculator,finish};
+  return {calculator,finish,unmount:view.unmount};
 }
 const plot=()=>screen.getByRole("img",{name:/横軸：世帯主.*縦軸：配偶者/});
 
@@ -27,7 +38,7 @@ test("縦線・横線を正しい給与軸の1万円差に戻し、線分端や�
   expect(endpointsForBoundary([10.5,1499.5,1500,1499.5],1500,1499.5)).toEqual([[1500,1499],[1500,1500]]);
 });
 
-test("Gの描画結果を使い、各制度の線を夫婦の給与全域に色分けして表示する",()=>{
+test("共通の給与格子を使い、各制度の線を夫婦の給与全域に色分けして表示する",()=>{
   const {finish}=draw();
   finish({"N01-1":[[0,906.5,300.5,906.5]],"N01-2":[[599.5,906.5,600.5,906.5]],"N02/N03":[[811.5,199.5,811.5,200.5]]});
   const map=plot();
@@ -45,6 +56,7 @@ test("Gの描画結果を使い、各制度の線を夫婦の給与全域に色�
   fireEvent.keyDown(map,{key:"Enter"});
   expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+  expect(screen.queryByRole("radio")).not.toBeInTheDocument();
   expect(screen.queryByRole("slider")).not.toBeInTheDocument();
   expect(screen.queryByRole("button",{name:/描画/})).not.toBeInTheDocument();
   expect(screen.queryByText(/断面|固定給与/)).not.toBeInTheDocument();
@@ -56,37 +68,46 @@ test("該当境界がなければ平面図に切替なしと表示する",()=>{
   expect(screen.getByText("この条件では対象制度の切り替わりはありません。")).toBeVisible();
 });
 
-test("増収方向を切り替えると、児福停止時の下落線と初回回復線が同じXY平面内の正しい給与位置に描かれる",()=>{
+test("両方向の実下落を同じXY平面に示し、線をクリックして下落幅・前後の給与と可処分所得・同水準線を読む",()=>{
   const {calculator,finish}=draw();
   const horizontal=y=>[599.5,y-.5,600.5,y-.5],vertical=x=>[x-.5,599.5,x-.5,600.5];
   const pair=line=>({drop:[line(907)],recovery:[line(937)],dropMasks:[2],recoveryDropIndex:[0]});
-  // 世帯主／配偶者とも600万円以上ではこの世帯条件の給与軸を交換しても同じ算定値となる。
-  // 906万円直前水準を907〜936万円は下回り、937万円で初めて回復する。
+  // 給与軸を交換しても同じ906→907万円で児福が停止する例。
+  // 同水準線の基準は下落直前の実年額であり、下落後の年額でも下落差そのものでもない。
   for(const axis of ["head","spouse"]) {
     const net=w=>Math.round((axis==="head"?calculator.evaluate(w,600):calculator.evaluate(600,w)).studyDisposableWan*10000);
-    expect([net(906),net(907),net(937)]).toEqual([11419020,11227552,11425160]);
-    for(let w=908;w<937;w++)expect(net(w)).toBeLessThan(net(906));
+    expect([net(906),net(907)]).toEqual([11419020,11227552]);
   }
-  finish({"N01-2":[vertical(907),horizontal(907)]},{head:pair(vertical),spouse:pair(horizontal)});
+  const grid={width:1501,netYen:new Int32Array(1501*1501)};
+  for(const w of [906,907])for(const [x,y] of [[600,w],[w,600]])grid.netYen[y*grid.width+x]=Math.round(calculator.evaluate(x,y).studyDisposableWan*10000);
+  finish({"N01-2":[vertical(907),horizontal(907)]},{head:pair(vertical),spouse:pair(horizontal)},grid);
   const map=plot(),base=map.querySelector("rect");
-  function pathAt(kind){
-    const el=map.querySelector(`path[data-outcome="${kind}"]`);
-    expect(el).not.toBeNull();
-    return el.getAttribute("d").match(/-?\d+(?:\.\d+)?/g).map(Number);
-  }
-  function checkPath(kind,[x1,y1,x2,y2]){
-    const left=Number(base.getAttribute("x")),top=Number(base.getAttribute("y"));
-    const width=Number(base.getAttribute("width")),height=Number(base.getAttribute("height"));
-    const expected=[left+x1*width/1500,top+(1500-y1)*height/1500,left+x2*width/1500,top+(1500-y2)*height/1500];
-    const pts=pathAt(kind);
-    expect(pts).toHaveLength(4);
-    pts.forEach((n,i)=>expect(n).toBeCloseTo(expected[i],2));
-  }
-  fireEvent.click(screen.getByRole("radio",{name:"世帯主の給与を増やす"}));
-  checkPath("drop",vertical(907));checkPath("recovery",vertical(937));
-  fireEvent.click(screen.getByRole("radio",{name:"配偶者の給与を増やす"}));
-  checkPath("drop",horizontal(907));checkPath("recovery",horizontal(937));
-  expect(map).toBe(plot());
+  const left=Number(base.getAttribute("x")),top=Number(base.getAttribute("y"));
+  const width=Number(base.getAttribute("width")),height=Number(base.getAttribute("height"));
+  const sx=x=>left+x*width/1500,sy=y=>top+(1500-y)*height/1500;
+  const svgCoords=([x1,y1,x2,y2])=>[sx(x1),sy(y1),sx(x2),sy(y2)];
+  const segs=p=>Array.from(p.getAttribute("d").matchAll(/M([^M]+)/g),m=>m[1].match(/-?\d+(?:\.\d+)?/g).map(Number));
+  const sameSegment=(actual,expected)=>actual.length===4&&actual.every((n,i)=>Math.abs(n-expected[i])<.01);
+  const drops=map.querySelectorAll("path[data-outcome='drop']");
+  expect(drops).toHaveLength(1);
+  for(const seg of [vertical(907),horizontal(907)])expect(segs(drops[0]).some(actual=>sameSegment(actual,svgCoords(seg)))).toBe(true);
+  expect(map.querySelector("path[data-outcome='level']")).toBeNull();
+  map.getBoundingClientRect=()=>({left:0,top:0,width:1032,height:720});
+  fireEvent.click(map,{clientX:sx(600),clientY:sy(906.5)});
+  const caption=map.closest("figure").querySelector("figcaption");
+  for(const term of ["下落幅","191,468円","下落前","11,419,020円","下落後","11,227,552円","同水準線"])expect(caption).toHaveTextContent(term);
+  expect(caption).toHaveTextContent(/600[,、]\s*906/);
+  expect(caption).toHaveTextContent(/600[,、]\s*907/);
+  expect(useSalaryLevelContour).toHaveBeenLastCalledWith(grid,11419020);
+  const level=map.querySelector("path[data-outcome='level']");
+  expect(level).not.toBeNull();
+  expect(segs(level).some(pts=>sameSegment(pts,svgCoords([580,940,590,940])))).toBe(true);
+  fireEvent.keyDown(map,{key:"ArrowRight"});
+  expect(caption).toHaveTextContent(/906[,、]\s*600/);
+  expect(caption).toHaveTextContent(/907[,、]\s*600/);
+  expect(screen.queryByRole("radio")).toBeNull();
+  expect(screen.queryByRole("spinbutton")).toBeNull();
+  expect(screen.queryByText(/点P/)).toBeNull();
 });
 
 test("世帯主の増収で特児が停止する境界では実際の隣接座標と判定を示す",()=>{
@@ -111,16 +132,41 @@ test("配偶者の増収により児福が停止する境界では、先に停�
   expect(after.details.benefits.welfare).toBe(0);
   finish({"N01-2":[[379.5,y-.5,380.5,y-.5]]});
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
-  expect(within(map).queryByText("特別児童扶養手当：支給 → 停止")).toBeNull();
-  expect(within(map).getByText("障害児福祉手当：支給 → 停止")).toBeVisible();
-  expect(map.closest("figure").querySelector("figcaption")).toHaveTextContent(`（380, ${y-1}）→（380, ${y}）万円`);
+  const caption=map.closest("figure").querySelector("figcaption");
+  expect(within(caption).queryByText("特別児童扶養手当：支給 → 停止")).toBeNull();
+  expect(within(caption).getByText("障害児福祉手当：支給 → 停止")).toBeVisible();
+  expect(caption).toHaveTextContent(new RegExp(`380[,、]\\s*${y-1}`));
+  expect(caption).toHaveTextContent(new RegExp(`380[,、]\\s*${y}`));
 });
 
 test("サービスの実負担が1,000円のままでも負担上限の切り替わりを示す",()=>{
   const {calculator,finish}=draw({tccaGrade:"not",welfareEligible:false,taxStatus:"none",serviceAmountYen:1000});
   expect([811,812].map(x=>calculator.evaluate(x,200).details.service.monthly)).toEqual([1000,1000]);
   expect([811,812].map(x=>calculator.evaluate(x,200).details.service.householdCapYen)).toEqual([4600,37200]);
-  finish({"N02/N03":[[811.5,199.5,811.5,200.5]]});
+  const net=[811,812].map(x=>Math.round(calculator.evaluate(x,200).studyDisposableWan*10000));
+  expect(net).toEqual([7694776,7702028]); // 区分が上がっても年間可処分所得は下落していない。
+  const grid={width:1501,netYen:new Int32Array(1501*1501)};
+  grid.netYen[200*grid.width+811]=net[0];grid.netYen[200*grid.width+812]=net[1];
+  finish({"N02/N03":[[811.5,199.5,811.5,200.5]]},undefined,grid);
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
-  expect(within(map).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
+  const caption=map.closest("figure").querySelector("figcaption");
+  expect(within(caption).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
+  expect(caption).not.toHaveTextContent("下落幅");
+  expect(map.querySelector("path[data-outcome='level']")).toBeNull();
+  expect(useSalaryLevelContour).toHaveBeenLastCalledWith(grid,null);
+});
+
+test("別タブから戻ると同じ世帯の境界選択を復元し、異なる世帯条件へは引き継がない",()=>{
+  const child={tccaGrade:"not",welfareEligible:false,taxStatus:"none",serviceAmountYen:1000};
+  const lines={"N02/N03":[[811.5,199.5,811.5,200.5]]};
+  const caption=()=>plot().closest("figure").querySelector("figcaption");
+  const first=draw(child);first.finish(lines);
+  fireEvent.keyDown(plot(),{key:"ArrowRight"});
+  expect(caption()).toHaveTextContent("一般1（月4,600円） → 一般2（月37,200円）");
+  first.unmount();
+  const same=draw(child);same.finish(lines);
+  expect(caption()).toHaveTextContent("一般1（月4,600円） → 一般2（月37,200円）");
+  same.unmount();
+  const changed=draw({...child,age:12});changed.finish(lines);
+  expect(caption()).not.toHaveTextContent("一般1（月4,600円） → 一般2（月37,200円）");
 });

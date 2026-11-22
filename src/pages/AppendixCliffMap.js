@@ -14,12 +14,10 @@ const APPENDIX_PAGES = [
   { mode: "laws", letter: "A", label: "法令検索・採否", hash: "#law-screening" },
   { mode: "sources", letter: "B", label: "調査対象・参照資料", hash: "#municipal-sources" },
   { mode: "rules", letter: "C", label: "所得区分・判定方法（船橋市例）", hash: "#income-assessment" },
-  { mode: "current", letter: "D", label: "現行制度", hash: "#current" },
-  { mode: "optimal", letter: "E", label: "調整モデル（探索例）", hash: "#optimal" },
-  { mode: "functions", letter: "F", label: "関数資料", hash: "#calculation-functions" },
-  { mode: "scenarios", letter: "G", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
-  { mode: "eligibility", letter: "H", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
+  { mode: "scenarios", letter: "D", label: "モデル世帯シミュレーター", hash: "#revision-scenarios" },
+  { mode: "eligibility", letter: "E", label: "障害要件の組み合わせ", hash: "#child-eligibility-evidence" },
 ];
+const FUNCTION_REFERENCE={mode:"functions",letter:"F",label:"関数資料",hash:"#calculation-functions"};
 
 const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",difference:"#disability-income-difference"};
 function graphForHash(hash){
@@ -29,7 +27,7 @@ function graphForHash(hash){
 function viewModeForHash(hash) {
   if (graphForHash(hash)) return "scenarios";
   if (hash.startsWith("#calculation-function") || hash.startsWith("#calculation-flow")) return "functions";
-  return APPENDIX_PAGES.find((page) => page.hash === hash)?.mode || "current";
+  return APPENDIX_PAGES.find((page) => page.hash === hash)?.mode || "scenarios";
 }
 
 const X_MIN = 200;
@@ -1215,7 +1213,7 @@ function BreakdownPanel({ point }) {
         wide
         confidence={service.confidence || "strict"}
         source={CALCULATION_SOURCES.serviceBurden}
-        note="この従来入力は児童別候補の最大値を使う旧条件の参考計算であり、兄弟の実費合算を再現したものではない。改稿用Gの明示利用条件では、児童別R_iを合計してから世帯上限を適用する。一般2の旧10,406円は児童単位の事後負担平均である。判定用所得割は税徴収額に年少扶養控除等相当額を補正する。"
+        note="この従来入力は児童別候補の最大値を使う旧条件の参考計算であり、兄弟の実費合算を再現したものではない。モデル世帯シミュレーターの利用条件では、児童別R_iを合計してから世帯上限を適用する。一般2の旧10,406円は児童単位の事後負担平均である。判定用所得割は税徴収額に年少扶養控除等相当額を補正する。"
         rows={[
           {
             key: "E1",
@@ -1321,6 +1319,7 @@ export default function AppendixCliffMap() {
   const graphView=(viewMode==="scenarios" && graphForHash(window.location.hash)) || (Object.hasOwn(GRAPH_HASH,lastGraph)?lastGraph:"income");
   useEffect(() => {
     const followHash = () => {
+      if(["#current","#optimal"].includes(window.location.hash)) window.history.replaceState(null,"",GRAPH_HASH.income);
       setViewMode(viewModeForHash(window.location.hash));
       const graph=graphForHash(window.location.hash);
       if(graph)setLastGraph(graph);
@@ -1329,13 +1328,7 @@ export default function AppendixCliffMap() {
     window.addEventListener("hashchange", followHash);
     return () => window.removeEventListener("hashchange", followHash);
   }, [setLastGraph]);
-  const [selectedId, setSelectedId] = useState("case1");
-  const [selectedSalary, setSelectedSalary] = useState(900);
-  const appendixData = useAppendixData(selectedId, selectedSalary);
-  const { data, ready, selectedPoint } = appendixData;
-
-  const selected = data.find((d) => d.id === selectedId) || data[0];
-  const activePage = APPENDIX_PAGES.find((page) => page.mode === viewMode);
+  const activePage = viewMode==="functions"?FUNCTION_REFERENCE:APPENDIX_PAGES.find((page) => page.mode === viewMode);
   const selectViewMode = (mode) => {
     setViewMode(mode);
     const hash = mode==="scenarios" ? GRAPH_HASH[graphView] : APPENDIX_PAGES.find((page) => page.mode === mode).hash;
@@ -1346,13 +1339,6 @@ export default function AppendixCliffMap() {
     window.history.replaceState(null,"",GRAPH_HASH[graph]);
     setLastGraph(graph);
   };
-  const caseAccent = selected?.color || "#9aa7ad";
-  const caseSectionStyle = {
-    "--case-accent": caseAccent,
-    "--case-bg": tintWhite(caseAccent, 0.86),
-    "--case-card": tintWhite(caseAccent, 0.96),
-  };
-
   return (
     <main className={"App appendix-page" + (viewMode==="scenarios" ? " appendix-page-simulator" : "")}>
       <section className="appendix-hero">
@@ -1380,7 +1366,26 @@ export default function AppendixCliffMap() {
         <a href={viewMode==="scenarios"?GRAPH_HASH[graphView]:activePage.hash}>このページへのリンク</a>
       </header>
 
-      {(viewMode === "current" || viewMode === "optimal") && <p className="research-note">D・Eは従来3ケースの入力条件による参考計算です。医療費の旧代表値と旧就学奨励費条件を含み、改稿用の採用条件とは区別します。改稿用の条件とシミュレーターは<a href="#revision-scenarios" onClick={() => selectViewMode("scenarios")}>Web Appendix G</a>に示します。</p>}
+      {viewMode === "scenarios" ? <RevisionScenariosAppendix graphView={graphView} onGraphViewChange={selectGraph}/> :
+       viewMode === "functions" ? <CalculationReferenceAppendix/> :
+       viewMode === "eligibility" ? <ChildEligibilityEvidence/> :
+       viewMode === "laws" ? <ResearchDataAppendix/> :
+       viewMode === "rules" ? <IncomeAssessmentAppendix/> : <MunicipalSourcesAppendix/>}
+      <footer><a href={FUNCTION_REFERENCE.hash} aria-current={viewMode==="functions"?"page":undefined}>Web Appendix F　関数資料</a></footer>
+    </main>
+  );
+}
+
+// 以前の計算・検証の再現用。公開ナビゲーションからは呼ばず、旧系列のデータを取得しない。
+export function ArchivedCliffCalculation({viewMode="current"}) {
+  const [selectedId,setSelectedId]=useState("case1");
+  const [selectedSalary,setSelectedSalary]=useState(900);
+  const appendixData=useAppendixData(selectedId,selectedSalary);
+  const {data,ready,selectedPoint}=appendixData;
+  const selected=data.find(d=>d.id===selectedId)||data[0];
+  const caseAccent=selected?.color || "#9aa7ad";
+  const caseSectionStyle={"--case-accent":caseAccent,"--case-bg":tintWhite(caseAccent,.86),"--case-card":tintWhite(caseAccent,.96)};
+  return <>
 
       {(viewMode === "current" || viewMode === "optimal") && <section className="appendix-controls" aria-label="表示ケース">
         {data.map((c) => {
@@ -1400,7 +1405,7 @@ export default function AppendixCliffMap() {
         })}
       </section>}
 
-      {viewMode === "eligibility" ? <ChildEligibilityEvidence /> : viewMode === "scenarios" ? <RevisionScenariosAppendix graphView={graphView} onGraphViewChange={selectGraph}/> : viewMode === "functions" ? <CalculationReferenceAppendix /> : viewMode === "laws" ? <ResearchDataAppendix /> : viewMode === "rules" ? <IncomeAssessmentAppendix /> : viewMode === "sources" ? <MunicipalSourcesAppendix /> : !ready ? (
+      {!ready ? (
         <section className="appendix-panel">
           <div className="appendix-empty">
             {appendixData.error ? "表示データを読み込めませんでした。" : "表示データを読み込んでいます。"}
@@ -1499,6 +1504,5 @@ export default function AppendixCliffMap() {
           </section>
         </>
       )}
-    </main>
-  );
+  </>;
 }

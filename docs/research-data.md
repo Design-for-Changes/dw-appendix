@@ -11,12 +11,11 @@
 | Web Appendix A | 法令検索・採否 | `#law-screening` |
 | Web Appendix B | 調査対象・参照資料 | `#municipal-sources` |
 | Web Appendix C | 所得区分・判定方法（船橋市例） | `#income-assessment` |
-| Web Appendix D | 現行制度 | `#current` |
-| Web Appendix E | 調整モデル（探索例） | `#optimal` |
+| Web Appendix D | モデル世帯シミュレーター | `#revision-scenarios` |
+| Web Appendix E | 障害要件の組み合わせ | `#child-eligibility-evidence` |
 | Web Appendix F | 関数資料 | `#calculation-functions` |
-| Web Appendix G | モデル条件・感度分析 | `#revision-scenarios` |
 
-表A1〜表A3は表番号として維持し、ページ記号とは区別する。旧URLの直接リンクは引き続き利用できる。記号を指定しない従来の入口は現行制度（D）を表示する。
+表A1〜表A3は表番号として維持し、ページ記号とは区別する。入口と旧リンク `#current`・`#optimal` はモデル世帯シミュレーター（D）を表示する。関数資料（F）へのリンクは末尾に置く。
 
 ## 表A3　計算内容と関数の対応
 

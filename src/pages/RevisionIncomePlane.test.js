@@ -12,7 +12,7 @@ jest.mock("./salaryGraphDataset",()=>({__esModule:true,useSalaryGraphDataset:(_i
 
 beforeEach(()=>window.sessionStorage.clear());
 
-test("Gの3図は一つの世帯格子・描画操作・点Pを共用し、再訪は描画済みコンポーネントを再利用する",()=>{
+test("3図は給与格子を共用するが点Pは可処分所得3D専用で、他の図からその値を書き換えない",()=>{
   const subscribe=jest.fn(),unsubscribe=jest.fn(),state={type:"progress",percent:37};
   const dataset=jest.spyOn(graphDataset,"useSalaryGraphDataset").mockImplementation(function useTestDataset(inputs,drawn){
     useEffect(()=>{if(drawn){subscribe(inputs);return unsubscribe;}},[inputs,drawn]);
@@ -20,8 +20,7 @@ test("Gの3図は一つの世帯格子・描画操作・点Pを共用し、再�
   });
   const surface=jest.spyOn(surfaceModule,"RevisionSurface").mockImplementation(({comparison,head,spouse})=>
     <div data-testid={comparison?"difference-plot":"income-plot"}>{head},{spouse}</div>);
-  const boundaries=jest.spyOn(boundaryModule,"default").mockImplementation(({head,spouse,onSelectSalary})=>
-    <button data-testid="boundary-plot" onClick={()=>onSelectSalary(906,600)}>{head},{spouse}</button>);
+  const boundaries=jest.spyOn(boundaryModule,"default").mockImplementation(()=><div data-testid="boundary-plot"/>);
   const tab=name=>screen.getByRole("tab",{name});
   try{
     renderWithPoint();
@@ -30,18 +29,21 @@ test("Gの3図は一つの世帯格子・描画操作・点Pを共用し、再�
     expect(surface).not.toHaveBeenCalled();expect(boundaries).not.toHaveBeenCalled();
     drawGraph();
     const initial=screen.getByTestId("income-plot");expect(initial).toBeVisible();
+    change(salaryNumber("世帯主"),"906");change(salaryNumber("配偶者"),"600");
     expect(subscribe).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("boundary-plot")).not.toBeInTheDocument();
     expect(screen.queryByTestId("difference-plot")).not.toBeInTheDocument();
     fireEvent.click(tab(/制度境界/));
     const boundary=screen.getByTestId("boundary-plot");expect(boundary).toBeVisible();
     expect(initial).not.toBeVisible();
-    fireEvent.click(boundary);
-    expect(salaryNumber("世帯主")).toHaveValue(906);expect(salaryNumber("配偶者")).toHaveValue(600);
+    expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
+    expect(boundaries.mock.lastCall[0]).not.toHaveProperty("onSelectSalary");
     fireEvent.click(tab("可処分所得差"));
     const difference=screen.getByTestId("difference-plot");
-    expect(difference).toBeVisible();expect(difference).toHaveTextContent("906,600");
-    expect(screen.getByText("可処分所得差（年額）")).toBeVisible();
+    expect(difference).toBeVisible();
+    expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
+    expect(surface.mock.calls.filter(([p])=>p.comparison).every(([p])=>!p.onSelectSalary)).toBe(true);
+    expect(screen.queryByText("全設定での最低差・最高差")).toBeNull();
     fireEvent.click(tab("可処分所得（3D）"));
     expect(screen.getByTestId("income-plot")).toBe(initial);expect(initial).toBeVisible();
     expect(screen.getByTestId("difference-plot")).toBe(difference);
@@ -60,12 +62,12 @@ test("外部ナビからの表示指定とタブの選択要求を区別し、�
   const changeView=jest.fn();
   const {rerender}=render(<RevisionIncomePlane graphView="difference" onGraphViewChange={changeView}/>);
   expect(screen.getByRole("tab",{name:"可処分所得差"})).toHaveAttribute("aria-selected","true");
-  change(salaryNumber("配偶者"),"600");
+  expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
   fireEvent.keyDown(screen.getByRole("tab",{name:"可処分所得差"}),{key:"Home"});
   expect(changeView).toHaveBeenCalledWith("income");
   rerender(<RevisionIncomePlane graphView="income" onGraphViewChange={changeView}/>);
   expect(screen.getByRole("tab",{name:"可処分所得（3D）"})).toHaveAttribute("aria-selected","true");
-  expect(salaryNumber("配偶者")).toHaveValue(600);
+  expect(salaryNumber("配偶者")).toHaveValue(0);
   expect(screen.queryByText("可処分所得差（年額）")).not.toBeInTheDocument();
 });
 
@@ -94,8 +96,8 @@ test("独立の整数給与2軸で両端を含み、格子と任意の1点は別
   expect(salaryBounds(2800)).toEqual({ min: 1300, max: 1500 });
 });
 
-test.each([["G",false],["J",true]])("%s：給与入力と1万円刻みのスライダーを双方向に連動し、総額固定・空欄からの復帰も同じ点Pに反映",(_page,comparison)=>{
-  render(<RevisionIncomePlane comparison={comparison}/>);
+test("3Dの給与入力と1万円刻みのスライダーを双方向に連動し、総額固定・空欄からの復帰も同じ点Pに反映",()=>{
+  render(<RevisionIncomePlane/>);
   const p=within(screen.getByRole("region",{name:"点P"}));
   const [hn,sn]=["世帯主","配偶者"].map(parent=>salaryNumber(parent,p));
   const [hr,sr]=["世帯主","配偶者"].map(parent=>salarySlider(parent,p));
@@ -124,8 +126,7 @@ test.each([["G",false],["J",true]])("%s：給与入力と1万円刻みのスラ�
   change(hr,"901");values(901,1099);
   expect(fixed).toBeChecked();
   expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
-  if(comparison)expect(p.getByText("可処分所得差（年額）")).toBeVisible();
-  else expect(savedPoint()).toMatchObject({headSalaryWan:901,spouseSalaryWan:1099,result:{status:"calculated"}});
+  expect(savedPoint()).toMatchObject({headSalaryWan:901,spouseSalaryWan:1099,result:{status:"calculated"}});
 });
 
 test("総額固定で配分を変え、入力範囲外の結果を残さない", () => {
@@ -177,14 +178,14 @@ test("点Pは初期表示から可視で、3Dの境界選択が両方の給与�
   } finally { surface.mockRestore(); }
 });
 
-test("同じタブで再表示すると子ども別の条件・通所額、申告条件、点Pと総額固定を復元する", () => {
+test("同じタブで再表示すると子ども別の条件・通所額、点Pと総額固定を復元する", () => {
   const first=renderWithPoint();
   setChildCount(2);
   change(child(2).getByLabelText("年齢"),"16");
   change(combination(2),"1:yes:special");
   change(serviceSlider(1),"1100"); change(serviceSlider(2),"3200");
-  change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
-  change(screen.getByLabelText("障害児福祉手当の主たる生計維持者"),"spouse");
+  expect(screen.queryByLabelText("配偶者控除・配偶者特別控除を申告する親")).toBeNull();
+  expect(screen.queryByLabelText("障害児福祉手当の主たる生計維持者")).toBeNull();
   change(salaryNumber("世帯主"),"460");
   change(salaryNumber("配偶者"),"120");
   fireEvent.click(screen.getByRole("checkbox",{name:/総額を固定/}));
@@ -306,9 +307,9 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   let p=savedPoint();
   expect(p.inputs.protocol).toBe("paper-2029");
   expect(p.inputs).not.toHaveProperty("insurance");
-  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"head",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"});
+  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"highest-salary",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"});
   expect(savedChildren(p).map(c=>c.taxDependentOf)).toEqual(["highest-salary","highest-salary"]);
-  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"spouse",taxDependentOf:["spouse","spouse"],welfareMaintainer:"spouse"});
+  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"spouse",taxDependentOf:["spouse","spouse"],welfareMaintainer:"spouse",spouseDeductionClaimant:"spouse"});
   expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
   expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
   expect(p.result.details.insurance.spouse.status).toBe("employee");
@@ -320,9 +321,7 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",taxDependentOf:["head","head"],welfareMaintainer:"head"});
   expect(savedPoint().result.details.benefits.additionalSupportedCount).toBe(0);
   expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
-  change(screen.getByLabelText("障害児福祉手当の主たる生計維持者"),"spouse");
-  change(screen.getByLabelText("配偶者控除・配偶者特別控除を申告する親"),"none");
-  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"spouse",spouseDeductionClaimant:"none"});
+  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"head",spouseDeductionClaimant:"head"});
   for(const w of ["1","129","130"]) {
     change(salaryNumber("配偶者"),w);
     expect(savedPoint().result.details.insurance.spouse.status).toBe("employee");
@@ -337,34 +336,30 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
 test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]])(
   "旧固定受給者 %s と個別申告を廃止し、児童の年齢・等級等は保持する", (oldRecipient,taxDependentOf,newHeadHigher)=>{
     const key="dw-appendix:salary-surface:v1:";
-    if(oldRecipient)window.sessionStorage.setItem(key+"roles",JSON.stringify({spouseDeductionClaimant:"head",allowanceRecipient:oldRecipient,welfareMaintainer:"highest-salary"}));
+    if(oldRecipient)window.sessionStorage.setItem(key+"roles",JSON.stringify({spouseDeductionClaimant:newHeadHigher?"spouse":"none",allowanceRecipient:oldRecipient,welfareMaintainer:newHeadHigher?"spouse":"head"}));
     window.sessionStorage.setItem(key+"children",JSON.stringify([{age:8,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:0,taxDependentOf,maintainedByRecipient:true}]));
     const {unmount}=renderWithPoint();
     expect(child(1).queryByRole("checkbox",{name:/追加申告/})).toBeNull();
-    change(salaryNumber("世帯主"),newHeadHigher?"600":"400");
-    change(salaryNumber("配偶者"),"500");
+    change(salaryNumber("世帯主"),newHeadHigher?"600":"100");
+    change(salaryNumber("配偶者"),newHeadHigher?"100":"600");
     const actual=newHeadHigher?"head":"spouse";
     const p=savedPoint();
-    expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual]});
+    expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual],spouseDeductionClaimant:actual,welfareMaintainer:actual});
+    expect(p.result.details[actual+"Tax"].spouseDeductionITYen).toBe(380000);
+    expect(p.result.details[(newHeadHigher?"spouse":"head")+"Tax"].spouseDeductionITYen).toBe(0);
     expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
     expect(savedChildren(p)[0]).toMatchObject({age:8,tccaGrade:"2",taxStatus:"special",taxDependentOf:"highest-salary",maintainedBy:null});
     expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("taxDependentOf");
     expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("maintainedByRecipient");
-    expect(JSON.parse(window.sessionStorage.getItem(key+"roles")).allowanceRecipient).toBe("highest-salary");
+    expect(JSON.parse(window.sessionStorage.getItem(key+"roles"))).toEqual({allowanceRecipient:"highest-salary",spouseDeductionClaimant:"highest-salary",welfareMaintainer:"highest-salary"});
     unmount(); renderWithPoint(); expect(savedPoint()).toEqual(p);
   });
 
-test("差額ページの点Pも、その給与点で計算に用いた受給資格者・税扶養先を表示する",()=>{
+test("差額ページには点Pの設定・詳細や全設定の極値を出さない",()=>{
   render(<RevisionIncomePlane comparison/>);
-  const p=within(screen.getByRole("region",{name:"点P"}));
-  change(salaryNumber("世帯主",p),"132");
-  change(salaryNumber("配偶者",p),"841");
-  expect(p.getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
-  change(salaryNumber("世帯主",p),"841");
-  expect(p.getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
-  change(salaryNumber("世帯主",p),"0");
-  change(salaryNumber("配偶者",p),"0");
-  expect(p.queryByText(/特児の受給資格者・子の税扶養/)).toBeNull();
+  expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
+  expect(screen.queryByText("全設定での最低差・最高差")).toBeNull();
+  expect(screen.queryByLabelText("差額の内訳")).toBeNull();
 });
 
 test("児童別の通所スライダーは0円なら利用なし、正額なら合算後に世帯上限を一度だけ適用する",()=>{

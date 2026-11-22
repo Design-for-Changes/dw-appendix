@@ -28,6 +28,8 @@ for (const children of process.argv.includes("--tax-only")?[]:fixtures) {
     const parents=[d.headTax,d.spouseTax];
     const owner=x>=y?"head":"spouse";
     assert.equal(d.roles.allowanceRecipient,owner);
+    assert.equal(d.roles.spouseDeductionClaimant,owner);
+    assert.equal(d.roles.welfareMaintainer,owner);
     assert(d.roles.taxDependentOf.length===children.length && d.roles.taxDependentOf.every(id=>id===owner));
     const taxed=parents.some(t=>t.residentTax.perCapitaYen>0 || t.residentTax.incomeLevyYen>0);
     const assess=parents.reduce((v,t,j)=>v+Math.max(0,t.residentTax.municipalIncomeLevyYen-
@@ -93,19 +95,44 @@ expected("配偶者所得割：世帯主132万・配偶者182万",right.details.
 // +10,000 gross -48 insurance; benefits, service fees and taxes are unchanged.
 expected("この隣接2点の可処分所得増減（円）",Math.round((right.studyDisposableWan-left.studyDisposableWan)*10000),9952);
 
-// A=181→182万, B=825万: A's municipal levy rises 23,200→23,700; B's remains 276,500.
-// The 19,800 adjustment for the 10-year-old belongs to B (tax parent). The 280,000 threshold
-// is bracketed by 279,900→280,400. A:B taxes = 43,600:936,700 → 44,500:936,700.
+// B receives the spouse special deduction, with the amount set by A's salary income:
+// https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1195.htm
+// These four handwritten table rows are specific to this family; no calculator output
+// is used to generate the oracle. A's salary income is gross less 690,000; B's is
+// 8,250,000 × 90% − 1,100,000 = 6,325,000. Monthly standard pay: A 150,000/160,000;
+// B 680,000. Health/care/support: 5.79%, pension: 9.15%, employment: 0.5% of actual pay.
+// https://www.kyoukaikenpo.or.jp/assets/R8_12chiba.pdf
+// For the 4 points A owes zero national income tax. B's national taxable income is
+// floor_1000(6,325,000 − 1,260,348 − allowance − 620,000); the 20% bracket
+// subtracts 427,500 yen before × 1.021 and truncation below 100 yen.
+// Local: floor_1000(income − social insurance − allowance − 430,000); each parent's
+// adjustment is 2,500. Split the resulting levy 6:4, truncate below 100 yen for each
+// jurisdiction, then add 5,000 flat taxes. Final service test subtracts 19,800
+// from B's city levy for the single 10-year-old. The child receives no TCCA here.
 const serviceModel=model([child(10,"2",false,"none",10406)]);
-for (const [a,cityA,levy,cap,annual,net] of [
-  [181,23200,279900,4600,55200,10060000-43600-936700-277968-1260348+120000-55200],
-  [182,23700,280400,37200,124872,10070000-44500-936700-278016-1260348+120000-124872],
+for (const [a,insuranceA,allowance,cityA,taxA,cityB,nationalB,localB,cap] of [
+  // At the former crossing both sides are now below 280,000 (267,300 → 267,800).
+  [181,277968,210000,23200,43600,263900,428100,444800,4600],
+  [182,278016,210000,23700,44500,263900,428100,444800,4600],
+  // A's income rises from 1,250,000 to 1,260,000: the allowance changes at the
+  // same step as the service cap. 29,800+269,900−19,800 = 279,900;
+  // 30,400+272,900−19,800 = 283,500.
+  [194,296544,110000,29800,54700,269900,448500,454800,4600],
+  [195,296592,60000,30400,55700,272900,458700,459800,37200],
 ]) {
   const p=serviceModel.evaluate(a,825),d=p.details, id="（世帯主"+a+"万・配偶者825万）";
+  const levy=cityA+cityB-19800,annual=12*Math.min(10406,cap);
+  const net=(a+825)*10000-taxA-nationalB-localB-insuranceA-1260348+120000-annual;
+  expected("配偶者特別控除（高給与の親）"+id,d.spouseTax.spouseDeduction.current.it,allowance);
+  expected("高給与の親の所得税等"+id,d.spouseTax.incomeTaxYen,nationalB);
+  expected("高給与の親の住民税等"+id,d.spouseTax.residentTaxYen,localB);
   expected("世帯主の市民税所得割"+id,d.headTax.residentTax.municipalIncomeLevyYen,cityA);
-  expected("配偶者の市民税所得割"+id,d.spouseTax.residentTax.municipalIncomeLevyYen,276500);
+  expected("配偶者の市民税所得割"+id,d.spouseTax.residentTax.municipalIncomeLevyYen,cityB);
   expected("通所の判定所得割"+id,d.service.assessmentLevyYen,levy);
   expected("通所の月額上限"+id,d.service.householdCapYen,cap);
   expected("年間の通所自己負担"+id,d.service.annual,annual);
   expected("住民税・通所負担をともに反映した可処分所得"+id,Math.round(p.studyDisposableWan*10000),net);
+  const flipped=serviceModel.evaluate(825,a);
+  expected("夫婦の給与を入れ替えた場合の判定所得割"+id,flipped.details.service.assessmentLevyYen,levy);
+  expected("夫婦の給与を入れ替えた場合の可処分所得"+id,Math.round(flipped.studyDisposableWan*10000),net);
 }

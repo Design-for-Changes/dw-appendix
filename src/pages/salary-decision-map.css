@@ -1,6 +1,4 @@
 .decision-figure{margin:1rem 0;max-width:none;color:#20333d}
-.decision-direction{display:flex;gap:1.5rem;flex-wrap:wrap}
-.decision-direction label{display:inline-flex;align-items:center;gap:.35rem}
 .decision-legend{display:flex;flex-wrap:wrap;gap:.55rem 1.6rem;list-style:none;padding:0;margin:.7rem 0;font-size:1rem;font-weight:600}
 .decision-legend li,.decision-figure figcaption span{display:inline-flex;align-items:center;gap:.45rem}
 .decision-legend i,.decision-figure figcaption i{display:inline-block;width:1.6rem;height:3px}
@@ -8,10 +6,7 @@
 .decision-figure svg:focus-visible{outline:2px solid #31596a;outline-offset:2px}
 .decision-figure text{fill:#243b46;font:16px system-ui,sans-serif;font-variant-numeric:tabular-nums}
 .decision-figure text.decision-axis{font-weight:650;font-size:18px}
-.decision-figure text.decision-callout-title{font-size:14px;font-weight:650}
-.decision-figure text.decision-callout-label{font-size:14px}
 .decision-grid{stroke:#dce4e5;stroke-width:1;vector-effect:non-scaling-stroke}
 .decision-figure figcaption{font-size:.97rem;line-height:1.7;min-height:2rem;font-variant-numeric:tabular-nums}
 .decision-figure figcaption span{margin-inline-start:1.2rem}
-.decision-caption-selected{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 @media print{.decision-page>.revision-conditions{display:none}.decision-figure{break-inside:avoid}.decision-figure svg{width:100%}.decision-figure figcaption{min-height:0}}

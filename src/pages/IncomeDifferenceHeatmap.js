@@ -28,14 +28,13 @@ function ticks(n){
 }
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
-/** Jの3D面と同一の全給与格子を平面に投影。点Pを動かしてもラスターは描き直さない。 */
-export default function IncomeDifferenceHeatmap({surface,head,spouse,onSelectSalary,fixedTotal=null}){
+/** 各給与点の差をそのまま描く。指示点の金額は表示用Float32ではなく共有格子の円額を優先する。 */
+export default function IncomeDifferenceHeatmap({surface,differenceYen}){
   const canvas=useRef(null),[failed,setFailed]=useState(false),[hover,setHover]=useState(null);
   const {width,heights}=surface,max=width-1;
   const stepTicks=useMemo(()=>ticks(max),[max]),bound=boundOf(surface);
   const sx=v=>L+(v+.5)/width*(R-L),sy=v=>B-(v+.5)/width*(B-T);
   const valid=(x,y)=>Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<width&&y<width&&(x!==0||y!==0)&&Number.isFinite(heights[y*width+x]);
-  const pointOK=valid(head,spouse),minX=fixedTotal==null?0:Math.max(0,fixedTotal-max),maxX=fixedTotal==null?max:Math.min(max,fixedTotal);
   useEffect(()=>{
     setHover(null);
     try{
@@ -48,15 +47,7 @@ export default function IncomeDifferenceHeatmap({surface,head,spouse,onSelectSal
     const box=e.currentTarget.getBoundingClientRect();if(!box.width||!box.height)return null;
     const fx=(e.clientX-box.left)/box.width,fy=1-(e.clientY-box.top)/box.height;
     if(fx<0||fx>1||fy<0||fy>1)return null;
-    let x=clamp(Math.floor(fx*width),0,max),y=clamp(Math.floor(fy*width),0,max);
-    if(fixedTotal!=null && x+y!==fixedTotal){
-      if(minX>maxX)return null;
-      // Snap only within a small visual hit area of the fixed-total segment.
-      // The projection is in screen pixels, so a nonsquare plot does not bias picking.
-      const ax=box.width/width,ay=box.height/width,wx=fx*width-.5,wy=fy*width-.5;
-      x=clamp(Math.round((ax*ax*wx+ay*ay*(fixedTotal-wy))/(ax*ax+ay*ay)),minX,maxX); y=fixedTotal-x;
-      if(Math.hypot((x-wx)*ax,(y-wy)*ay)>7)return null;
-    }
+    const x=clamp(Math.floor(fx*width),0,max),y=clamp(Math.floor(fy*width),0,max);
     return valid(x,y)?[x,y]:null;
   }
   function key(e){
@@ -64,27 +55,23 @@ export default function IncomeDifferenceHeatmap({surface,head,spouse,onSelectSal
     if(!move)return;
     e.preventDefault();
     const [dx,dy]=move;
-    let x=(pointOK?head:0)+dx,y=(pointOK?spouse:0)+dy;
-    if(fixedTotal!=null){if(dx)y=fixedTotal-x;else x=fixedTotal-y;}
-    if(valid(x,y))onSelectSalary(x,y);
+    const x=(hover?.[0]??0)+dx,y=(hover?.[1]??0)+dy;
+    if(valid(x,y))setHover([x,y]);
   }
-  const hoverOK=hover&&valid(...hover)&&(fixedTotal==null||hover[0]+hover[1]===fixedTotal);
-  const shown=hoverOK?hover:pointOK?[head,spouse]:null;
+  const shown=hover&&valid(...hover)?hover:null;
   return <figure className="diff-heatmap" aria-label="可処分所得差の平面図">
-    <figcaption>可処分所得差の平面図</figcaption>
+    <figcaption>年間可処分所得差（設定した世帯 − 同じ給与・家族構成で子に障害がない世帯）</figcaption>
     {failed&&<p role="alert">この環境では平面図を描画できません。</p>}
     <div className="diff-map-frame">
       <canvas ref={canvas} width={width} height={width} role="img" tabIndex="0" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入。色は障害の有無による可処分所得差"
         onPointerMove={e=>{const q=readPosition(e);setHover(old=>old?.[0]===q?.[0]&&old?.[1]===q?.[1]?old:q);}}
-        onPointerLeave={()=>setHover(null)} onClick={e=>{const q=readPosition(e);if(q)onSelectSalary(...q);}} onKeyDown={key}/>
+        onPointerLeave={()=>setHover(null)} onClick={e=>setHover(readPosition(e))} onKeyDown={key}/>
       <svg className="diff-map-axes" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" preserveAspectRatio="none">
         <rect x={L} y={T} width={R-L} height={B-T} fill="none" stroke="#6e8084"/>
         {stepTicks.map(x=><g key={x}><path d={`M${sx(x)} ${B}v6 M${L} ${sy(x)}h-6`} stroke="#486468"/>
           <text x={sx(x)} y={B+25} textAnchor="middle">{fmt(x)}</text><text x={L-10} y={sy(x)+5} textAnchor="end">{fmt(x)}</text></g>)}
         <text className="diff-axis-title" x={(L+R)/2} y={H-10} textAnchor="middle">世帯主の給与収入（万円／年）</text>
         <text className="diff-axis-title" transform={`translate(23 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
-        {fixedTotal!=null&&minX<=maxX&&<path d={`M${sx(minX)} ${sy(fixedTotal-minX)}L${sx(maxX)} ${sy(fixedTotal-maxX)}`} stroke="#324850" strokeWidth="2" strokeDasharray="6 4" fill="none"/>}
-        {pointOK&&<g transform={`translate(${sx(head)} ${sy(spouse)})`}><circle r="6" fill="white" stroke="#132f38" strokeWidth="2.5"/><text x={head>max*.90?-10:10} y={spouse>max*.95?19:-9} textAnchor={head>max*.90?"end":"start"} className="diff-point-p">P</text></g>}
       </svg>
     </div>
     <div className="diff-key" aria-label="可処分所得差の色の目盛">
@@ -95,6 +82,6 @@ export default function IncomeDifferenceHeatmap({surface,head,spouse,onSelectSal
       </div>:<span><i style={{background:rgb(ZERO)}}/>0</span>}
       <span><i style={{background:rgb(MISS)}}/>算定外</span>
     </div>
-    {shown&&<div className="diff-map-readout">{hoverOK?"指示点":"点P"}　世帯主 {fmt(shown[0])}万円／配偶者 {fmt(shown[1])}万円　差 {signed(Math.round(heights[shown[1]*width+shown[0]]*10000))}円／年</div>}
+    {shown&&<div className="diff-map-readout">世帯主 {fmt(shown[0])}万円／配偶者 {fmt(shown[1])}万円　差 {signed(differenceYen?.[shown[1]*width+shown[0]]??Math.round(heights[shown[1]*width+shown[0]]*10000))}円／年</div>}
   </figure>;
 }

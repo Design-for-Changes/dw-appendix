@@ -43,11 +43,12 @@ export function validateRevisionHousehold(input) {
   const requestedRecipient = input.roles?.allowanceRecipient ?? (paper ? "highest-salary" : "head");
   if (!(paper ? ["head","spouse","highest-salary"] : ["head","spouse"]).includes(requestedRecipient)) throw new RangeError("受給資格者の指定が不正です。");
   const roles = {
-    spouseDeductionClaimant:input.roles?.spouseDeductionClaimant ?? "head",
+    spouseDeductionClaimant:input.roles?.spouseDeductionClaimant ?? (paper ? "highest-salary" : "head"),
     allowanceRecipient:paper ? "highest-salary" : requestedRecipient,
     welfareMaintainer:input.roles?.welfareMaintainer ?? (protocol === "paper-2029" ? "highest-salary" : "both"),
   };
-  if (!["head","spouse","none"].includes(roles.spouseDeductionClaimant)) throw new RangeError("配偶者控除の申告者の指定が不正です。");
+  if (!(paper ? ["highest-salary","head","spouse","none"] : ["head","spouse","none"]).includes(roles.spouseDeductionClaimant))
+    throw new RangeError("配偶者控除の申告者の指定が不正です。");
   if (!(protocol === "paper-2029" ? ["head","spouse","highest-salary"] : ["head","spouse","highest-salary","both"]).includes(roles.welfareMaintainer))
     throw new RangeError("障害児福祉手当の生計維持者の仮定が不正です。");
   if (protocol === "paper-2029" && input.insurance !== undefined)
@@ -194,9 +195,9 @@ function revisionCashBenefits(children, claimant, other, additionalSupportedCoun
   const obligorLimit = calcWelfareAllowanceLimitObligorYen(claimant.allowanceFuyo);
   const otherLimit = calcWelfareAllowanceLimitObligorYen(other.allowanceFuyo);
   const tccaOK = specialChildAllowance.incomeEligible;
-  // 障害児福祉手当の本人所得は0。本人の上限超と、両親の上限以上停止は同じ判定ではない。
+  // 障害児福祉手当の本人は無所得の児童。本人は限度額超、扶養義務者は限度額以上で停止。
   const tcca = specialChildAllowance.annualYen;
-  // 特児の配偶者判定を児福に流用しない。児福の受給者は児童本人、その生計を維持する親は別指定。
+  // 特児の判定結果は流用せず、児福の生計維持者には児福の扶養義務者の所得算式・限度額を適用する。
   const maintainers = [[claimantId,claimant],[spouseId,other]].filter(([id])=>maintainerId==="both" || id===maintainerId)
     .map(([id,tax])=>({id,incomeYen:tax.welfareMaintainerIncomeYen,dependentCount:tax.allowanceFuyo}));
   const welfareChildren = children.map((c,i)=>calculateDisabledChildWelfareAllowance({eligible:c.welfareEligible,
@@ -252,10 +253,10 @@ export function createRevisionCalculator(input) {
   function evaluate(headWan, spouseWan) {
     const headWage = wageRecord(headWan), spouseWage = wageRecord(spouseWan);
     // 法3条2項の「主として生計を維持する者」を本試算では給与収入の多い親で近似（同額は世帯主）。
-    // 論文用では子全員の税扶養・障害者控除も同じ親に帰属させる。配偶者控除の申告者は別設定。
+    // 本試算ではこの親に子全員の税扶養と配偶者等控除の判定を割り当てる。控除額には別途双方の所得要件を適用。
     const higher = headWan >= spouseWan ? "head" : "spouse";
     const recipient = archived || steady2029 ? higher : roles.allowanceRecipient;
-    const filing = archived ? higher : roles.spouseDeductionClaimant;
+    const filing = archived || roles.spouseDeductionClaimant==="highest-salary" ? higher : roles.spouseDeductionClaimant;
     const taxDependentOf = children.map(c => archived || steady2029 ? higher : c.taxDependentOf);
     const maintainerId = roles.welfareMaintainer === "highest-salary" ? higher : roles.welfareMaintainer;
     const assigned = {allowanceRecipient:recipient, spouseDeductionClaimant:filing, taxDependentOf,

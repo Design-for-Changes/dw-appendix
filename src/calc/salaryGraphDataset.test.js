@@ -69,7 +69,7 @@ test("実世帯だけ未算定なら全図で欠測、対照世帯だけ未算�
   expect(comparison.heights[baselineGap]).toBeNaN();
 });
 
-test("共通Workerは原格子と描画配列を一度だけ転送し、同一メッシュ・高さを共有する",()=>{
+test("共通Workerは格子と各図に必要な描画配列を一度だけ転送し、差額に3D形状を作らない",()=>{
   const saved=globalThis.postMessage;
   try{
     globalThis.postMessage=jest.fn();
@@ -80,8 +80,8 @@ test("共通Workerは原格子と描画配列を一度だけ転送し、同一�
     expect(new Set(buffers).size).toBe(buffers.length);
     [income.heights,comparison.heights,grid.netYen,grid.differenceYen,grid.decisionCodes,comparison.heatmapPixels,
       income.meshIndices].forEach(a=>expect(buffers).toContain(a.buffer));
-    expect(comparison.meshIndices).toBe(income.meshIndices);
-    expect(comparison.barBins.heights).toBe(comparison.heights);
+    expect(comparison.meshIndices).toBeUndefined();
+    expect(comparison.barBins).toBeUndefined();
     expect(calls.filter(([msg])=>msg.type==="complete")).toHaveLength(1);
   } finally {globalThis.postMessage=saved;}
 });

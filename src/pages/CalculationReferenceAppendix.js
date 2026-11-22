@@ -30,6 +30,7 @@ const currentFlow = [
   ["service","世帯の判定用所得割＋対象負担（円／月）→ 利用者負担（円／年）","本モデルの同一保護者に係る合算対象額に世帯の月額上限を適用し、12か月分を差し引く。","revisionServiceBurden"],
   ["disposable","夫婦の給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
   ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
+  ["level","選んだ下落直前の可処分所得 → 給与平面の同水準線","隣接する給与点のうち一方だけが基準額以上になる境界を両軸で結ぶ。未算定点はまたがない。","src/calc/salaryLevelContour.js:buildSalaryLevelContour"],
 ];
 const discussionFlow = [
   ["隣接する給与点の判定区分 → 制度別・判定対象者別の変化点","収支が下がったか否かを問わず、判定区分が変わった点を抽出する。判定できない区間をまたいで変化を推定しない。","src/calc/paperChangePoints.js:scanPaperChangePoints"],
@@ -100,7 +101,7 @@ export default function CalculationReferenceAppendix({ catalog = functionCatalog
       {internalLink("calculation-flow", "計算処理との対応")}
       {internalLink("calculation-function-list", `関数・クラス一覧（${catalog.functionCount}関数・${catalog.classCount}クラス）`)}
     </nav>
-    <h3 id="calculation-flow-current" tabIndex={-1}><a href="#revision-scenarios">Appendix Gの給与2軸シミュレーター</a>の計算式</h3>
+    <h3 id="calculation-flow-current" tabIndex={-1}><a href="#revision-scenarios">Appendix Dの給与2軸シミュレーター</a>の計算式</h3>
     <div className="appendix-table-wrap"><table className="appendix-table"><caption>入力から年額への計算表（現行制度のみ）</caption>
     <thead><tr><th scope="col">入力 → 出力</th><th scope="col">計算内容</th><th scope="col">担当する関数</th></tr></thead>
     <tbody>{currentFlow.map(([id,values,rule,...functions])=><tr key={id}><th scope="row">{values}</th><td data-label="計算内容">{rule}</td><td data-label="関数">{functions.map(name=>{

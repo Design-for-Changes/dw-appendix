@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import AppendixCliffMap from "./AppendixCliffMap";
+import {ArchivedCliffCalculation} from "./AppendixCliffMap";
 import { computeOptimalModel } from "../calc/optimalModel";
 
 let mockCase;
@@ -71,7 +71,7 @@ function cardValue(label) {
 }
 
 test("Eの3比較カードは選択給与の年額を表示し、差額の符号を保持する", () => {
-  render(<AppendixCliffMap />);
+  render(<ArchivedCliffCalculation viewMode="optimal" />);
   const first = mockCase.optimalModel.series[0];
   expect(cardValue("現行制度の可処分所得")).toBe(formatWan(first.currentDisposableWan));
   expect(cardValue("調整モデル後の可処分所得")).toBe(formatWan(first.optimalDisposableWan));
@@ -91,7 +91,7 @@ test("Eの3比較カードは選択給与の年額を表示し、差額の符号
 });
 
 test("Eの仮定6項目は実装上の代理値・未実装項・固定支出を区別する", () => {
-  render(<AppendixCliffMap />);
+  render(<ArchivedCliffCalculation viewMode="optimal" />);
   const summary = screen.getByText("数値試算で実際に置いている仮定");
   const details = summary.closest("details");
   fireEvent.click(summary);

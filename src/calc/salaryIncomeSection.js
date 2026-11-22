@@ -4,7 +4,7 @@ import {changedSalaryDecisionSystems,decisionCodes} from "./salaryDecisionMap.js
  * 一方の親の給与を固定し、他方の給与を1万円ずつ増やして可処分所得の断面と制度境界を求める。
  * 曲線にはすべての収支変動を含む。一方、境界は地図と同じ3制度の切替えに限り、同時に
  * 変わる税・社会保険料も含む可処分所得の下落額を、個々の制度の効果とはみなさない。
- * @param {object} calculator Appendix Gと同じ evaluate(世帯主給与万円,配偶者給与万円) を持つ計算器。
+ * @param {object} calculator シミュレーターと同じ evaluate(世帯主給与万円,配偶者給与万円) を持つ計算器。
  * @param {object} options axis は増やす親の給与軸、fixedWan は他方の年給与（万円）、maxSalaryWan は走査上限。
  * @returns {object} points は各年給与に対応する円単位の可処分所得（未算定はnull）。events は境界の直前・直後の値と
  * 直後から測った後退幅・回復幅（給与万円）、および回復までに重なる他の制度境界での下落数。

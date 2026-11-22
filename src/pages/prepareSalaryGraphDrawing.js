@@ -1,5 +1,4 @@
 import {SURFACE_SYSTEMS} from "../calc/salarySurfaceSystems.js";
-import {binIncomeDifferences} from "./incomeDifferenceBarGeometry.js";
 import {salaryInkGeometry} from "./salarySurfaceInk.js";
 
 const RESTART=0xffffffff;
@@ -50,10 +49,5 @@ export function differenceHeatmapPixels({width,heights,min,max}) {
 export function prepareSalaryGraphDrawing(income,comparison){
   income.meshIndices=salaryMeshIndices(income.heights,income.width);
   income.inkGeometry=salaryInkGeometry(income,SURFACE_SYSTEMS);
-  // 2面の「算定外」の位置が一致すれば三角形索引も同一。転送・保管を二重にしない。
-  let same=income.width===comparison.width;
-  for(let i=0;same&&i<income.heights.length;i++)same=Number.isFinite(income.heights[i])===Number.isFinite(comparison.heights[i]);
-  comparison.meshIndices=same?income.meshIndices:salaryMeshIndices(comparison.heights,comparison.width);
-  comparison.barBins=comparison.width>=2?binIncomeDifferences(comparison):null;
   comparison.heatmapPixels=differenceHeatmapPixels(comparison);
 }

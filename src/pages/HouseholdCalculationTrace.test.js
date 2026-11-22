@@ -42,6 +42,9 @@ test("等級表の表示区間はすべての下限と上限直前で計算器�
 test("収支合計を最初に示し、社保、税、各手当、サービス負担の順に全表を折りたたみなしで表示する",()=>{
   render(draw(360,120));
   const trace=screen.getByRole("region",{name:"計算式と内訳"});
+  expect(screen.getByRole("heading",{name:"夫婦それぞれの社会保険料（船橋市在住、船橋市勤務想定）"})).toBeVisible();
+  expect(trace).not.toHaveTextContent("端数処理は、各月の本人負担");
+  expect(trace).not.toHaveTextContent("金額は年額・円。");
   expect(trace.querySelector("details,summary")).toBeNull();
   expect(screen.getAllByRole("table").map(t=>t.caption.textContent)).toEqual([
     "世帯の可処分所得（円／年）","世帯主の社会保険料（本人負担）","配偶者の社会保険料（本人負担）",

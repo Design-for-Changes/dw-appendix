@@ -38,14 +38,14 @@ test("高給与・配偶者特別控除：控除の代入、国税端数、市�
   expect(cells("世帯主","配偶者控除・配偶者特別控除")[2]).toHaveTextContent("所得税 110,000円／住民税 110,000円");
   expect(cells("世帯主","所得税の課税所得")[1]).toHaveTextContent("7,000,000 − 1,389,600 − 1,400,000 − 110,000 − 620,000");
   expect(cells("世帯主","基準所得税額")[1]).toHaveTextContent("3,480,000 × 20% − 427,500");
-  expect(cells("世帯主","所得税等（年調年税額）")[1]).toHaveTextContent("100 × ⌊268,500 × 1.021 ÷ 100⌋");
+  expect(cells("世帯主","所得税等（年調年税額）")[1]).toHaveTextContent("268,500 × 1.021（100円未満を切捨て）");
   expect(cells("世帯主","所得税等（年調年税額）")[2]).toHaveTextContent("274,100円");
   expect(cells("世帯主","住民税の調整控除")[2]).toHaveTextContent("2,500円");
   expect(cells("世帯主","市民税所得割")[2]).toHaveTextContent("235,500円");
   expect(cells("世帯主","県民税所得割")[2]).toHaveTextContent("157,000円");
   expect(cells("世帯主","住民税等（森林環境税込み）")[1]).toHaveTextContent("235,500 + 157,000 + 4,000 + 1,000");
-  expect(cells("世帯主","この親の税負担")[2]).toHaveTextContent(yen(h.totalTaxYen));
-  expect(cells("配偶者","この親の税負担")[2]).toHaveTextContent(yen(p.details.spouseTax.totalTaxYen));
+  expect(cells("世帯主","税負担の合計")[2]).toHaveTextContent(yen(h.totalTaxYen));
+  expect(cells("配偶者","税負担の合計")[2]).toHaveTextContent(yen(p.details.spouseTax.totalTaxYen));
 });
 
 test("法定表の定額帯を使い、税額ゼロでも控除・非課税根拠を表示する", () => {
@@ -57,16 +57,23 @@ test("法定表の定額帯を使い、税額ゼロでも控除・非課税根�
   expect(cells("世帯主","均等割等の非課税判定")[1]).toHaveTextContent("350,000 × (3 + 1) + 310,000 = 1,710,000；所得 1,338,000");
   expect(cells("世帯主","所得割の非課税判定")[2]).toHaveTextContent("非課税");
   expect(cells("世帯主","住民税の調整控除")[1]).toHaveTextContent("所得割非課税 → 0");
-  expect(cells("世帯主","この親の税負担")[2]).toHaveTextContent(yen(point.details.headTax.totalTaxYen));
+  expect(cells("世帯主","税負担の合計")[2]).toHaveTextContent(yen(point.details.headTax.totalTaxYen));
 });
 
 test("4千円刻みの給与表と給与控除額を混同せず、所得割の200万円超の調整控除にも数値を代入", () => {
   const point = select(601,600,{...inputs,children:[inputs.children[0]]});
-  expect(cells("世帯主","給与所得（所得金額調整控除前）")[1]).toHaveTextContent("⌊6,010,000 ÷ 4,000⌋ × 3,200 − 440,000");
+  expect(cells("世帯主","給与所得（所得金額調整控除前）")[1]).toHaveTextContent("（6,010,000 ÷ 4,000 の小数点以下を切捨て）× 3,200 − 440,000");
   expect(cells("世帯主","給与所得控除相当額")[2]).toHaveTextContent("1,643,600円");
   expect(cells("世帯主","住民税の調整控除")[1]).toHaveTextContent("max(2,500, [320,000 − (2,149,000 − 2,000,000)] × 5%)");
   expect(cells("世帯主","住民税の調整控除")[2]).toHaveTextContent("8,550円");
-  expect(cells("世帯主","この親の税負担")[2]).toHaveTextContent(yen(point.details.headTax.totalTaxYen));
+  expect(cells("世帯主","税負担の合計")[2]).toHaveTextContent(yen(point.details.headTax.totalTaxYen));
+});
+
+test("税額表の社会保険料控除は各人の負担額を示す。給与0の被扶養配偶者の保険料は0円",()=>{
+  select(400,0);
+  expect(cells("世帯主","社会保険料控除").map(c=>c.textContent)).toEqual(["当人の社会保険料負担額","629,556円","629,556円"]);
+  expect(cells("配偶者","社会保険料控除").map(c=>c.textContent)).toEqual(["当人の社会保険料負担額","0円","0円"]);
+  expect(screen.queryByText(/金額は年額・円/)).not.toBeInTheDocument();
 });
 
 test("原点を0円の課税明細として表示しない", () => {

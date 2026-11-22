@@ -28,7 +28,7 @@ function parentRows(p, policy) {
 
 export default function TraceInsurance({point}) {
   const ins=point.details.insurance;
-  return <><p>端数処理は、各月の本人負担の1円未満について50銭以下を切り捨て、50銭を超えると切り上げます。</p>
+  return <>
     {[["head","世帯主"],["spouse","配偶者"]].map(([key,name])=><TraceTable key={key}
       caption={name+"の社会保険料（本人負担）"} rows={parentRows(ins[key],ins.policy)}/>)}
     <p><a href={ins.policy.sources.healthGradesAndProxyRates}>協会けんぽ千葉の等級・料率表</a> ／ <a href={ins.policy.sources.pensionAmounts}>厚生年金の等級上限</a></p></>;

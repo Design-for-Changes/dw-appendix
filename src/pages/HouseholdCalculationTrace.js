@@ -24,7 +24,7 @@ export default function HouseholdCalculationTrace({point, inputs}) {
   ];
   return <section className="revision-calculation-trace" aria-label="計算式と内訳">
     <TraceTable caption="世帯の可処分所得（円／年）" rows={rows}/>
-    <section aria-label="夫婦それぞれの社会保険料"><h4>夫婦それぞれの社会保険料</h4>
+    <section aria-label="夫婦それぞれの社会保険料（船橋市在住、船橋市勤務想定）"><h4>夫婦それぞれの社会保険料（船橋市在住、船橋市勤務想定）</h4>
       <TraceInsurance point={point}/>
     </section>
     <section aria-label="夫婦それぞれの給与所得・控除・税額"><h4>夫婦それぞれの給与所得・控除・税額</h4>

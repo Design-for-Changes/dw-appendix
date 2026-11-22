@@ -18,7 +18,7 @@ const child=(age,taxStatus,tccaGrade="1",welfareEligible=true)=>({
 const calculator=children=>createRevisionCalculator({protocol,children,serviceAmountYen:0});
 
 // The two parents have the same modeled age and coverage rules. The higher wage
-// claims all child deductions and is the allowance claimant/maintainer; ties go
+// claims all child deductions and is the special-child allowance claimant; ties go
 // to the head. A different partner wage within the same spouse-income band does
 // not change this parent's taxes, levy, or means test provided roles stay fixed.
 assert.ok(first.every(x=>x>=0));
@@ -39,7 +39,8 @@ const lows=last.map(representative=>wages.map(low=>{
   const d=lowModel.evaluate(representative,low).details;
   assert.equal(d.spouseTax.taxDependentCount,0);
   return {taxable:d.spouseTax.serviceTaxable,levy:d.spouseTax.serviceLevyYen,
-    spousePass:!d.benefits.specialChildAllowance.checks[1].stopped};
+    spousePass:!d.benefits.specialChildAllowance.checks[1].stopped,
+    welfarePass:d.benefits.welfareChildren[0].checks.find(c=>c.role==="maintainer"&&c.id==="spouse").passes};
 }));
 
 // Relative to a no-disability household at the same ages and wages, insurance
@@ -60,7 +61,7 @@ function groupCells(children,baseTax){
     const b=d.benefits;
     return {levy:t.serviceLevyYen,taxable:t.serviceTaxable,
       tax:baseTax[i][high]-t.totalTaxYen,claimant:!b.specialChildAllowance.checks[0].stopped,
-      welfare:b.welfareChildren[0].incomeEligible};
+      welfarePass:b.welfareChildren[0].checks.find(c=>c.role==="maintainer"&&c.id==="head").passes};
   }));
   const buckets=new Map();
   for(let high=1;high<=maxSalaryWan;high++){
@@ -68,7 +69,7 @@ function groupCells(children,baseTax){
     for(let low=0;low<=high;low++){
       const h=highs[band[low]][high],l=L[low];
       const cap=getChildDayServiceCapYen(h.levy+l.levy,h.taxable||l.taxable);
-      const tcca=h.claimant&&l.spousePass,welfare=h.welfare,dc=h.tax;
+      const tcca=h.claimant&&l.spousePass,welfare=h.welfarePass&&l.welfarePass,dc=h.tax;
       const key=cap*4+Number(tcca)*2+Number(welfare);
       let state=buckets.get(key);
       if(!state){
@@ -111,7 +112,7 @@ function groupCells(children,baseTax){
   // salaries nowhere near a bucket extremum. Alternate which parent earns more.
   for(let a=1;a<=maxSalaryWan;a++){
     const b=(104729*a+23)%(a+1), h=highs[band[b]][a],l=lows[band[a]][b];
-    verifyPoint(a%2?a:b,a%2?b:a,h.claimant&&l.spousePass,h.welfare,
+    verifyPoint(a%2?a:b,a%2?b:a,h.claimant&&l.spousePass,h.welfarePass&&l.welfarePass,
       getChildDayServiceCapYen(h.levy+l.levy,h.taxable||l.taxable),h.tax);
   }
   return cells;

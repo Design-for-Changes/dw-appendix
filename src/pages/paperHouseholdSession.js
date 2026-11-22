@@ -1,8 +1,9 @@
 import {useEffect,useMemo} from "react";
 import {useSessionParameter} from "./salarySimulatorSession";
+import {PAPER_ALLOWANCE_ROLES} from "../calc/revisionEngine";
 
 export const blankChild = () => ({age:8,tccaGrade:"not",welfareEligible:false,taxStatus:"none",serviceAmountYen:0});
-const PAPER_ROLES=Object.freeze({spouseDeductionClaimant:"highest-salary",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"});
+const PAPER_ROLES=Object.freeze({spouseDeductionClaimant:"highest-salary",...PAPER_ALLOWANCE_ROLES});
 
 // 全児童を特児の受給資格者と同じ親の税扶養に置くので、旧画面で選択した個別申告は引き継がない。
 const formerFields=["taxDependentOf","maintainedBy","maintainedByRecipient"];

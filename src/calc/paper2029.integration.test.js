@@ -24,15 +24,15 @@ describe("Gの給与点ごとの自動判定（旧研究条件の明示指定と
     [131,1210,"spouse","ordinary",130000], [131,1211,"spouse","none",0],
   ])("給与 %i・%i 万円：%s の配偶者等控除 %s（%i 円）、児福の受給者は子",(a,b,higher,kind,it)=>{
     const {details}=automatic.evaluate(a,b), lower=higher==="head"?"spouse":"head";
-    expect(details.roles).toMatchObject({spouseDeductionClaimant:higher,allowanceRecipient:higher,taxDependentOf:[higher],welfareMaintainer:higher});
+    expect(details.roles).toMatchObject({spouseDeductionClaimant:higher,allowanceRecipient:higher,taxDependentOf:[higher],welfareMaintainer:"both"});
     for(const period of ["current","previous"]){
       expect(details[higher+"Tax"].spouseDeduction[period]).toMatchObject({kind,it});
       expect(details[lower+"Tax"].spouseDeduction[period]).toMatchObject({kind:"none",it:0,lt:0});
     }
-    expect(details.benefits.specialChildAllowance.checks.slice(0,2)).toMatchObject([
+    expect(details.benefits.specialChildAllowance.checks).toMatchObject([
       {role:"claimant",id:higher},{role:"spouse",id:lower}]);
     expect(details.benefits.welfareChildren[0].checks).toMatchObject([
-      {role:"recipient",id:"child1",incomeYen:0},{role:"maintainer",id:higher}]);
+      {role:"recipient",id:"child1",incomeYen:0},{role:"maintainer",id:higher},{role:"maintainer",id:lower}]);
   });
   test("全給与格子で低給与側のみが配偶者等控除の所得要件を満たす点はない",()=>{
     // 国税庁 No.1191・1195。給与のみ、2人に同じ給与所得算式を使う本試算の範囲。
@@ -120,6 +120,7 @@ test("世帯主給与を上げたとき、特児の本人限度と児福の扶�
     expect(b.welfareChildren[0].checks).toMatchObject([
       {role:"recipient",id:"child1",incomeYen:0,limitYen:3758000,stopComparison:">",passes:true},
       {role:"maintainer",id:"head",incomeYen:assessment,limitYen:6749000,stopComparison:">=",passes:welfare},
+      {role:"maintainer",id:"spouse",limitYen:6287000,stopComparison:">=",passes:true},
     ]);
     expect([b.tcca,b.welfare]).toEqual([tcca?701400:0, welfare?198720:0]);
   }
@@ -146,12 +147,28 @@ test.each(["head","spouse","highest-salary"])("旧受給者設定 %s にかか�
   for(const [h,s,id,other] of [[601,600,"head","spouse"],[600,600,"head","spouse"],[599,600,"spouse","head"]]){
     const p=c.evaluate(h,s);
     expect(p.details.roles).toMatchObject({allowanceRecipient:id,allowanceRecipientAssumption:"highest-salary",
-      spouseDeductionClaimant:"spouse",taxDependentOf:[id,id],welfareMaintainer:"head",additionalMaintainedChildren:0});
+      spouseDeductionClaimant:"spouse",taxDependentOf:[id,id],welfareMaintainer:"both",additionalMaintainedChildren:0});
     expect(p.details[id+"Tax"]).toMatchObject({taxDependentCount:2,olderDependentCount:1,disabilityDeductionITYen:750000});
     expect(p.details[other+"Tax"]).toMatchObject({taxDependentCount:0,olderDependentCount:0,disabilityDeductionITYen:0});
-    expect(p.details.benefits.specialChildAllowance.checks.slice(0,2)).toMatchObject([
+    expect(p.details.benefits.specialChildAllowance.checks).toMatchObject([
       {id,role:"claimant",limitYen:5606000},{id:other,role:"spouse",limitYen:6287000}]);
     expect(p.details.benefits.additionalSupportedCount).toBe(0);
+  }
+});
+
+test.each([["head","spouse"],["spouse","head"]])("児福は低給与側の%sだけが自身の限度額に達しても停止する", (lower,higher)=>{
+  const c=calc({children:[qualifying]});
+  const point=w=>lower==="head" ? c.evaluate(w,875) : c.evaluate(875,w);
+  // 875万円側: 875万−給与所得控除195万−給与控除10万−一律8万−特障40万=622万円。
+  // 低給与側は税扶養0人。840万円×90%−110万−18万=628万円、841万円なら628.9万円。
+  for(const [w,income,allowed] of [[840,6280000,true],[841,6289000,false]]){
+    const p=point(w),check=p.details.benefits.welfareChildren[0];
+    expect(check.checks).toMatchObject([{id:"child1",role:"recipient",incomeYen:0,passes:true},
+      {id:higher,role:"maintainer",dependentCount:1,incomeYen:6220000,limitYen:6536000,passes:true},
+      {id:lower,role:"maintainer",dependentCount:0,incomeYen:income,limitYen:6287000,passes:allowed}]);
+    expect(check.reasons).toEqual(allowed?[]:["maintainer:"+lower]);
+    expect(check.annualYen).toBe(allowed?198720:0);
+    expect(p.details.roles).toMatchObject({allowanceRecipient:higher,taxDependentOf:[higher],welfareMaintainer:"both"});
   }
 });
 

@@ -1,6 +1,6 @@
 import { childOrDisabilityIncomeAdjustmentYen } from "./employmentIncome.js";
 
-/** 2026年11月時点の公布法を将来に当てはめた比較条件。2029年分の確定税表ではない。 */
+/** 給与所得・所得金額調整控除・基礎控除の計算に用いる公布法とその出典。 */
 export const PAPER_SALARY_POLICY_2029 = Object.freeze({
   id: "JP-salary-R10on-as-enacted-20261122",
   comparisonYear: 2029,

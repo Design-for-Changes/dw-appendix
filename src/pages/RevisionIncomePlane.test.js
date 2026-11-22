@@ -272,8 +272,12 @@ test("就学奨励費と対象支出はともに除外し、画面と保存し�
   renderWithPoint();
   expect(screen.queryByLabelText("就学条件")).not.toBeInTheDocument();
   expect(screen.queryByLabelText("世帯の年間需要額（円）")).not.toBeInTheDocument();
-  expect(screen.getByText(/就学奨励費（N04）とその対象支出、医療費助成（M01）と医療の自己負担は試算対象外/)).toBeInTheDocument();
+  expect(screen.queryByText(/2029年末の制度を想定し/)).not.toBeInTheDocument();
+  expect(screen.queryByText("給与軸の仕様（JSON）")).not.toBeInTheDocument();
+  expect(screen.queryByText("利用者負担の基準")).not.toBeInTheDocument();
+  expect(screen.queryByText(/就学奨励費（N04）とその対象支出、医療費助成（M01）と医療の自己負担は試算対象外/)).not.toBeInTheDocument();
   const saved = savedPoint();
+  expect(saved.outcome.scopeNote).toMatch(/就学奨励費（N04）とその対象支出/);
   expect(saved).toMatchObject({schema:"household-income-point-paper-2029",inputs:{protocol:"paper-2029"},
     outcome:{field:"studyDisposableWan", axis:"世帯の可処分所得"},
     result:{status:"calculated", studyDisposableWan: expect.any(Number)}});
@@ -307,9 +311,9 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   let p=savedPoint();
   expect(p.inputs.protocol).toBe("paper-2029");
   expect(p.inputs).not.toHaveProperty("insurance");
-  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"highest-salary",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"});
+  expect(p.inputs.roles).toEqual({spouseDeductionClaimant:"highest-salary",allowanceRecipient:"highest-salary",welfareMaintainer:"both"});
   expect(savedChildren(p).map(c=>c.taxDependentOf)).toEqual(["highest-salary","highest-salary"]);
-  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"spouse",taxDependentOf:["spouse","spouse"],welfareMaintainer:"spouse",spouseDeductionClaimant:"spouse"});
+  expect(p.result.details.roles).toMatchObject({allowanceRecipient:"spouse",taxDependentOf:["spouse","spouse"],welfareMaintainer:"both",spouseDeductionClaimant:"spouse"});
   expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
   expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：配偶者")).toBeVisible();
   expect(p.result.details.insurance.spouse.status).toBe("employee");
@@ -318,10 +322,10 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   expect(taxRow.cells[2]).toHaveTextContent(p.result.details.spouseTax.incomeTaxYen.toLocaleString("ja-JP"));
   expect(taxRow.cells[3]).toHaveTextContent(Math.round(p.result.breakdown.taxWan*10000).toLocaleString("ja-JP")+"円");
   change(salaryNumber("配偶者"),"350");
-  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",taxDependentOf:["head","head"],welfareMaintainer:"head"});
+  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",taxDependentOf:["head","head"],welfareMaintainer:"both"});
   expect(savedPoint().result.details.benefits.additionalSupportedCount).toBe(0);
   expect(within(screen.getByRole("region",{name:"点P"})).getByText("特児の受給資格者・子の税扶養：世帯主")).toBeVisible();
-  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"head",spouseDeductionClaimant:"head"});
+  expect(savedPoint().result.details.roles).toMatchObject({allowanceRecipient:"head",welfareMaintainer:"both",spouseDeductionClaimant:"head"});
   for(const w of ["1","129","130"]) {
     change(salaryNumber("配偶者"),w);
     expect(savedPoint().result.details.insurance.spouse.status).toBe("employee");
@@ -333,10 +337,10 @@ test("新稿画面は船橋市の固定条件で夫婦を個別計算し、旧�
   expect(screen.getByText("この給与点は試算対象外")).toBeVisible();
 });
 
-test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]])(
+test.each([["spouse","head",false],["head","spouse",true],["highest-salary","spouse",false],[null,"spouse",false]])(
   "旧固定受給者 %s と個別申告を廃止し、児童の年齢・等級等は保持する", (oldRecipient,taxDependentOf,newHeadHigher)=>{
     const key="dw-appendix:salary-surface:v1:";
-    if(oldRecipient)window.sessionStorage.setItem(key+"roles",JSON.stringify({spouseDeductionClaimant:newHeadHigher?"spouse":"none",allowanceRecipient:oldRecipient,welfareMaintainer:newHeadHigher?"spouse":"head"}));
+    if(oldRecipient)window.sessionStorage.setItem(key+"roles",JSON.stringify({spouseDeductionClaimant:newHeadHigher?"spouse":"none",allowanceRecipient:oldRecipient,welfareMaintainer:oldRecipient}));
     window.sessionStorage.setItem(key+"children",JSON.stringify([{age:8,tccaGrade:"2",taxStatus:"special",welfareEligible:false,serviceAmountYen:0,taxDependentOf,maintainedByRecipient:true}]));
     const {unmount}=renderWithPoint();
     expect(child(1).queryByRole("checkbox",{name:/追加申告/})).toBeNull();
@@ -344,14 +348,14 @@ test.each([["spouse","head",false],["head","spouse",true],[null,"spouse",false]]
     change(salaryNumber("配偶者"),newHeadHigher?"100":"600");
     const actual=newHeadHigher?"head":"spouse";
     const p=savedPoint();
-    expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual],spouseDeductionClaimant:actual,welfareMaintainer:actual});
+    expect(p.result.details.roles).toMatchObject({allowanceRecipient:actual,taxDependentOf:[actual],spouseDeductionClaimant:actual,welfareMaintainer:"both"});
     expect(p.result.details[actual+"Tax"].spouseDeductionITYen).toBe(380000);
     expect(p.result.details[(newHeadHigher?"spouse":"head")+"Tax"].spouseDeductionITYen).toBe(0);
     expect(p.result.details.benefits.additionalSupportedCount).toBe(0);
     expect(savedChildren(p)[0]).toMatchObject({age:8,tccaGrade:"2",taxStatus:"special",taxDependentOf:"highest-salary",maintainedBy:null});
     expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("taxDependentOf");
     expect(JSON.parse(window.sessionStorage.getItem(key+"children"))[0]).not.toHaveProperty("maintainedByRecipient");
-    expect(JSON.parse(window.sessionStorage.getItem(key+"roles"))).toEqual({allowanceRecipient:"highest-salary",spouseDeductionClaimant:"highest-salary",welfareMaintainer:"highest-salary"});
+    expect(JSON.parse(window.sessionStorage.getItem(key+"roles"))).toEqual({allowanceRecipient:"highest-salary",spouseDeductionClaimant:"highest-salary",welfareMaintainer:"both"});
     unmount(); renderWithPoint(); expect(savedPoint()).toEqual(p);
   });
 

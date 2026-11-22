@@ -32,11 +32,15 @@ test("高給与・配偶者特別控除：控除の代入、国税端数、市�
   expect(cells("世帯主","給与所得（所得金額調整控除前）")[1]).toHaveTextContent("9,000,000 − 1,950,000");
   expect(cells("世帯主","所得金額調整控除")[2]).toHaveTextContent("50,000円");
   expect(cells("世帯主","給与所得（調整後）")[2]).toHaveTextContent("7,000,000円");
-  expect(cells("世帯主","扶養控除・障害者控除")[2]).toHaveTextContent("所得税 1,400,000円／住民税 1,120,000円");
-  expect(cells("配偶者","扶養控除・障害者控除")[2]).toHaveTextContent("所得税 0円／住民税 0円");
+  expect(cells("世帯主","扶養控除")[2]).toHaveTextContent("所得税 380,000円／住民税 330,000円");
+  expect(cells("世帯主","障害者控除")[2]).toHaveTextContent("所得税 1,020,000円／住民税 790,000円");
+  expect(cells("配偶者","扶養控除")[2]).toHaveTextContent("所得税 0円／住民税 0円");
+  expect(cells("配偶者","障害者控除")[2]).toHaveTextContent("所得税 0円／住民税 0円");
   expect(cells("世帯主","配偶者控除・配偶者特別控除")[1]).toHaveTextContent("1,210,000（120万円超125万円以下）：配偶者特別控除");
   expect(cells("世帯主","配偶者控除・配偶者特別控除")[2]).toHaveTextContent("所得税 110,000円／住民税 110,000円");
-  expect(cells("世帯主","所得税の課税所得")[1]).toHaveTextContent("7,000,000 − 1,389,600 − 1,400,000 − 110,000 − 620,000");
+  expect(cells("世帯主","所得税の課税所得")[1]).toHaveTextContent("7,000,000 − 1,389,600 − 380,000 − 1,020,000（障害者控除） − 110,000 − 620,000");
+  expect(cells("世帯主","住民税の課税所得")[1]).toHaveTextContent("7,000,000 − 1,389,600 − 330,000 − 790,000（障害者控除） − 110,000 − 430,000");
+  expect(cells("世帯主","調整控除に用いる人的控除額の差")[1]).toHaveTextContent("50,000 + (380,000 − 330,000) + (1,020,000 − 790,000) + 0");
   expect(cells("世帯主","基準所得税額")[1]).toHaveTextContent("3,480,000 × 20% − 427,500");
   expect(cells("世帯主","所得税等（年調年税額）")[1]).toHaveTextContent("268,500 × 1.021（100円未満を切捨て）");
   expect(cells("世帯主","所得税等（年調年税額）")[2]).toHaveTextContent("274,100円");
@@ -47,6 +51,31 @@ test("高給与・配偶者特別控除：控除の代入、国税端数、市�
   expect(cells("世帯主","税負担の合計")[2]).toHaveTextContent(yen(h.totalTaxYen));
   expect(cells("配偶者","税負担の合計")[2]).toHaveTextContent(yen(p.details.spouseTax.totalTaxYen));
 });
+
+// 600万円の給与所得は436万円、社会保険料は926,400円。配偶者給与は0円、
+// 子1人について年齢・税区分だけを変更した手計算の税額と比較する。
+const taxCases=[
+  [8, "none",     0,     0,148800,269700],
+  [8, "ordinary",270000,260000,121200,243700],
+  [8, "special", 750000,530000, 85900,210300],
+  [16,"none",     0,     0,110000,236700],
+  [16,"ordinary",270000,260000, 91000,209300],
+  [16,"special", 750000,530000, 66500,167700],
+];
+test.each(taxCases.flatMap(c=>[[600,0,...c],[0,600,...c]]))(
+  "世帯主%i万円・配偶者%i万円・子%i歳(%s)：扶養控除とは別に障害者控除を高給与親のみに計上",
+  (head,spouse,age,taxStatus,dit,dlt,it,lt)=>{
+    const payer=head?"世帯主":"配偶者",other=head?"配偶者":"世帯主";
+    select(head,spouse,{...inputs,children:[{...inputs.children[1],age,taxStatus}]});
+    const allowances=(ni,nl)=>"所得税 "+yen(ni)+"／住民税 "+yen(nl);
+    expect(cells(payer,"扶養控除")[2]).toHaveTextContent(allowances(age>=16?380000:0,age>=16?330000:0));
+    expect(cells(payer,"障害者控除")[2]).toHaveTextContent(allowances(dit,dlt));
+    expect(cells(other,"障害者控除")[2]).toHaveTextContent(allowances(0,0));
+    expect(cells(payer,"所得税等（年調年税額）")[2]).toHaveTextContent(yen(it));
+    expect(cells(payer,"住民税等（森林環境税込み）")[2]).toHaveTextContent(yen(lt));
+    expect(cells(other,"税負担の合計")[2]).toHaveTextContent("0円");
+  }
+);
 
 test("法定表の定額帯を使い、税額ゼロでも控除・非課税根拠を表示する", () => {
   const point = select(203,100);

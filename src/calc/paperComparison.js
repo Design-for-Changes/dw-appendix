@@ -1,4 +1,4 @@
-import { createRevisionCalculator, classifyRevisionFalls } from "./revisionEngine.js";
+import { createRevisionCalculator, classifyRevisionFalls, PAPER_ALLOWANCE_ROLES } from "./revisionEngine.js";
 
 // 比較値は利用児1人当たり・軽減後・世帯上限適用前。調査の区分別実支払額の分位点ではない。
 export const paperMonthlyFees = [4600, 10406, 37200];
@@ -10,7 +10,7 @@ export function paperComparisonInputs(family, fee, protocol="paper-2029") {
   const children = family.children.map(c=>protocol==="paper-2029" ? {...c} : {...c,taxDependentOf:"head",maintainedByRecipient:false});
   const base = {protocol,children,serviceAmountYen:fee,otherServiceMonthlyYen:0};
   if (protocol==="legacy-v2") return base;
-  if (protocol==="paper-2029") return {...base,roles:{spouseDeductionClaimant:"head",allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary"}};
+  if (protocol==="paper-2029") return {...base,roles:{spouseDeductionClaimant:"head",...PAPER_ALLOWANCE_ROLES}};
   return {...base,roles:{spouseDeductionClaimant:"head",allowanceRecipient:"head"},insurance:{
     residence:"funabashi",head:{mode:"contract",workPattern:"regular",workRegion:"chiba"},
     spouse:{mode:"contract",workPattern:"under20",workRegion:"chiba"},

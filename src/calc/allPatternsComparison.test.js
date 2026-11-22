@@ -64,11 +64,12 @@ test("利用料増額で各パターンの差は上昇しない。逆転して�
   expect([updated.headWan,updated.spouseWan]).not.toEqual([flat.minimum.headWan,flat.minimum.spouseWan]);
 });
 
-// These oracle values were obtained by directly evaluating E, spouse-first,
-// across all 2,253,000 wage pairs per row; reproduce with the --full-grid audit.
+// 児福は両親を個別判定。Eの通常の二世帯計算で、各行2,253,000点を全探索した。
+// 最低点はともに(841,841)の1点。最高点は順に10点・8,434点で同額のため、
+// 配偶者給与が小さい順、次いで世帯主給与が小さい順の代表座標を記録（--full-gridで再現）。
 test.each([
-  [[15,16],[12345,4600],["2:yes:ordinary","1:no:special"],[83860,1063,0],[1580780,846,195]],
-  [[2,5,16],[1,37200,37198],[full,"not:no:ordinary","2:no:none"],[-159188,1102,0],[1599380,911,0]],
+  [[15,16],[12345,4600],["2:yes:ordinary","1:no:special"],[66960,841,841],[1580780,846,195]],
+  [[2,5,16],[1,37200,37198],[full,"not:no:ordinary","2:no:none"],[-176088,841,841],[1599380,911,0]],
 ])("全給与点を直接走査したEの極値・同率時の座標と一致する：年齢 %j",(ages,fees,ids,min,max)=>{
   const r=select(compareAllPatterns({ages,fees}),ids);
   for(const [key,expected] of [["minimum",min],["maximum",max]]){

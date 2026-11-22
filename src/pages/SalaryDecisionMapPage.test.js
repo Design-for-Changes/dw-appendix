@@ -15,7 +15,7 @@ beforeEach(()=>{
 
 function inputsFor(child={}) {
   return {protocol:"paper-2029",serviceAmountYen:0,
-    roles:{allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary",spouseDeductionClaimant:"head"},
+    roles:{allowanceRecipient:"highest-salary",welfareMaintainer:"both",spouseDeductionClaimant:"head"},
     children:[{age:8,tccaGrade:"1",taxStatus:"special",welfareEligible:true,taxDependentOf:"highest-salary",maintainedBy:null,serviceUser:true,serviceAmountYen:20000,...child}]};
 }
 function draw(child){

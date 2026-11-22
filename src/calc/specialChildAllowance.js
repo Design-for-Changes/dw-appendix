@@ -1,7 +1,7 @@
 // 特別児童扶養手当（N01-1）だけの所得制限。児童扶養手当・障害児福祉手当とは別。
 // 在宅の父母（45歳）・無所得の子1～3人、認定済みの等級を前提とする。
 export const specialChildAllowanceBasis = Object.freeze({
-  amountBasis: "2026-04", // 2026年4月以降の公表月額。2029年確定額の意味ではない。
+  amountBasis: "2026-04", // 2026年4月以降の公表月額。
   law: "https://www.mhlw.go.jp/web/t_doc?dataId=82090000&dataType=0&pageNo=1",
   order: "https://www.mhlw.go.jp/web/t_doc?dataId=82091000&dataType=0",
 });

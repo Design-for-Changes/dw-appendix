@@ -54,7 +54,7 @@ test("改稿計算器の両給与から特児判定と停止理由が実際の�
   expect(a.breakdown.tccaWan).toBe(70.14);
   expect(a.details.benefits.specialChildAllowance).toMatchObject({annualYen:701400,incomeEligible:true,stoppedBy:[]});
   expect(a.details.benefits.specialChildAllowance.checks.map(p=>[p.id,p.limitYen])).toEqual(
-    [["head",4976000],["spouse",6287000],["child1",6287000]]);
+    [["head",4976000],["spouse",6287000]]);
   expect(b.details.benefits.specialChildAllowance.stoppedBy.map(p=>p.role)).toEqual(["spouse"]);
   expect(c.details.benefits.specialChildAllowance.stoppedBy.map(p=>p.role)).toEqual(["claimant"]);
   expect([b.breakdown.tccaWan,c.breakdown.tccaWan]).toEqual([0,0]);

@@ -26,7 +26,7 @@ const currentFlow = [
   ["household","両親の給与（各万円／年）、児童別条件","範囲と組合せを検証し、給与点ごとの計算器を作る。","validateRevisionHousehold","createRevisionCalculator"],
   ["payroll","各人の給与 → 給与所得・保険料（円／年）","給与控除と所得金額調整控除を適用する。保険料は年収を12等分して親ごとの標準報酬等級と本人負担額を求める。","revisionSalaryRecord","src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029","src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029"],
   ["tax","各人の所得・扶養 → 税額と制度判定用所得割（円／年）","所得税、住民税、森林環境税を算定。前年所得による通所の判定額は給与から差し引く税額とは分ける。","revisionParentTax"],
-  ["cash","各親の判定所得・扶養人数＋各児の障害要件 → 年間手当（円）","特児は受給資格者と配偶者等、児福は児童本人と生計維持者等の所得を個別に判定する。児童手当は年齢・出生順に応じて加える。","revisionCashBenefits","src/calc/specialChildAllowance.js:calculateSpecialChildAllowance","src/calc/disabledChildWelfareAllowance.js:calculateDisabledChildWelfareAllowance"],
+  ["cash","各親の判定所得・扶養人数＋各児の障害要件 → 年間手当（円）","特児は受給資格者とその配偶者を判定する。児福は子本人（無所得・配偶者なし）と、生計を維持する両親を個別に判定し、親の一方でもその人の限度額以上なら停止とする。","revisionCashBenefits","src/calc/specialChildAllowance.js:calculateSpecialChildAllowance","src/calc/disabledChildWelfareAllowance.js:calculateDisabledChildWelfareAllowance"],
   ["service","世帯の判定用所得割＋対象負担（円／月）→ 利用者負担（円／年）","本モデルの同一保護者に係る合算対象額に世帯の月額上限を適用し、12か月分を差し引く。","revisionServiceBurden"],
   ["disposable","夫婦の給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
   ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
@@ -36,7 +36,7 @@ const currentFlow = [
 const discussionFlow = [
   ["E「制度境界のみ」：各給与点の所得区分 → 制度別の境界線","夫婦各1万円刻みの隣接する給与点を比較し、各制度の区分が切り替わる位置だけを結ぶ。支出額や可処分所得の下落幅は用いない。","src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier","src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier","src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap"],
   ["隣接する給与点の判定区分 → 制度別・判定対象者別の変化点","収支が下がったか否かを問わず、判定区分が変わった点を抽出する。判定できない区間をまたいで変化を推定しない。","src/calc/paperChangePoints.js:scanPaperChangePoints"],
-  ["就学奨励費（N04）：所定の月収入額・月需要額 → 支弁区分","特別支援学校小学部の通常判定に必要な測定値が揃う場合だけ区分を判定する。支給額を推定せず、主試算の収支に加えない。","src/calc/paperEducationAssessment.js:assessPaperEducationClass"],
+  ["就学奨励費（N04）：世帯構成・級地・教育費 → 月需要額 → 支弁区分","特別支援学校小学部に在籍する場合の参考境界。令和6年度の需要額表を使い、必要な実費等が不明なら区分を判定しない。給付額は可処分所得に加えない。","src/calc/policyEducationNeed.js:assessBoundaryEducationNeed","src/calc/paperEducationAssessment.js:assessPaperEducationClass"],
   ["船橋市の医療費助成（M01）・子ども医療：各制度の要件 → 適用状況","同一医療保険単位の所得割・障害要件等によるM01の判定と、年齢や診療条件等による子ども医療の判定を分ける。窓口の実支払額は推定しない。","src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage"],
 ];
 

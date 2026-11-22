@@ -2,7 +2,7 @@ import {useCallback,useMemo,useSyncExternalStore} from "react";
 
 // IndexedDB holds completed numerical results, not React state or an image of a chart.
 // Change this version when the model, grid or stored result schema changes.
-const VERSION="paper-2029-grid-v2";
+const VERSION="paper-2029-grid-v3";
 const PENDING=Object.freeze({type:"progress",percent:0});
 const HOLD=2;
 function canonical(v) {

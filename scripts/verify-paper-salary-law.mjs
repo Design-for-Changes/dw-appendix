@@ -1,4 +1,4 @@
-// 確定した2029年税表ではなく、R8年法律12号の本則別表第五を照合する。
+// R8年法律12号の本則別表第五を照合する。
 // curl -fsSL https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/22120260331012.htm | node --experimental-default-type=module scripts/verify-paper-salary-law.mjs
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";

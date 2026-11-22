@@ -12,7 +12,7 @@ export const PAPER_EDUCATION_ASSESSMENT_BASIS = Object.freeze({
 export const PAPER_EDUCATION_PUBLISHED_EXAMPLES = Object.freeze({
   title:"埼玉県教育委員会「支弁区分について」：同一世帯の所得条件を変えた3例",
   householdLabel:"さいたま市。父40歳・母37歳・特別支援学校在籍の子7歳・妹5歳（前年12月31日時点）。",
-  yearLabel:"資料に適用年度の記載なし。船橋市の2029年比較の値ではない。",
+  yearLabel:"資料に適用年度の記載なし。",
   sourceUrl:PAPER_EDUCATION_ASSESSMENT_BASIS.workedExamples,
   sourcePageUrl:"https://www.pref.saitama.lg.jp/f2212/904-20091216-84.html",
   measuredMonthlyNeedYen:229089,

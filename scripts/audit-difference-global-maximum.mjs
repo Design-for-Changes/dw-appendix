@@ -12,7 +12,7 @@ const normal=h=>({...h,children:h.children.map(c=>({...c,tccaGrade:"not",welfare
 
 // Higher gross salary gets all child dependants and claims the special child allowance. By
 // symmetry it suffices to scan head >= spouse: the higher earner is always the spouse-
-// deduction filer and the child's welfare maintainer, including ties (head). The low earner's
+// deduction filer, including ties (head). Both parents are tested as welfare maintainers. The low earner's
 // tax saving is always zero. Only the higher earner receives these child deductions.
 // With service off (maximal delta), age collapses to <16 / 16–17, order is immaterial, and
 // ordinary child allowance cancels. The largest eligible cash rates are first grade + welfare.
@@ -37,13 +37,13 @@ for(let n=1;n<=3;n++)for(let old=0;old<=n;old++){
     if(a<b || !a)return null;
     const d=g.evaluate(a,b).details, dt=base.evaluate(a,b).details;
     assert.equal(d.headTax.taxDependentCount,n);
-    assert.deepEqual([d.roles.allowanceRecipient,d.roles.spouseDeductionClaimant,d.roles.welfareMaintainer],["head","head","head"]);
+    assert.deepEqual([d.roles.allowanceRecipient,d.roles.spouseDeductionClaimant,d.roles.welfareMaintainer],["head","head","both"]);
     assert.equal(d.benefits.additionalSupportedCount,0);
     const c=d.benefits.specialChildAllowance.checks[0];
     sampledCells++;
     assert.equal(typeof c.stopped,"boolean");
     return {tax:dt.headTax.totalTaxYen-d.headTax.totalTaxYen,claimant:!c.stopped,
-      welfare:d.benefits.welfareChildren[0].incomeEligible};
+      welfare:d.benefits.welfareChildren[0].checks.find(c=>c.role==="maintainer"&&c.id==="head").passes};
   }));
   const lowData=hi.map(a=>wages.map(b=>{
     if(b>a)return null;
@@ -53,14 +53,14 @@ for(let n=1;n<=3;n++)for(let old=0;old<=n;old++){
     const c=d.benefits.specialChildAllowance.checks[1];
     sampledCells++;
     assert.equal(typeof c.stopped,"boolean");
-    return {spouse:!c.stopped};
+    return {spouse:!c.stopped,welfare:d.benefits.welfareChildren[0].checks.find(c=>c.role==="maintainer"&&c.id==="spouse").passes};
   }));
   const {tcca,welfare}=g.evaluate(1,1).details.benefits;
   assert.ok(tcca>0 && welfare>0);
   const direct=createDisabilityIncomeComparison(household);
   function differenceFromBands(a,b){
     const H=highData[band[b]][a],L=lowData[band[a]][b];
-    return H.tax+(H.claimant&&L.spouse?tcca:0)+(H.welfare?welfare:0);
+    return H.tax+(H.claimant&&L.spouse?tcca:0)+(H.welfare&&L.welfare?welfare:0);
   }
   // Check the salary-band reduction independently against both the actual household and
   // its control. Cover each possible salary, as well as the exact endpoints of every
@@ -90,7 +90,7 @@ for(let n=1;n<=3;n++)for(let old=0;old<=n;old++){
   assert.equal(Math.round(result.studyDisposableWan*W)-Math.round(createRevisionCalculator(normal(hh)).evaluate(a,b).studyDisposableWan*W),best);
   if(a!==b){ // direct check of the excluded (mirror image) half of the grid, with parent IDs interchanged
     const mirror=g.evaluate(b,a).details.roles;
-    assert.deepEqual([mirror.allowanceRecipient,mirror.spouseDeductionClaimant,mirror.welfareMaintainer],["spouse","spouse","spouse"]);
+    assert.deepEqual([mirror.allowanceRecipient,mirror.spouseDeductionClaimant,mirror.welfareMaintainer],["spouse","spouse","both"]);
     assert.equal(createDisabilityIncomeComparison(hh).evaluate(b,a).differenceYen,best);
   }
   restoredChecks++;

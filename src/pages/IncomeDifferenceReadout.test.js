@@ -33,7 +33,7 @@ test.each([
       serviceUser:false,serviceAmountYen:0}))});
   for(const [a,b,higher] of [[high,low,"head"],[low,high,"spouse"]]){
     const {observedPoint,comparisonPoint}=calc.evaluatePair(a,b);
-    expect(observedPoint.details.roles).toMatchObject({allowanceRecipient:higher,welfareMaintainer:higher,spouseDeductionClaimant:higher});
+    expect(observedPoint.details.roles).toMatchObject({allowanceRecipient:higher,welfareMaintainer:"both",spouseDeductionClaimant:higher});
     expect(comparisonPoint).toMatchObject({differenceYen,extraBenefitsYen,taxSavingYen,extraServiceYen:0,insuranceSavingYen:0});
     expect(comparisonPoint.withYen-comparisonPoint.withoutYen).toBe(differenceYen);
   }

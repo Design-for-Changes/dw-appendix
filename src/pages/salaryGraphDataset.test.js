@@ -14,6 +14,15 @@ test("入力項目の順序ではなく、世帯の計算条件でキーを決�
   expect(householdDatasetKey({children:[{serviceAmountYen:20000,age:8}],protocol:"paper-2029"})).toBe(key);
   expect(householdDatasetKey({...household,children:[]})).not.toBe(key);
 });
+test("児福を一方の親だけで判定した旧格子は、同じ条件の保存済みデータとして再利用しない",async()=>{
+  const {db,store,makeWorker}=fixture();
+  const oldKey=key.replace(/^.*?:/,"paper-2029-grid-v2:");
+  expect(oldKey).not.toBe(key);
+  db.set(oldKey,data);
+  store.subscribe(key,household,jest.fn());await tick();
+  expect(makeWorker).toHaveBeenCalledTimes(1);
+  expect(store.snapshot(key)).not.toBe(data);
+});
 test("3図が購読しても計算は1回。途中で全画面を離れても終了せず、結果を同じオブジェクトで返す",async()=>{
   const {store,makeWorker,api}=fixture();
   const unsub=Array.from({length:3},()=>store.subscribe(key,household,jest.fn()));

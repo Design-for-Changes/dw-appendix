@@ -40,15 +40,16 @@ function parentRows({point, inputs, id}) {
   const older = t.olderDependentCount;
   const ordinary = dependents.filter(c => c.taxStatus === "ordinary").length;
   const special = dependents.filter(c => c.taxStatus === "special").length;
-  const childIT = 380000*older + 270000*ordinary + 750000*special;
-  const childLT = 330000*older + 260000*ordinary + 530000*special;
+  const dependentIT = 380000*older, dependentLT = 330000*older;
+  const disabilityIT = t.disabilityDeductionITYen, disabilityLT = 260000*ordinary + 530000*special;
   const difference = Math.round(local.personalDeductionDifferenceWan*10000);
   const gross = n(s.annualSalaryYen), lbase = n(local.taxableYen);
   const beforeThreshold = n(local.incomeLevyBeforeThresholdAdjustmentYen);
   const afterThreshold = n(local.incomeLevyAfterThresholdAdjustmentYen);
   const thresholdAdjustment = ex.incomeLevyExempt ? "所得割非課税 → 0"
     : "min("+beforeThreshold+", "+n(income)+" − "+n(ex.incomeLevyExemptionThresholdYen)+")";
-  const thousand = (terms) => "max(0, " + terms.map(n).join(" − ") + ") の1,000円未満を切捨て";
+  const taxableSubstitution = (dependent, disability, spouse, basic) =>
+    "max(0, "+n(income)+" − "+n(t.socialYen)+" − "+n(dependent)+" − "+n(disability)+"（障害者控除） − "+n(spouse)+" − "+n(basic)+") の1,000円未満を切捨て";
   const familySpouse = Number(partner.currentIncomeYen <= 620000);
   const threshold = (variable) => ex.dependentCount ? "350,000 × (" + ex.dependentCount + " + 1) + " + variable : "450,000（扶養等0人）";
   const adjustmentBranch = ex.incomeLevyExempt ? "所得割非課税 → 0" : local.taxableYen <= 2000000
@@ -61,16 +62,17 @@ function parentRows({point, inputs, id}) {
     ["給与所得（調整後）", "調整前給与所得 − 所得金額調整控除", n(s.salaryIncomeBeforeAdjustmentYen)+" − "+n(s.incomeAdjustmentDeductionYen), yen(income)],
     ["基礎控除", "この給与範囲では、所得税は所得132万円以下99万円・超62万円。住民税は43万円。", n(income)+(income<=1320000?" ≤ ":" > ")+"1,320,000", pair(t.basicITYen,430000)],
     ["社会保険料控除", "当人の社会保険料負担額", yen(t.socialYen), yen(t.socialYen)],
-    ["扶養控除・障害者控除", "所得税：16歳以上×38万＋普通×27万＋同居特別×75万。住民税：同じ人数に33万・26万・53万。", older+" × 380,000 + "+ordinary+" × 270,000 + "+special+" × 750,000 ／ "+older+" × 330,000 + "+ordinary+" × 260,000 + "+special+" × 530,000", pair(childIT,childLT)],
+    ["扶養控除", "16歳以上の扶養児童1人につき、所得税38万円、住民税33万円。", "所得税 "+older+" × 380,000 ／ 住民税 "+older+" × 330,000", pair(dependentIT,dependentLT)],
+    ["障害者控除", "16歳未満の扶養児童も対象。所得税／住民税は、障害者1人27万／26万円、同居特別障害者1人75万／53万円。", "所得税 "+ordinary+" × 270,000 + "+special+" × 750,000 ／ 住民税 "+ordinary+" × 260,000 + "+special+" × 530,000", pair(disabilityIT,disabilityLT)],
     ["配偶者控除・配偶者特別控除", "本人と配偶者の所得に応じた控除額。所得要件を満たさなければ0円。", spouseLookup(income,partner.currentIncomeYen,details.roles.spouseDeductionClaimant === id), pair(sp.it,sp.lt)],
-    ["所得税の課税所得", "給与所得 − 社会保険料 − 子の控除 − 配偶者等控除 − 基礎控除。負値は0、1,000円未満切捨て。", thousand([income,t.socialYen,childIT,sp.it,t.basicITYen]), yen(national.taxableYen)],
+    ["所得税の課税所得", "給与所得 − 社会保険料 − 扶養控除 − 障害者控除 − 配偶者等控除 − 基礎控除。負値は0、1,000円未満切捨て。", taxableSubstitution(dependentIT,disabilityIT,sp.it,t.basicITYen), yen(national.taxableYen)],
     ["基準所得税額", "max(0, 課税所得 × 速算税率 − 速算控除額) の1円未満を切捨て", "max(0, "+n(national.taxableYen)+" × "+n(national.rate*100)+"% − "+n(national.deductionYen)+") の1円未満を切捨て", yen(national.baseTaxYen)],
     ["所得税等（年調年税額）", "基準所得税 ×（100%＋復興1.1%＋防衛1%）。合計で100円未満切捨て。", n(national.baseTaxYen)+" × 1.021（100円未満を切捨て）", yen(t.incomeTaxYen)],
-    ["住民税の課税所得", "給与所得 − 社会保険料 − 子の控除 − 配偶者等控除 − 430,000。負値は0、1,000円未満切捨て。", thousand([income,t.socialYen,childLT,sp.lt,430000]), yen(local.taxableYen)],
+    ["住民税の課税所得", "給与所得 − 社会保険料 − 扶養控除 − 障害者控除 − 配偶者等控除 − 基礎控除。負値は0、1,000円未満切捨て。", taxableSubstitution(dependentLT,disabilityLT,sp.lt,430000), yen(local.taxableYen)],
     ["住民税の非課税判定人数", "申告した扶養児童＋同一生計配偶者（配偶者所得62万円以下）。配偶者控除の申告者とは別判定。", dependents.length+" + "+familySpouse+"（配偶者所得 "+yen(partner.currentIncomeYen)+"）", ex.dependentCount+"人"],
     ["均等割等の非課税判定", "扶養等0人は45万円、それ以外は35万円×(人数＋1)＋31万円。所得が限度額以下なら非課税。", threshold("310,000")+" = "+n(ex.perCapitaExemptionThresholdYen)+"；所得 "+n(income), ex.perCapitaExempt?"非課税":"課税"],
     ["所得割の非課税判定", "扶養等0人は45万円、それ以外は35万円×(人数＋1)＋42万円。所得が限度額以下なら非課税。", threshold("420,000")+" = "+n(ex.incomeLevyExemptionThresholdYen)+"；所得 "+n(income), ex.incomeLevyExempt?"非課税":"課税"],
-    ["住民税の人的控除差", "基礎差5万円＋子の控除差＋配偶者控除の差（配偶者特別控除の差は0）。", "50,000 + ("+n(childIT)+" − "+n(childLT)+") + "+n(sp.difference), yen(difference)],
+    ["調整控除に用いる人的控除額の差", "基礎控除の所定差額5万円＋扶養控除の差＋障害者控除の差＋配偶者控除の差。", "50,000 + ("+n(dependentIT)+" − "+n(dependentLT)+") + ("+n(disabilityIT)+" − "+n(disabilityLT)+") + "+n(sp.difference), yen(difference)],
     ["住民税の調整控除", "所得割非課税は0。課税所得200万円以下：min(人的控除差, 課税所得)×5%。超：max(2,500, [差−(課税所得−200万)]×5%)。", adjustmentBranch, yen(local.adjustmentDeductionYen)],
     ["所得割（市・県計、減額前）","所得割非課税なら0。課税なら課税所得×10%から人的控除差の調整控除を差し引く。",ex.incomeLevyExempt?"所得割非課税 → 0":lbase+" × 10% − "+n(local.adjustmentDeductionYen),yen(local.incomeLevyBeforeThresholdAdjustmentYen)],
     ["所得割（非課税限度額による減額後）","給与所得から非課税限度額を引いた額を所得割の上限とする（地方税法附則第3条の3）。",thresholdAdjustment,yen(local.incomeLevyAfterThresholdAdjustmentYen)],

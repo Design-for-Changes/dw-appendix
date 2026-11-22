@@ -46,3 +46,19 @@ test("計算エラーを保持したままにせず、同じ条件で再実行�
   act(()=>worker.onmessage({data:{jobId,type:"result",result:{maxSalaryWan:1500,layers:[]}}}));
   expect(screen.getByText("ready:1500")).toBeVisible();
 });
+
+test("条件変更前の計算が後から終わっても、新しい条件の結果を上書きしない",async()=>{
+  const workers=[0,1].map(()=>({postMessage:jest.fn(),terminate:jest.fn()}));
+  createPolicyOnlyWorker.mockReturnValueOnce(workers[0]).mockReturnValueOnce(workers[1]);
+  const {rerender}=render(<Probe cacheKey={jobKey("old-conditions")}/>);
+  await waitFor(()=>expect(workers[0].postMessage).toHaveBeenCalledTimes(1));
+  rerender(<Probe cacheKey={jobKey("new-conditions")}/>);
+  await waitFor(()=>expect(workers[1].postMessage).toHaveBeenCalledTimes(1));
+  const finish=(worker,maxSalaryWan)=>act(()=>worker.onmessage({data:{
+    jobId:worker.postMessage.mock.calls[0][0].jobId,type:"result",result:{maxSalaryWan,layers:[]}
+  }}));
+  finish(workers[1],1300);
+  finish(workers[0],1500);
+  expect(screen.getByText("ready:1300")).toBeVisible();
+  expect(screen.queryByText("ready:1500")).not.toBeInTheDocument();
+});

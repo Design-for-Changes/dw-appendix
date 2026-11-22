@@ -1,10 +1,10 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { REVISION_INCOME_DESIGN as design, readSalaryWan, salaryBounds } from "../data/revisionIncomeDesign";
 import { createRevisionCalculator } from "../calc/revisionEngine";
-import { CALCULATION_SOURCES } from "../calc/calculationSources";
 import { RevisionSurface } from "./RevisionSurface";
 import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
 import PolicyBoundariesOnly from "./PolicyBoundariesOnly";
+import BoundaryEducationFields from "./BoundaryEducationFields";
 import {useSalaryGraphDataset} from "./salaryGraphDataset";
 import { useSessionParameter } from "./salarySimulatorSession";
 import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
@@ -18,7 +18,6 @@ export {blankChild};
 const PARENT_NAME={head:"世帯主",spouse:"配偶者"};
 const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
-const designUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(design, null, 2));
 const GRAPH_VIEWS = [
   ["income","可処分所得（3D）"],
   ["boundaries","制度境界・下落・同水準線（2D）"],
@@ -41,7 +40,7 @@ export function ChildFields({ index, child, update }) {
 }
 
 
-/** 給与格子は3図で共有する。点Pとその内訳は世帯可処分所得3DだけのUI。 */
+/** 4図の世帯条件は一度の描画で確定する。給与格子と制度境界は必要な図を開いたときに計算する。 */
 export default function RevisionIncomePlane({graphView,onGraphViewChange,comparison=false}) {
   const pointId=useId();
   const [localView,setLocalView]=useState(comparison?"difference":"income");
@@ -59,6 +58,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
     changeView(GRAPH_VIEWS[target][0]);
   }
   const {children,setChildren,inputs}=usePaperHousehold();
+  const [educationInputs,setEducationInputs]=useSessionParameter("boundaryEducationInputsV2",{});
   const [income, setIncome] = useSessionParameter("income", initialPoint);
   const [fixedTotal, setFixedTotal] = useSessionParameter("fixedTotal", null);
   const [lastDrawnKey,setLastDrawnKey] = useSessionParameter("lastDrawnKey", null);
@@ -71,16 +71,16 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       return { calculator:createRevisionCalculator(inputs), error:null };
     } catch (err) { return { calculator: null, error: err.message }; }
   }, [inputs]);
-  const inputKey=useMemo(()=>calculator ? JSON.stringify(inputs) : null,[calculator,inputs]);
+  // 教育費の前提は制度境界にだけ使う。変更しても可処分所得の格子のキーには加えない。
+  const inputKey=useMemo(()=>calculator ? JSON.stringify(Object.keys(educationInputs).length ? {inputs,educationInputs} : inputs) : null,[calculator,inputs,educationInputs]);
   const drawn=inputKey !== null && lastDrawnKey === inputKey;
-  // 給与格子は世帯条件ごとに一度だけ走査し、各図は同じ結果を使う。
-  const datasetState=useSalaryGraphDataset(inputs,drawn && view!=="systems");
   // 未訪問の図は先回りで描画せず、一度開いた図は非表示状態のまま保持する。
   const [visited,setVisited]=useState([]);
   useEffect(()=>{
     setVisited(old=>!drawn ? (old.length?[]:old) : old.includes(view)?old:[...old,view]);
   },[drawn,view]);
   const plotted=id=>drawn&&(view===id||visited.includes(id));
+  const datasetState=useSalaryGraphDataset(inputs,drawn&&(view!=="systems"||visited.some(id=>id!=="systems")));
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
   useEffect(()=>{
     if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(null);
@@ -108,8 +108,9 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       <summary>世帯と子どもの条件</summary>
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
       {children.map((c, i) => <ChildFields key={i} index={i} child={c} update={delta=>updateChild(i,delta)} />)}
+      <BoundaryEducationFields children={children} values={educationInputs} onChange={setEducationInputs}/>
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
-      {view!=="systems"&&<button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>}
+      <button type="button" disabled={!calculator || drawn} onClick={()=>{setLastDrawnKey(inputKey);setConditionsOpen(false);}}>グラフを描画</button>
     </details>
     <div className="revision-graph-tabs" role="tablist" aria-label="グラフの切り替え">
       {GRAPH_VIEWS.map(([id,label],index)=><button key={id} id={pointId+"-tab-"+id} type="button" role="tab"
@@ -117,7 +118,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
         onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
     </div>
     {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
-      {id==="systems" ? view==="systems"&&<PolicyBoundariesOnly inputs={inputs}/> : plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
+      {plotted(id)&&(id==="systems"?<PolicyBoundariesOnly inputs={inputs} educationInputs={educationInputs}/>:id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
         id==="difference"?<RevisionSurface {...sharedPlot} comparison/>:
         <RevisionSurface {...sharedPlot} {...{calculator,point,head,spouse,fixedTotal}} onSelectSalary={selectSalary}/>)}
     </div>)}
@@ -142,9 +143,8 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
       <a download="household-point.json" href={"data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ schema: "household-income-point-paper-2029", outcome: design.outcome, salaryUnit: "万円／年", headSalaryWan: salary[0], spouseSalaryWan: salary[1], inputs, result: point }, null, 2))}>この給与点の世帯条件・計算内訳を保存（JSON）</a>
     </>}
     </section>}
-    <details><summary>試算条件・出典</summary>
-      <p>夫婦はともに45歳で、船橋市に居住・勤務する。子は全員、父母と同居し、本人の所得は前年・当年ともに0円とする。給与は前年と同額で12等分し、賞与・通勤手当・任意控除は含めない。給与が正の親は勤務先で加入、無給与の配偶者は被扶養者とする。</p>
-      <p>2029年末の制度を想定し、未確定の手当額・保険料率には令和8年度の公表値を使用。通所負担は多子軽減後、食費等を除く。{design.outcome.scopeNote}</p>
-      <a href={CALCULATION_SOURCES.serviceBurden.url}>利用者負担の基準</a> ／ <a href={designUrl} download="revision-income-design.json">給与軸の仕様（JSON）</a></details>
+    <details><summary>試算条件</summary>
+      <p>夫婦はともに45歳で、船橋市に居住・勤務する。子は全員、父母と同居し、配偶者はおらず、本人の所得は前年・当年ともに0円とする。給与は前年と同額で12等分し、賞与・通勤手当・任意控除は含めない。給与が正の親は勤務先で加入、無給与の配偶者は被扶養者とする。</p>
+    </details>
   </section>;
 }

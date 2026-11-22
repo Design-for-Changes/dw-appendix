@@ -9,7 +9,7 @@ import { calculateHouseholdInsurance2029 } from "./householdInsurance2029";
 // https://www.mhlw.go.jp/content/12500000/001496971.pdf
 // 雇用：令和8年度一般事業の労働者負担額、給与から源泉控除する場合。
 // https://www.mhlw.go.jp/new-info/kobetu/roudou/gyousei/hoken/kakikata/dl/keizoku-20.pdf
-// 以下は月ごとの実納付額ではなく、2029年末の制度＋令和8年度の代理料率による静的年換算。
+// 以下の期待年額は同じ報酬月額の12か月分。
 
 const golden = [
   // 額面年収、健保標準、厚年標準、健保等年額、厚年年額、雇用年額、本人計（円）。

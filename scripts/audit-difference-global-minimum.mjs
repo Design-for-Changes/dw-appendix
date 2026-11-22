@@ -17,7 +17,7 @@ const fields=(p,age=10,fee=maxMonthly)=>({age,tccaGrade:p.tccaGrade,welfareEligi
 const plain=profiles.find(p=>p.tccaGrade==="not"&&!p.welfareEligible&&p.taxStatus==="none");
 const household=children=>({protocol,children,serviceAmountYen:0});
 const witness={headWan:0,spouseWan:1500,age:10,profile:plain.id,taxDependentOf:"spouse",servicePerUserMonthlyYen:maxMonthly,
-  allowanceRecipient:"spouse",welfareMaintainer:"spouse",spouseDeductionClaimant:"spouse"};
+  allowanceRecipient:"spouse",welfareMaintainer:"both",spouseDeductionClaimant:"spouse"};
 
 // For fixed wages and tax-filing relationships, only the two disability deductions change the taxes:
 // the tax exemption limit depends on the number of dependants, not their disability classifications.
@@ -73,7 +73,7 @@ for(const {children:n,minimumYen} of published){
   const d=createRevisionCalculator(h).evaluate(witness.headWan,witness.spouseWan).details;
   assert.deepEqual(d.roles.taxDependentOf,Array(n).fill("spouse"));
   assert.equal(d.roles.allowanceRecipient,"spouse");
-  assert.equal(d.roles.welfareMaintainer,"spouse");
+  assert.equal(d.roles.welfareMaintainer,"both");
   assert.equal(d.roles.spouseDeductionClaimant,"spouse");
   const p=createDisabilityIncomeComparison(h).evaluate(witness.headWan,witness.spouseWan);
   assert.deepEqual([p.taxSavingYen,p.insuranceSavingYen,p.extraBenefitsYen,p.extraServiceYen,p.differenceYen],

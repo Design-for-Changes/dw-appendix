@@ -67,11 +67,11 @@ test("給与順位と本人表の支給可否が同じ一歩で変わっても�
   expect(changes).toMatchObject([{atWan:782,subject:"claimant:spouse",beforePerson:"head",afterPerson:"spouse",after:"所得制限に該当"}]);
 });
 
-test("同一給与で2人の児福の維持者判定が変われば2件。本人や維持者でない親の限度超過を混ぜない",()=>{
+test("2児とも父母を別々に判定し、世帯主だけが限度額に達したら児童別に2件記録する",()=>{
   const c=index([qualified(10),qualified(8)]);
   const r=scanPaperChangePoints(c,"head",200);
   const ward=r.events.filter(e=>e.system==="N01-2");
-  expect(ward.map(e=>e.subject)).toEqual(["child1:maintainer","child2:maintainer"]);
+  expect(ward.map(e=>e.subject)).toEqual(["child1:maintainer:head","child2:maintainer:head"]);
   expect(ward[0].atWan).toBe(ward[1].atWan);
   expect(ward.every(e=>e.beforePerson==="head" && e.afterPerson==="head")).toBe(true);
   // 本人は無所得のモデルなので、本人の所得判定には変化点がない。

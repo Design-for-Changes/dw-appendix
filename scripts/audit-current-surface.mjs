@@ -29,7 +29,8 @@ for (const children of process.argv.includes("--tax-only")?[]:fixtures) {
     const owner=x>=y?"head":"spouse";
     assert.equal(d.roles.allowanceRecipient,owner);
     assert.equal(d.roles.spouseDeductionClaimant,owner);
-    assert.equal(d.roles.welfareMaintainer,owner);
+    assert.equal(d.roles.welfareMaintainer,"both");
+    for(const w of b.welfareChildren)assert.deepEqual(w.checks.filter(c=>c.role==="maintainer").map(c=>c.id).sort(),["head","spouse"]);
     assert(d.roles.taxDependentOf.length===children.length && d.roles.taxDependentOf.every(id=>id===owner));
     const taxed=parents.some(t=>t.residentTax.perCapitaYen>0 || t.residentTax.incomeLevyYen>0);
     const assess=parents.reduce((v,t,j)=>v+Math.max(0,t.residentTax.municipalIncomeLevyYen-

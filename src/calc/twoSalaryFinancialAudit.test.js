@@ -1,8 +1,7 @@
 import {createRevisionCalculator} from "./revisionEngine";
 
 // 本稿の二給与経路だけを呼ぶ外部期待値テスト。税・保険の実装関数、UIおよび生成済み数表を
-// 期待値の計算に使わない。45歳・千葉支部・R8年度代理料率・2029年末の厚年上限・
-// 給与以外の所得なし。2029年に実際に徴収される額の検証ではない。
+// 期待値の計算に使わない。45歳・千葉支部・令和8年度料率・厚年上限75万円・給与以外の所得なし。
 // 給与所得・国税の基礎控除・子に係る所得金額調整控除（夫婦双方に適用可）：
 // https://www.shugiin.go.jp/internet/itdb_housei.nsf/html/housei/22120260331012.htm
 // https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1199.htm

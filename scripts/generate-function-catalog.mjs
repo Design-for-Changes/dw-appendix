@@ -14,7 +14,7 @@ const files=[...fs.readdirSync(path.join(ROOT,'src/calc')).filter(f=>f.endsWith(
 const apiNames=new Set(['createRevisionCalculator','calculateHouseholdInsurance2029','calculatePaperSalaryTaxInputs2029','calculateSpecialChildAllowance','calculateDisabledChildWelfareAllowance','scanPaperChangePoints','assessFunabashiMedicalCoverage','assessPaperEducationClass','calculateHouseholdCoverage','estimateFunabashiNational','annualEmployeePremiums','buildHousehold','computeSeries','calculateSocialInsuranceComponents','computeOptimalModel','computeIllustrativeAdjustment','generateRevisionScenarios']);
 function category(file){
   if(/allPatternsComparison|generate-pattern-salary-envelopes/.test(file))return '全パターンの可処分所得差';
-  if(/policyOnlyBoundaries|policyAdditionalBands/.test(file))return '制度ごとの所得区分の境界';
+  if(/policyOnlyBoundaries|policyAdditionalBands|policyEducationNeed/.test(file))return '制度ごとの所得区分の境界';
   if(/paperSalaryBands/.test(file))return '二給与格子と配偶者所得区分';
   if(/disabilityIncomeDifference/.test(file))return '障害の有無による可処分所得差';
   if(/salaryDecisionMap/.test(file))return '二給与平面での制度変更点';

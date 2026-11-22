@@ -8,7 +8,7 @@ import "../pages/salarySurface.worker.js";
 
 const normal={age:8,tccaGrade:"not",taxStatus:"none",welfareEligible:false,serviceUser:false,serviceAmountYen:0,
   taxDependentOf:"highest-salary",maintainedBy:null};
-const inputs={protocol:"paper-2029",serviceAmountYen:0,roles:{allowanceRecipient:"highest-salary",welfareMaintainer:"highest-salary",
+const inputs={protocol:"paper-2029",serviceAmountYen:0,roles:{allowanceRecipient:"highest-salary",welfareMaintainer:"both",
   spouseDeductionClaimant:"head"},children:[{...normal,tccaGrade:"1",taxStatus:"special",welfareEligible:true,serviceUser:true,serviceAmountYen:20000}]};
 
 test.each([[inputs,2],[{...inputs,children:[normal]},1]])("各世帯の全評価点は重複せず、原点を評価しない", (h,count)=>{

@@ -1,9 +1,9 @@
 import {ADDITIONAL_POLICY_LAYERS,createAdditionalPolicyClassifier} from "./policyAdditionalBands";
 
-const parent=(values={})=>({wageWan:100,income:0,municipalLevy:0,serviceLevy:0,taxable:false,...values});
+const parent=(values={})=>({income:0,municipalLevy:0,serviceLevy:0,taxable:false,...values});
 const child=(age=8,taxStatus="none")=>({age,taxStatus});
 const decode=word=>ADDITIONAL_POLICY_LAYERS.map((_,i)=>(word>>>(4*i))&15);
-const calculator=(children=[child()],insuredParent=null)=>createAdditionalPolicyClassifier(children,{medical:{insuredParent}});
+const calculator=(children=[child()])=>createAdditionalPolicyClassifier(children);
 
 test("市の公営住宅所得計算例（夫婦と16歳未満の子1人）は第2区分",()=>{
   // 船橋市の例：所得 1,670,000 + 750,000 − 760,000 − 200,000 = 1,460,000円（年）。
@@ -15,7 +15,7 @@ test.each([104000,123000,139000,158000,186000,214000,259000])("住宅区分の�
   // 給与所得者1人・扶養の配偶者・16歳の特別障害児：基礎10万+親族76万+特定25万+特別40万。
   const gross=limit*12+1510000;
   const c=calculator([child(16,"special")]);
-  const band=income=>decode(c.classify(parent({income}),parent({wageWan:0})))[0];
+  const band=income=>decode(c.classify(parent({income}),parent()))[0];
   expect([band(gross),band(gross+1)]).toEqual([i+1,i+2]);
 });
 
@@ -35,15 +35,10 @@ test("補聴器は扶養復元後の個人いずれかが46万円以上。電源
   expect(decode(c.classify(parent({taxable:true}),parent()))[2]).toBe(1);
 });
 
-test("医療は子の被保険者の所得帯。扶養先未指定を非課税扱いせず、給与0円の親は被保険者にしない",()=>{
-  const h=parent({wageWan:350,taxable:true,serviceLevy:33000});
-  const s=parent({wageWan:900,taxable:true,serviceLevy:235000});
-  const code=(opt,a=h,b=s)=>decode(calculator([child()],opt).classify(a,b))[3];
-  expect(calculator().statuses[3]).toBe("needs-input");
-  expect([code(null),code("head"),code("spouse"),code("higher")]).toEqual([0,3,4,4]);
-  expect(code("head",{...h,wageWan:0})).toBe(4);
-  expect(code("higher",{...h,wageWan:900},s)).toBe(3);
-  expect(code("head",{...h,taxable:false,serviceLevy:0})).toBe(1);
-  expect(code("head",{...h,serviceLevy:32999})).toBe(2);
-  expect(code("spouse",h,{...s,serviceLevy:234999})).toBe(3);
+test("自立支援医療は被保険者と仮定した高給与親の所得帯だけを分類し、他方の所得割は加えない",()=>{
+  const c=calculator(),other=parent({taxable:true,serviceLevy:235000});
+  const code=(taxable,serviceLevy)=>decode(c.classify(parent({taxable,serviceLevy}),other))[3];
+  expect(c.statuses[3]).toBe("calculated");
+  expect([code(false,0),code(true,0),code(true,32999),code(true,33000),
+    code(true,234999),code(true,235000)]).toEqual([1,2,2,3,3,4]);
 });

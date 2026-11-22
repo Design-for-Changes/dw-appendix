@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
-  "revision": "74f7fefc0f3540737de4a49185e0fc89e47289fc4d66f7cd53f9f5f9fc79f2b4",
+  "revision": "84ff28b4f314d7d8f5e8dab2f235daf410d5684096c8000e34503219dabe2853",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 230,
+  "functionCount": 231,
   "classCount": 0,
   "sources": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "file": "scripts/generate-pattern-salary-envelopes.mjs",
-      "sha256": "4ea409ca03ba117667b1de30462c1581a8b07d7631b25233cc3b4fa954267ac6"
+      "sha256": "1ac3321171341de7f81417c5855fdc9350f75fe45117a23bf7c73198d09dbb0b"
     },
     {
       "file": "scripts/generate-revision-scenarios.mjs",
@@ -97,11 +97,11 @@
     },
     {
       "file": "src/calc/paperComparison.js",
-      "sha256": "356c7f3d890c5d2dd4729ac633547b6ab9c5dd20a2faa3e6435caf3d665c978a"
+      "sha256": "108f4104d8ce0f7c7e8899c749ab6e7e36c597c83c6980bc515e8ea76ee1cebb"
     },
     {
       "file": "src/calc/paperEducationAssessment.js",
-      "sha256": "fd59d70147d1c2c1cee9e05bbd474ed883e5be34c099b9ad5b70ac988ac8715e"
+      "sha256": "2fc531d9fc353bfb9bdff6d1b24fb68247e96cfb9721080a24d69c91b03a55cb"
     },
     {
       "file": "src/calc/paperMedicalCoverage.js",
@@ -113,15 +113,19 @@
     },
     {
       "file": "src/calc/paperSalaryTaxInputs2029.js",
-      "sha256": "c0277014d8902f5550a36e75f70db24fb2e48c29b6255f41aef16a5b8436a313"
+      "sha256": "f7b14def62b639ccb181729ea1eb68974fc888095a70713d22e78f2bb82f34b1"
     },
     {
       "file": "src/calc/policyAdditionalBands.js",
-      "sha256": "922c2ab3d21c676a2f93eed6c54ffaa846c2a6b9e1496fbb1e35ad3db144d377"
+      "sha256": "12f9173a81477a27672b77982840266c56db4899936608dfb8237d8b2e67725f"
+    },
+    {
+      "file": "src/calc/policyEducationNeed.js",
+      "sha256": "dccbd11e1aa9c63711481e9e35ed949e4da2475b9f2b6e7f810dfcda580c318b"
     },
     {
       "file": "src/calc/policyOnlyBoundaries.js",
-      "sha256": "85de8cf003acac12a5e86f58ee81ac4d9c3488872010a92ef8e9d9c8fd461016"
+      "sha256": "81cbc4b47de96db64fa0187625ef82cbcf7864a0bd1c3e57a1dad2c96d20fdfb"
     },
     {
       "file": "src/calc/revisionCoverage.js",
@@ -129,7 +133,7 @@
     },
     {
       "file": "src/calc/revisionEngine.js",
-      "sha256": "a72d96b8ed940ee7f40314c9bcbb59f10f271770e1eda4c56018a7edbea5d5eb"
+      "sha256": "b4b059a10d7fa6ac10338059958b32c94bb6614a99878e5e24d2fa69e6f486b5"
     },
     {
       "file": "src/calc/revisionPayroll.js",
@@ -173,7 +177,7 @@
     },
     {
       "file": "src/calc/specialChildAllowance.js",
-      "sha256": "79f747d5974edbc7bf06881f0ef2a7089366b62fc70d56c54ed06d607ce342ab"
+      "sha256": "161694eb44ae7c4f9496d81f70470e1a76f51b13a6a221dddf103c4f9e78ebd9"
     },
     {
       "file": "src/calc/tableUtils.js",
@@ -379,8 +383,8 @@
       "kind": "function",
       "file": "scripts/generate-pattern-salary-envelopes.mjs",
       "category": "全パターンの可処分所得差",
-      "line": 51,
-      "endLine": 118,
+      "line": 52,
+      "endLine": 119,
       "role": "内部関数",
       "signature": "groupCells(children, baseTax)",
       "description": "手当の支給状態と通所上限が等しい給与点ごとに、税額差の両端と給与座標を集計する。",
@@ -394,8 +398,8 @@
       "kind": "function",
       "file": "scripts/generate-pattern-salary-envelopes.mjs",
       "category": "全パターンの可処分所得差",
-      "line": 99,
-      "endLine": 104,
+      "line": 100,
+      "endLine": 105,
       "role": "内部関数",
       "signature": "verifyPoint(x, y, tcca, welfare, cap, tax)",
       "description": "二給与の直接算定と、所得帯ごとに再構成した支給状態・負担上限・税額差を照合する。",
@@ -2699,16 +2703,33 @@
       "kind": "function",
       "file": "src/calc/policyAdditionalBands.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 35,
-      "endLine": 68,
+      "line": 34,
+      "endLine": 60,
       "role": "内部モジュール間",
-      "signature": "createAdditionalPolicyClassifier(children, options={})",
+      "signature": "createAdditionalPolicyClassifier(children)",
       "description": "Eの給与・同居扶養条件（両親45歳・給与のみ、無所得の子1～3人）について、購入・診療・ 入居の事実を仮定せず所得軸だけを分類する。各区分は1始まり、未設定は0。",
       "params": [
-        "{object[]} children 子の年齢と税法上の障害者区分。",
-        "{object} options 医療を受ける子の保険被扶養先。税扶養先からは推測しない。"
+        "{object[]} children 子の年齢と税法上の障害者区分。"
       ],
-      "returns": "{object} 各層の利用可否と、親2人分の個別判定値から区分を符号化する関数。"
+      "returns": "{object} 各層の利用可否と、高給与親（同額時は世帯主）・他方の親の順に受け取った個別判定値から区分を符号化する関数。"
+    },
+    {
+      "id": "src/calc/policyEducationNeed.js:assessBoundaryEducationNeed",
+      "name": "assessBoundaryEducationNeed",
+      "qualifiedName": "assessBoundaryEducationNeed",
+      "kind": "function",
+      "file": "src/calc/policyEducationNeed.js",
+      "category": "制度ごとの所得区分の境界",
+      "line": 40,
+      "endLine": 85,
+      "role": "内部モジュール間",
+      "signature": "assessBoundaryEducationNeed(children, inputs={})",
+      "description": "前年末の月需要額を、両親45歳＋子1～3人・船橋市の在宅通学生モデルについて測定する。 子の入力年齢を4月1日現在とし、全員が前年末から4月1日までに誕生日を迎えない設定。 進級は通常どおり、転学なし。小学部相当児(6～11歳)のうち少なくとも1人が特別支援学校に 通うとした参考境界。きょうだいの学校種を固定せず、障害者控除や特児等級から在学を推定しない。 新小1は前年末は未就学なので加算・教育扶助に含めない。",
+      "params": [
+        "{object[]} children 共有設定の子ども（age:0～17歳）",
+        "{object} inputs 指定教材代（年額・世帯計）、前年度の対象通学費（年額・世帯計）、"
+      ],
+      "returns": "{object} 計算可能なら月需要額とその内訳。費目が未確定なら月需要額=null。"
     },
     {
       "id": "src/calc/policyOnlyBoundaries.js:parentRecord",
@@ -2717,10 +2738,10 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 23,
+      "line": 24,
       "endLine": 27,
       "role": "内部関数",
-      "signature": "parentRecord(t, wageWan)",
+      "signature": "parentRecord(t)",
       "description": "各制度の所得判定に必要な親別の税・所得・保険料を、Eと同じ計算結果から取り出す。",
       "params": [],
       "returns": ""
@@ -2733,7 +2754,7 @@
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
       "line": 30,
-      "endLine": 103,
+      "endLine": 94,
       "role": "内部モジュール間",
       "signature": "createPolicyOnlyClassifier(inputs, options={}, maxSalaryWan=MAX)",
       "description": "Conditional policy classifications, not actual service uptake, payable expenses, or disposable income.",
@@ -2747,11 +2768,11 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 38,
-      "endLine": 45,
+      "line": 37,
+      "endLine": 43,
       "role": "内部関数",
       "signature": "medicalClass(t)",
-      "description": "子が加入する医療保険と障害要件を前提に、M01の所得区分を判定する。",
+      "description": "M01の障害要件に該当し、所得制限の特例がない場合の参考線。実際の資格は推定しない。",
       "params": [],
       "returns": ""
     },
@@ -2762,8 +2783,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 71,
-      "endLine": 101,
+      "line": 68,
+      "endLine": 92,
       "role": "内部関数",
       "signature": "classify(x, y, out)",
       "description": "一組の夫婦給与について各制度の区分を2語に格納する。非該当・未設定は0とする。",
@@ -2777,8 +2798,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 108,
-      "endLine": 149,
+      "line": 99,
+      "endLine": 140,
       "role": "内部モジュール間",
       "signature": "buildPolicyOnlyMap(inputs, options={}, {maxSalaryWan=MAX,onProgress}={})",
       "description": "Consecutive adjacent 1万円 cells with the same *directed* change are merged, never interpolated. A segment [x1,y1,x2,y2,before,after] lies halfway between neighboring valid salaries; its class indices are 1-based. No financial height is read.",
@@ -2792,8 +2813,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 118,
-      "endLine": 118,
+      "line": 109,
+      "endLine": 109,
       "role": "内部関数",
       "signature": "lower(i)",
       "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
@@ -2807,8 +2828,8 @@
       "kind": "function",
       "file": "src/calc/policyOnlyBoundaries.js",
       "category": "制度ごとの所得区分の境界",
-      "line": 118,
-      "endLine": 118,
+      "line": 109,
+      "endLine": 109,
       "role": "内部関数",
       "signature": "upper(i)",
       "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
@@ -2916,8 +2937,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 27,
-      "endLine": 30,
+      "line": 31,
+      "endLine": 34,
       "role": "内部関数",
       "signature": "requireInteger(value, min, max, label)",
       "description": "円額・年齢・給与点の空欄や小数を暗黙にゼロまたは近い給与点として扱わない。",
@@ -2931,8 +2952,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 37,
-      "endLine": 74,
+      "line": 41,
+      "endLine": 78,
       "role": "内部モジュール間",
       "signature": "validateRevisionHousehold(input)",
       "description": "世帯条件を走査に先立ち検査する。サービスの利用を手当等級から導出しない。",
@@ -2948,8 +2969,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 81,
-      "endLine": 97,
+      "line": 85,
+      "endLine": 101,
       "role": "内部関数",
       "signature": "revisionSalaryRecord(salaryWan, steady2029=false)",
       "description": "給与1本から当年と前年の給与所得を作る。本人の加入・相手の扶養を給与所得には混ぜない。",
@@ -2965,8 +2986,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 100,
-      "endLine": 103,
+      "line": 104,
+      "endLine": 107,
       "role": "内部関数",
       "signature": "archivedPremiums(salaryWan)",
       "description": "v2の再現専用。新しい世帯条件からこの規則を自動選択しない。",
@@ -2980,8 +3001,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 112,
-      "endLine": 119,
+      "line": 116,
+      "endLine": 123,
       "role": "内部関数",
       "signature": "revisionSpouseDeduction(own, partner, ordinaryLimit)",
       "description": "1人の所得と配偶者所得から普通／特別の配偶者控除を選択する。",
@@ -2999,8 +3020,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 130,
-      "endLine": 172,
+      "line": 134,
+      "endLine": 176,
       "role": "内部関数",
       "signature": "revisionParentTax(person, partner, dependents, claimsSpouse, archived)",
       "description": "個人別に税を算定し、当年所得対応の税と、2026年度のサービス負担判定に用いる前年所得割を区別する。",
@@ -3020,8 +3041,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 183,
-      "endLine": 209,
+      "line": 188,
+      "endLine": 213,
       "role": "内部関数",
       "signature": "revisionCashBenefits(children, claimant, other, additionalSupportedCount, claimantId, maintainerId)",
       "description": "N01の本人・配偶者・扶養義務者を個人ごとに判定し、対象児の等級別額を年換算する。",
@@ -3030,7 +3051,8 @@
         "{object} claimant 当該給与点で受給資格者とする親の判定所得・扶養人数。",
         "{object} other 他方の親の判定所得・扶養人数。",
         "{number} additionalSupportedCount 受給資格者の税扶養に数えていない前年末生計維持児童の人数。",
-        "{string} claimantId 当該点で解決済みの受給資格者（head又はspouse）。この人に法6条、他方の親に7条を適用する。"
+        "{string} claimantId 当該点で解決済みの受給資格者（head又はspouse）。この人に法6条、他方の親に7条を適用する。",
+        "{string} maintainerId 児福で所得を判定する扶養義務者。\"both\"なら父母をそれぞれの限度額と照合する。"
       ],
       "returns": "{object} 各手当の支給額（円／年）、本人と扶養義務者の限度額・可否。"
     },
@@ -3041,8 +3063,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 218,
-      "endLine": 228,
+      "line": 222,
+      "endLine": 232,
       "role": "内部関数",
       "signature": "revisionServiceBurden(children, otherServiceMonthlyYen, adults)",
       "description": "在宅の同一保護者・同一負担区分に限り、利用額と世帯の最終月額上限の小さい方を年換算する。",
@@ -3060,8 +3082,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 235,
-      "endLine": 294,
+      "line": 239,
+      "endLine": 297,
       "role": "計算エントリ",
       "signature": "createRevisionCalculator(input)",
       "description": "任意の二給与点に対する収支を返す計算器を用意する。世帯条件を固定し、同じ給与の基礎計算を再利用する。",
@@ -3077,8 +3099,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 241,
-      "endLine": 245,
+      "line": 245,
+      "endLine": 249,
       "role": "内部関数",
       "signature": "wageRecord(w)",
       "description": "一度計算した個人給与の基礎値を二つの軸で共有する。親の扶養・給付の判定値は共有しない。",
@@ -3092,8 +3114,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 252,
-      "endLine": 292,
+      "line": 256,
+      "endLine": 295,
       "role": "内部関数",
       "signature": "evaluate(headWan, spouseWan)",
       "description": "同じ給与点で全制度を評価し、年間収支（万円）と各判定（円）を返す。",
@@ -3110,8 +3132,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 301,
-      "endLine": 324,
+      "line": 304,
+      "endLine": 327,
       "role": "内部モジュール間",
       "signature": "classifyRevisionFalls(points)",
       "description": "隣り合う給与点を比較し、可処分所得の逆転とその初回回復を検出する。",
@@ -3127,8 +3149,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 333,
-      "endLine": 338,
+      "line": 336,
+      "endLine": 341,
       "role": "内部モジュール間",
       "signature": "evaluateRevisionSlice(calculator, axis, fixedWan)",
       "description": "二つの給与軸のどちらかを固定し、0～1,500万円（両端を含む）の全点で逆転の位置・幅を得る。",
@@ -4354,7 +4376,7 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "scripts/generate-pattern-salary-envelopes.mjs:calculator",
-      "line": 52,
+      "line": 53,
       "column": 11,
       "resultUse": "g に格納",
       "arguments": [
@@ -4364,7 +4386,7 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 70,
+      "line": 71,
       "column": 17,
       "resultUse": "cap に格納",
       "arguments": [
@@ -4375,7 +4397,7 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "scripts/generate-pattern-salary-envelopes.mjs:calculator",
-      "line": 97,
+      "line": 98,
       "column": 17,
       "resultUse": "control に格納",
       "arguments": [
@@ -4385,7 +4407,7 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "scripts/generate-pattern-salary-envelopes.mjs:groupCells.verifyPoint",
-      "line": 107,
+      "line": 108,
       "column": 7,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -4400,14 +4422,14 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "scripts/generate-pattern-salary-envelopes.mjs:groupCells.verifyPoint",
-      "line": 114,
+      "line": 115,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
         "a%2?a:b",
         "a%2?b:a",
         "h.claimant&&l.spousePass",
-        "h.welfare",
+        "h.welfarePass&&l.welfarePass",
         "getChildDayServiceCapYen(h.levy+l.levy,h.taxable||l.taxable)",
         "h.tax"
       ]
@@ -4415,7 +4437,7 @@
     {
       "from": "scripts/generate-pattern-salary-envelopes.mjs:groupCells",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 115,
+      "line": 116,
       "column": 7,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10499,28 +10521,38 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.medicalClass",
       "to": "src/calc/paperMedicalCoverage.js:assessFunabashiMedicalCoverage",
-      "line": 41,
+      "line": 39,
       "column": 23,
       "resultUse": "{m01Status} に格納",
       "arguments": [
-        "{funabashiRegistered:true,insured:true,publicAssistance:false,\n      m01DisabilityConfirmed:true,m01ExceptionConfirmed:m.exceptionConfirmed,adjustedInsuranceUnitLevyYen:levy}"
+        "{funabashiRegistered:true,insured:true,publicAssistance:false,\n      m01DisabilityConfirmed:true,m01ExceptionConfirmed:false,adjustedInsuranceUnitLevyYen:levy}"
+      ]
+    },
+    {
+      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
+      "to": "src/calc/policyEducationNeed.js:assessBoundaryEducationNeed",
+      "line": 58,
+      "column": 42,
+      "resultUse": "{applicable,monthlyNeedYen:need} に格納",
+      "arguments": [
+        "children",
+        "options.educationInputs??{}"
       ]
     },
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
       "to": "src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier",
-      "line": 63,
+      "line": 60,
       "column": 20,
       "resultUse": "additional に格納",
       "arguments": [
-        "children",
-        "options"
+        "children"
       ]
     },
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 79,
+      "line": 77,
       "column": 15,
       "resultUse": "cap に格納",
       "arguments": [
@@ -10531,7 +10563,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
       "to": "src/calc/paperEducationAssessment.js:assessPaperEducationClass",
-      "line": 88,
+      "line": 86,
       "column": 29,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10541,7 +10573,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "line": 109,
+      "line": 100,
       "column": 27,
       "resultUse": "{layers,classify} に格納",
       "arguments": [
@@ -10553,7 +10585,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 129,
+      "line": 120,
       "column": 48,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10563,7 +10595,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 129,
+      "line": 120,
       "column": 79,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10573,7 +10605,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 133,
+      "line": 124,
       "column": 43,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10583,7 +10615,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 133,
+      "line": 124,
       "column": 73,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10593,7 +10625,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 140,
+      "line": 131,
       "column": 55,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10603,7 +10635,7 @@
     {
       "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
       "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 146,
+      "line": 137,
       "column": 59,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10740,7 +10772,7 @@
     {
       "from": "src/calc/revisionEngine.js:validateRevisionHousehold",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 55,
+      "line": 59,
       "column": 28,
       "resultUse": "serviceAmountYen に格納",
       "arguments": [
@@ -10753,7 +10785,7 @@
     {
       "from": "src/calc/revisionEngine.js:validateRevisionHousehold",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 56,
+      "line": 60,
       "column": 34,
       "resultUse": "otherServiceMonthlyYen に格納",
       "arguments": [
@@ -10766,7 +10798,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029",
-      "line": 84,
+      "line": 88,
       "column": 15,
       "resultUse": "s に格納",
       "arguments": [
@@ -10776,7 +10808,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:childOrDisabilityIncomeAdjustmentYen",
-      "line": 90,
+      "line": 94,
       "column": 22,
       "resultUse": "adjustment に格納",
       "arguments": [
@@ -10787,7 +10819,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:salaryIncomeBeforeAdjustmentYen",
-      "line": 92,
+      "line": 96,
       "column": 27,
       "resultUse": "prevGrossIncome に格納",
       "arguments": [
@@ -10798,7 +10830,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:salaryIncomeBeforeAdjustmentYen",
-      "line": 94,
+      "line": 98,
       "column": 23,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10809,7 +10841,7 @@
     {
       "from": "src/calc/revisionEngine.js:archivedPremiums",
       "to": "src/calc/socialInsurance.js:calculateSocialInsuranceComponents",
-      "line": 101,
+      "line": 105,
       "column": 29,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10821,7 +10853,7 @@
     {
       "from": "src/calc/revisionEngine.js:archivedPremiums",
       "to": "src/calc/socialInsurance.js:calculateSocialInsuranceComponents",
-      "line": 102,
+      "line": 106,
       "column": 27,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10833,7 +10865,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/revisionEngine.js:revisionSpouseDeduction",
-      "line": 136,
+      "line": 140,
       "column": 18,
       "resultUse": "spouse に格納",
       "arguments": [
@@ -10845,7 +10877,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/revisionEngine.js:revisionSpouseDeduction",
-      "line": 138,
+      "line": 142,
       "column": 22,
       "resultUse": "prevSpouse に格納",
       "arguments": [
@@ -10857,7 +10889,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxDescriptions.js:calcBasicIncomeTaxDeductionR8FinalWan",
-      "line": 144,
+      "line": 148,
       "column": 94,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10867,7 +10899,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getIncomeTaxParts",
-      "line": 146,
+      "line": 150,
       "column": 14,
       "resultUse": "it に格納",
       "arguments": [
@@ -10878,7 +10910,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getResidentTaxParts",
-      "line": 147,
+      "line": 151,
       "column": 20,
       "resultUse": "resident に格納",
       "arguments": [
@@ -10889,7 +10921,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getResidentTaxParts",
-      "line": 152,
+      "line": 156,
       "column": 24,
       "resultUse": "prevResident に格納",
       "arguments": [
@@ -10900,7 +10932,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/serviceBurdenLimits.js:calcServiceAssessmentLevyYen",
-      "line": 163,
+      "line": 167,
       "column": 20,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10911,7 +10943,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/specialChildAllowance.js:salaryOnlySpecialChildIncome",
-      "line": 166,
+      "line": 170,
       "column": 24,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10921,7 +10953,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/disabledChildWelfareAllowance.js:calculateWelfareSalaryAssessment",
-      "line": 168,
+      "line": 172,
       "column": 32,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10931,17 +10963,17 @@
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/specialChildAllowance.js:calculateSpecialChildAllowance",
-      "line": 185,
+      "line": 190,
       "column": 33,
       "resultUse": "specialChildAllowance に格納",
       "arguments": [
-        "{\n    grades:children.map(c=>c.tccaGrade),\n    claimant:{id:claimantId,assessmentIncomeYen:claimant.allowanceIncomeYen,dependentCount:claimant.allowanceFuyo},\n    spouse:{id:spouseId,assessmentIncomeYen:other.allowanceIncomeYen,dependentCount:other.allowanceFuyo},\n    // 同一生計の直系血族である子もここでは無所得・扶養親族なし。別居の祖父母等は想定しない。\n    otherObligors:children.map((_,i)=>({id:\"child\"+(i+1),assessmentIncomeYen:0,dependentCount:0})),\n    additionalMaintainedChildren:additionalSupportedCount, claimantOlderTaxDependents:claimant.olderDependentCount,\n  }"
+        "{\n    grades:children.map(c=>c.tccaGrade),\n    claimant:{id:claimantId,assessmentIncomeYen:claimant.allowanceIncomeYen,dependentCount:claimant.allowanceFuyo},\n    spouse:{id:spouseId,assessmentIncomeYen:other.allowanceIncomeYen,dependentCount:other.allowanceFuyo},\n    // この世帯では子は全員無所得で親に扶養されるため、特児の停止判定は両親分だけで足りる。\n    additionalMaintainedChildren:additionalSupportedCount, claimantOlderTaxDependents:claimant.olderDependentCount,\n  }"
       ]
     },
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/allowances.js:calcWelfareAllowanceLimitObligorYen",
-      "line": 194,
+      "line": 198,
       "column": 24,
       "resultUse": "obligorLimit に格納",
       "arguments": [
@@ -10951,7 +10983,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/allowances.js:calcWelfareAllowanceLimitObligorYen",
-      "line": 195,
+      "line": 199,
       "column": 22,
       "resultUse": "otherLimit に格納",
       "arguments": [
@@ -10961,7 +10993,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionServiceBurden",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 220,
+      "line": 224,
       "column": 15,
       "resultUse": "cap に格納",
       "arguments": [
@@ -10972,7 +11004,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator",
       "to": "src/calc/revisionEngine.js:validateRevisionHousehold",
-      "line": 236,
+      "line": 240,
       "column": 74,
       "resultUse": "{children, otherServiceMonthlyYen, protocol, roles, insurance} に格納",
       "arguments": [
@@ -10982,7 +11014,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 242,
+      "line": 246,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -10995,7 +11027,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:revisionSalaryRecord",
-      "line": 243,
+      "line": 247,
       "column": 52,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11005,7 +11037,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:archivedPremiums",
-      "line": 243,
+      "line": 247,
       "column": 80,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11015,7 +11047,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:revisionSalaryRecord",
-      "line": 243,
+      "line": 247,
       "column": 103,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11026,7 +11058,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
-      "line": 253,
+      "line": 257,
       "column": 22,
       "resultUse": "headWage に格納",
       "arguments": [
@@ -11036,7 +11068,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
-      "line": 253,
+      "line": 257,
       "column": 56,
       "resultUse": "spouseWage に格納",
       "arguments": [
@@ -11046,7 +11078,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "line": 263,
+      "line": 267,
       "column": 41,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11056,7 +11088,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionCoverage.js:calculateHouseholdCoverage",
-      "line": 271,
+      "line": 275,
       "column": 7,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11068,7 +11100,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionParentTax",
-      "line": 276,
+      "line": 280,
       "column": 16,
       "resultUse": "ht に格納",
       "arguments": [
@@ -11082,7 +11114,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionParentTax",
-      "line": 277,
+      "line": 281,
       "column": 16,
       "resultUse": "st に格納",
       "arguments": [
@@ -11096,7 +11128,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionCashBenefits",
-      "line": 281,
+      "line": 285,
       "column": 22,
       "resultUse": "benefits に格納",
       "arguments": [
@@ -11111,7 +11143,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionServiceBurden",
-      "line": 282,
+      "line": 286,
       "column": 21,
       "resultUse": "service に格納",
       "arguments": [
@@ -11123,7 +11155,7 @@
     {
       "from": "src/calc/revisionEngine.js:evaluateRevisionSlice",
       "to": "src/calc/revisionEngine.js:classifyRevisionFalls",
-      "line": 337,
+      "line": 340,
       "column": 10,
       "resultUse": "呼出元にそのまま返す",
       "arguments": [

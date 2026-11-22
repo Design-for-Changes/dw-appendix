@@ -1,8 +1,7 @@
-// 改稿用の静学比較。2029年の実徴収額ではない。率の単位は1/10,000。
+// 率の単位は1/10,000。
 // 支部・介護・支援金は労使計、雇用保険だけは最初から労働者負担率。
 export const employeeInsurance2029 = Object.freeze({
   id: "funabashi-2029-12-with-2026-rate-proxies",
-  rulesAsOf: "2029-12",
   proxyRateFiscalYear: 2026,
   healthBps: 973, careBps: 162, childSupportBps: 23, employeeEmploymentBps: 50,
   // 厚生年金は法定の労使計18.3%。上限は2029年9月施行の35級。

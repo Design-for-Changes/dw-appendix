@@ -23,6 +23,10 @@ export const REVISION_SPOUSE_DEDUCTION_TABLE = [
   [125, [11,8,4], [11,8,4]], [130, [6,4,2], [6,4,2]], [133, [3,2,1], [3,2,1]],
 ];
 
+// 論文の世帯条件。児福の本人は無所得・配偶者なしの児童、父母はともに児童の生計を維持すると仮定する。
+// 税扶養の帰属や特児の受給資格者の選定とは別の判定であり、両親の所得を合算しない。
+export const PAPER_ALLOWANCE_ROLES = Object.freeze({allowanceRecipient:"highest-salary", welfareMaintainer:"both"});
+
 /** 円額・年齢・給与点の空欄や小数を暗黙にゼロまたは近い給与点として扱わない。 */
 function requireInteger(value, min, max, label) {
   if (!Number.isSafeInteger(value) || value < min || value > max) throw new RangeError(label + "が設定範囲外です。");
@@ -41,17 +45,17 @@ export function validateRevisionHousehold(input) {
   const paper = protocol === "paper-2029";
   const requestedRecipient = input.roles?.allowanceRecipient ?? (paper ? "highest-salary" : "head");
   if (!(paper ? ["head","spouse","highest-salary"] : ["head","spouse"]).includes(requestedRecipient)) throw new RangeError("受給資格者の指定が不正です。");
+  const requestedMaintainer = input.roles?.welfareMaintainer ?? "both";
+  if (!["head","spouse","highest-salary","both"].includes(requestedMaintainer))
+    throw new RangeError("障害児福祉手当の生計維持者の仮定が不正です。");
   const roles = {
     spouseDeductionClaimant:input.roles?.spouseDeductionClaimant ?? (paper ? "highest-salary" : "head"),
-    allowanceRecipient:paper ? "highest-salary" : requestedRecipient,
-    welfareMaintainer:input.roles?.welfareMaintainer ?? (protocol === "paper-2029" ? "highest-salary" : "both"),
+    ...(paper ? PAPER_ALLOWANCE_ROLES : {allowanceRecipient:requestedRecipient,welfareMaintainer:requestedMaintainer}),
   };
   if (!(paper ? ["highest-salary","head","spouse","none"] : ["head","spouse","none"]).includes(roles.spouseDeductionClaimant))
     throw new RangeError("配偶者控除の申告者の指定が不正です。");
-  if (!(protocol === "paper-2029" ? ["head","spouse","highest-salary"] : ["head","spouse","highest-salary","both"]).includes(roles.welfareMaintainer))
-    throw new RangeError("障害児福祉手当の生計維持者の仮定が不正です。");
   if (protocol === "paper-2029" && input.insurance !== undefined)
-    throw new RangeError("2029年末の比較には旧版の勤務条件・国保入力を持ち込めません。");
+    throw new RangeError("このモデルには旧版の勤務条件・国保入力を使用できません。");
   const serviceAmountYen = requireInteger(input.serviceAmountYen, 0, MAX_SERVICE_YEN, "利用額");
   const otherServiceMonthlyYen = requireInteger(input.otherServiceMonthlyYen ?? 0, 0, MAX_SERVICE_YEN, "同じ保護者に係るその他の合算対象負担");
   const children = input.children.map((c, i) => {
@@ -178,6 +182,7 @@ function revisionParentTax(person, partner, dependents, claimsSpouse, archived) 
  * @param {object} other 他方の親の判定所得・扶養人数。
  * @param {number} additionalSupportedCount 受給資格者の税扶養に数えていない前年末生計維持児童の人数。
  * @param {string} claimantId 当該点で解決済みの受給資格者（head又はspouse）。この人に法6条、他方の親に7条を適用する。
+ * @param {string} maintainerId 児福で所得を判定する扶養義務者。"both"なら父母をそれぞれの限度額と照合する。
  * @returns {object} 各手当の支給額（円／年）、本人と扶養義務者の限度額・可否。
  */
 function revisionCashBenefits(children, claimant, other, additionalSupportedCount, claimantId, maintainerId) {
@@ -186,8 +191,7 @@ function revisionCashBenefits(children, claimant, other, additionalSupportedCoun
     grades:children.map(c=>c.tccaGrade),
     claimant:{id:claimantId,assessmentIncomeYen:claimant.allowanceIncomeYen,dependentCount:claimant.allowanceFuyo},
     spouse:{id:spouseId,assessmentIncomeYen:other.allowanceIncomeYen,dependentCount:other.allowanceFuyo},
-    // 同一生計の直系血族である子もここでは無所得・扶養親族なし。別居の祖父母等は想定しない。
-    otherObligors:children.map((_,i)=>({id:"child"+(i+1),assessmentIncomeYen:0,dependentCount:0})),
+    // この世帯では子は全員無所得で親に扶養されるため、特児の停止判定は両親分だけで足りる。
     additionalMaintainedChildren:additionalSupportedCount, claimantOlderTaxDependents:claimant.olderDependentCount,
   });
   const limit = specialChildAllowance.checks[0].limitYen;
@@ -200,7 +204,7 @@ function revisionCashBenefits(children, claimant, other, additionalSupportedCoun
   const maintainers = [[claimantId,claimant],[spouseId,other]].filter(([id])=>maintainerId==="both" || id===maintainerId)
     .map(([id,tax])=>({id,incomeYen:tax.welfareMaintainerIncomeYen,dependentCount:tax.allowanceFuyo}));
   const welfareChildren = children.map((c,i)=>calculateDisabledChildWelfareAllowance({eligible:c.welfareEligible,
-    recipient:{id:"child"+(i+1), incomeYen:0, dependentCount:0}, maintainers}));
+    recipient:{id:"child"+(i+1), incomeYen:0, dependentCount:0}, spouse:null, maintainers}));
   const welfareOK = welfareChildren.every(c=>c.incomeEligible);
   const welfare = welfareChildren.reduce((sum,c)=>sum+c.annualYen,0);
   // 第3子以降は出生順（高年齢順）。年齢でソートしても子どもごとの入力対応は維持される。
@@ -285,9 +289,8 @@ export function createRevisionCalculator(input) {
     return {status:"calculated", protocol, reasons:[], studyDisposableWan:disposableWan, disposableWan, recipient,
       breakdown:{ salaryWan:salary/WAN, taxWan:tax/WAN, socialWan:social/WAN, tccaWan:benefits.tcca/WAN,
         welfareWan:benefits.welfare/WAN, childAllowanceWan:benefits.childAllowance/WAN, serviceWan:service.annual/WAN },
-      ...(steady2029 ? {basis:{rulesAsOf:"2029-12",salaryTaxPolicy:PAPER_SALARY_POLICY_2029.id,
-        insuranceRateProxyFiscalYear:fixedInsurance.policy.proxyRateFiscalYear, indexedAllowanceAmountsAsOf:"2026-04",
-        calculation:"年末の制度・固定世帯条件を12か月適用した比較。実際の2029年家計の予測ではない。"}} : {}),
+      ...(steady2029 ? {basis:{salaryTaxPolicy:PAPER_SALARY_POLICY_2029.id,
+        insuranceRateProxyFiscalYear:fixedInsurance.policy.proxyRateFiscalYear, indexedAllowanceAmountsAsOf:"2026-04"}} : {}),
       details:{headTax:ht, spouseTax:st, benefits, service, coverage,insurance:fixedInsurance ?? coverage,roles:assigned}};
   }
   return {evaluate};

@@ -28,6 +28,31 @@ function ticks(n){
 }
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
+// Pin the representative salary coordinates already used in the readout.
+// Values and ties come from the full integer-yen grid, not the display colours.
+function ExtremeOverlay({surface,sx,sy,valid}){
+  const {minimum,maximum}=surface;
+  if(!minimum||!maximum||!valid(minimum.headWan,minimum.spouseWan)||!valid(maximum.headWan,maximum.spouseWan))return null;
+  if(minimum.differenceYen===maximum.differenceYen)return <text className="diff-extreme-label"
+    x={(L+R)/2} y={(T+B)/2} textAnchor="middle">全算定点：最高＝最低　{signed(minimum.differenceYen)}円／年</text>;
+  const marks=[["maximum","最高点",maximum],["minimum","最低点",minimum]].map(([id,label,p],i)=>{
+    const x=sx(p.headWan),y=sy(p.spouseWan),side=x<(L+R)/2?1:-1;
+    return {id,label,p,x,y,side,tx:x+side*14,ty:clamp(y+(i?23:-14),T+18,B-7)};
+  });
+  // At the plot edges the two callouts can be clamped onto the same row.
+  // Move the labels only; both symbols stay at the actual salary coordinates.
+  if(Math.abs(marks[0].x-marks[1].x)<230 && Math.abs(marks[0].ty-marks[1].ty)<23){
+    const mid=clamp((marks[0].ty+marks[1].ty)/2,T+32,B-21);
+    marks[0].ty=mid-14;marks[1].ty=mid+14;
+  }
+  return marks.map(({id,label,p,x,y,side,tx,ty})=><g key={id} data-difference-extreme={id} transform={`translate(${x} ${y})`}>
+    <title>{label}：世帯主 {fmt(p.headWan)}万円、配偶者 {fmt(p.spouseWan)}万円、可処分所得差 {signed(p.differenceYen)}円／年{p.count>1?`（同額 ${fmt(p.count)}点の一例）`:""}</title>
+    <line className="diff-extreme-leader" x2={tx-x} y2={ty-y-5}/>
+    <path className="diff-extreme-mark" d={id==="maximum"?"M0 -7 L7 5 L-7 5 Z":"M0 7 L7 -5 L-7 -5 Z"}/>
+    <text className="diff-extreme-label" x={tx-x} y={ty-y} textAnchor={side===1?"start":"end"}>{label}　{signed(p.differenceYen)}円</text>
+  </g>);
+}
+
 /** 各給与点の差をそのまま描く。指示点の金額は表示用Float32ではなく共有格子の円額を優先する。 */
 export default function IncomeDifferenceHeatmap({surface,differenceYen}){
   const canvas=useRef(null),[failed,setFailed]=useState(false),[hover,setHover]=useState(null);
@@ -72,6 +97,7 @@ export default function IncomeDifferenceHeatmap({surface,differenceYen}){
           <text x={sx(x)} y={B+25} textAnchor="middle">{fmt(x)}</text><text x={L-10} y={sy(x)+5} textAnchor="end">{fmt(x)}</text></g>)}
         <text className="diff-axis-title" x={(L+R)/2} y={H-10} textAnchor="middle">世帯主の給与収入（万円／年）</text>
         <text className="diff-axis-title" transform={`translate(23 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+        <ExtremeOverlay surface={surface} sx={sx} sy={sy} valid={valid}/>
       </svg>
     </div>
     <div className="diff-key" aria-label="可処分所得差の色の目盛">

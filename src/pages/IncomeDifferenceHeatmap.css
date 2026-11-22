@@ -6,7 +6,9 @@
 .diff-heatmap .diff-map-frame .diff-map-axes { position:absolute; inset:0; display:block; width:100%; height:100%; max-width:none; pointer-events:none; }
 .diff-heatmap .diff-map-axes text { fill:#233b43; font:16px system-ui,sans-serif; font-variant-numeric:tabular-nums; }
 .diff-heatmap .diff-map-axes .diff-axis-title { font-size:18px; font-weight:650; }
-.diff-heatmap .diff-map-axes .diff-point-p { font-weight:700; paint-order:stroke; stroke:white; stroke-width:3px; }
+.diff-extreme-mark { fill:#182f37; stroke:white; stroke-width:1.8px; stroke-linejoin:round; }
+.diff-extreme-leader { stroke:#263d44; stroke-width:1.4px; }
+.diff-heatmap .diff-map-axes .diff-extreme-label { fill:#152e36; font-weight:700; paint-order:stroke; stroke:white; stroke-width:4px; stroke-linejoin:round; }
 .diff-key { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem 1.1rem; margin:.3rem 0; font-size:.95rem; }
 .diff-key i { display:inline-block; width:.85rem; height:.85rem; margin-right:.4rem; vertical-align:middle; border:1px solid #819194; }
 .diff-scale { width: min(27rem,100%); } .diff-ramp { height:.85rem; border:1px solid #acb7ba; }

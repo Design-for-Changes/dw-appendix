@@ -16,6 +16,29 @@ const free = [child(4,"not",false,"none",37200)];
 const model = children => createRevisionCalculator({protocol:"paper-2029",children,serviceAmountYen:0});
 const missing = {status:"excluded"};
 
+// 図1と同じ障害要件の8歳児1人。個々の収支項目を円に戻して、境界を挟む
+// 1万円増収前後の差を検算する（最終行だけ利用額を変えて差が0円になる例）。
+for (const [monthly, from, to, system, expectedYen] of [
+  [20000, [739,600], [740,600], "N01-1", -693248],
+  [20000, [971,146], [972,146], "N02/N03", 172660],
+  [20000, [928,131], [928,132], "N01-2", 208672],
+  [5196, [984,0], [985,0], "N02/N03", 0],
+]) {
+  const children = [child(8,"1",true,"special",monthly)], calc = model(children);
+  const statuses = [];
+  const nets = [from,to].map(coords => {
+    const point = calc.evaluate(...coords), b = point.breakdown;
+    statuses.push(reference(point,children,...coords)[ids.indexOf(system)]);
+    const yen = amount => Math.round(amount*10000);
+    const net = yen(b.salaryWan)+yen(b.tccaWan)+yen(b.welfareWan)+yen(b.childAllowanceWan)
+      -yen(b.taxWan)-yen(b.socialWan)-yen(b.serviceWan);
+    assert.equal(net, yen(point.studyDisposableWan));
+    return net;
+  });
+  assert.notEqual(statuses[0],statuses[1],system+"の制度境界");
+  assert.equal(nets[1]-nets[0],expectedYen,"選択した給与点の変化量（円／年）");
+}
+
 // 各点の個別所得判定から、当該世帯への実際の支給の有無を組み立てる。
 // 月額上限は親の市民税所得割・扶養児童と年齢から再算定する。判定用所得割や
 // 計算器の世帯上限そのもの、手当の合計年額からコピーしない。

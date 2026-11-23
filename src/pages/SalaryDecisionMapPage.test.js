@@ -1,6 +1,7 @@
 import {fireEvent,render,screen,within} from "@testing-library/react";
 import SalaryDecisionMapPage,{endpointsForBoundary} from "./SalaryDecisionMapPage";
 import {createRevisionCalculator} from "../calc/revisionEngine";
+import {UNKNOWN_PLANE_NET_YEN} from "../calc/salaryPlaneRecovery";
 
 beforeEach(()=>sessionStorage.clear());
 
@@ -60,7 +61,7 @@ test("該当境界がなければ平面図に切替なしと表示する",()=>{
   expect(screen.getByText("この条件では対象制度の切り替わりはありません。")).toBeVisible();
 });
 
-test("両方向の制度線を黒線で覆わず、制度線を選ぶと下落幅・前後の給与と可処分所得を読める",()=>{
+test("両方向の制度線を黒線で覆わず、制度線を選ぶと負の変化量・前後の給与と可処分所得を読める",()=>{
   const {calculator,finish}=draw();
   const horizontal=y=>[599.5,y-.5,600.5,y-.5],vertical=x=>[x-.5,599.5,x-.5,600.5];
   const pair=line=>({drop:[line(907)],recovery:[line(937)],dropMasks:[2],recoveryDropIndex:[0]});
@@ -86,7 +87,7 @@ test("両方向の制度線を黒線で覆わず、制度線を選ぶと下落�
   map.getBoundingClientRect=()=>({left:0,top:0,width:1032,height:720});
   fireEvent.click(map,{clientX:sx(600),clientY:sy(906.5)});
   const caption=map.closest("figure").querySelector("figcaption");
-  for(const term of ["下落幅","191,468円","下落前","11,419,020円","下落後","11,227,552円"])expect(caption).toHaveTextContent(term);
+  expect(caption).toHaveTextContent("年間可処分所得 11,419,020円 → 11,227,552円 変化量 −191,468円");
   expect(caption).toHaveTextContent(/600[,、]\s*906/);
   expect(caption).toHaveTextContent(/600[,、]\s*907/);
   expect(map.querySelector("path[data-outcome='level']")).toBeNull();
@@ -154,8 +155,31 @@ test("サービスの実負担が1,000円のままでも負担上限の切り替
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
   const caption=map.closest("figure").querySelector("figcaption");
   expect(within(caption).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
-  expect(caption).not.toHaveTextContent("下落幅");
+  expect(caption).toHaveTextContent("年間可処分所得 7,694,776円 → 7,702,028円 変化量 ＋7,252円");
   expect(map.querySelector("path[data-outcome='level']")).toBeNull();
+});
+
+test.each([
+  {x:971,y:146,fee:20000,net:[8424712,8597372],change:"＋172,660円"},
+  {x:984,y:0,fee:5196,net:[7457616,7457616],change:"0円"},
+])("通所の境界で給与を増やすとき、実際の前後の値と変化量 $change を表示する",({x,y,fee,net,change})=>{
+  const {calculator,finish}=draw({serviceAmountYen:fee});
+  const actual=[x,x+1].map(w=>calculator.evaluate(w,y));
+  expect(actual[0].details.service.householdCapYen).not.toEqual(actual[1].details.service.householdCapYen);
+  expect(actual.map(p=>Math.round(p.studyDisposableWan*10000))).toEqual(net);
+  const grid={width:1501,netYen:new Int32Array(1501*1501)};
+  grid.netYen.set(net,y*grid.width+x);
+  finish({"N02/N03":[[x+.5,Math.max(0,y-.5),x+.5,y+.5]]},undefined,grid);
+  fireEvent.keyDown(plot(),{key:"ArrowRight"});
+  expect(within(plot().closest("figure")).getByText("変化量 "+change)).toBeVisible();
+});
+
+test("一方の給与点が欠測なら変化量は0円にしない",()=>{
+  const {finish}=draw(),grid={width:3,netYen:new Int32Array(9)};
+  grid.netYen.set([500000,UNKNOWN_PLANE_NET_YEN],3);
+  finish({"N01-2":[[.5,.5,.5,1.5]]},undefined,grid);
+  fireEvent.keyDown(plot(),{key:"ArrowRight"});
+  expect(plot().closest("figure")).toHaveTextContent("年間可処分所得 500,000円 → — 変化量 —");
 });
 
 test("別タブから戻ると同じ世帯の境界選択を復元し、異なる世帯条件へは引き継がない",()=>{

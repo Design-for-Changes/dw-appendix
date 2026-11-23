@@ -17,8 +17,8 @@ const PARENT_NAME={head:"世帯主",spouse:"配偶者"};
 const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
 const GRAPH_VIEWS = [
-  ["income","可処分所得（3D）"],
-  ["boundaries","制度境界・下落（2D）"],
+  ["income","可処分所得"],
+  ["boundaries","制度境界・可処分所得の変化量"],
   ["difference","可処分所得差"],
 ];
 

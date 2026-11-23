@@ -24,7 +24,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
   const tab=name=>screen.getByRole("tab",{name});
   try{
     renderWithPoint();
-    expect(screen.getAllByRole("tab").map(tab=>tab.textContent)).toEqual(["可処分所得（3D）","制度境界・下落（2D）","可処分所得差"]);
+    expect(screen.getAllByRole("tab").map(tab=>tab.textContent)).toEqual(["可処分所得","制度境界・可処分所得の変化量","可処分所得差"]);
     expect(screen.getAllByRole("region",{name:"点P"})).toHaveLength(1);
     expect(screen.getAllByRole("button",{name:"グラフを描画"})).toHaveLength(1);
     expect(surface).not.toHaveBeenCalled();expect(boundaries).not.toHaveBeenCalled();
@@ -34,7 +34,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
     expect(subscribe).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("boundary-plot")).not.toBeInTheDocument();
     expect(screen.queryByTestId("difference-plot")).not.toBeInTheDocument();
-    fireEvent.click(tab("制度境界・下落（2D）"));
+    fireEvent.click(tab("制度境界・可処分所得の変化量"));
     const boundary=screen.getByTestId("boundary-plot");expect(boundary).toBeVisible();
     expect(initial).not.toBeVisible();
     expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
@@ -45,7 +45,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
     expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
     expect(surface.mock.calls.filter(([p])=>p.comparison).every(([p])=>!p.onSelectSalary)).toBe(true);
     expect(screen.queryByText("全設定での最小差・最大差")).toBeNull();
-    fireEvent.click(tab("可処分所得（3D）"));
+    fireEvent.click(tab("可処分所得"));
     expect(screen.getByTestId("income-plot")).toBe(initial);expect(initial).toBeVisible();
     expect(screen.getByTestId("difference-plot")).toBe(difference);
     expect(screen.getByTestId("boundary-plot")).toBe(boundary);
@@ -67,7 +67,7 @@ test("外部ナビからの表示指定とタブの選択要求を区別し、�
   fireEvent.keyDown(screen.getByRole("tab",{name:"可処分所得差"}),{key:"Home"});
   expect(changeView).toHaveBeenCalledWith("income");
   rerender(<RevisionIncomePlane graphView="income" onGraphViewChange={changeView}/>);
-  expect(screen.getByRole("tab",{name:"可処分所得（3D）"})).toHaveAttribute("aria-selected","true");
+  expect(screen.getByRole("tab",{name:"可処分所得"})).toHaveAttribute("aria-selected","true");
   expect(salaryNumber("配偶者")).toHaveValue(0);
   expect(screen.queryByText("可処分所得差（年額）")).not.toBeInTheDocument();
 });

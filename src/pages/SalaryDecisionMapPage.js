@@ -47,7 +47,8 @@ function DecisionFigure({map,grid,calculator,household}){
     return {i:stored.i,from,to};
   },[stored,household,geometry]);
   const before=selection?readNet(grid,selection.from):null,after=selection?readNet(grid,selection.to):null;
-  const drop=before!==null&&after!==null&&before>after?before-after:null;
+  // 他方の給与を固定し、一方の年間給与を1万円増やした後の値から、増やす前の値を引く。
+  const change=before!==null&&after!==null?after-before:null;
   const detail=useMemo(()=>selection?describeBoundary(calculator,selection.from,selection.to):[],[calculator,selection]);
   function select(i,x,y){store({i,x,y,household,lineSet:"systems"});}
   function pointer(event){
@@ -84,7 +85,7 @@ function DecisionFigure({map,grid,calculator,household}){
     const [a,b,c,d]=geometry.lines[i];
     select(i,step>0?a:c,step>0?b:d);
   }
-  return <figure className="decision-figure" aria-label="夫婦の給与収入と制度の変更点">
+  return <figure className="decision-figure" aria-label="制度境界・可処分所得の変化量">
     <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}</ul>
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
       <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。</desc>
@@ -95,12 +96,12 @@ function DecisionFigure({map,grid,calculator,household}){
     <figcaption aria-live="polite">{!geometry.lines.length?"この条件では対象制度の切り替わりはありません。":!selection?null:<>
       <div>（世帯主, 配偶者）{coords(selection.from)}→{coords(selection.to)}万円
         {detail.map(s=><span key={s.id}><i style={{background:s.color}}/>{s.label}：{s.before} → {s.after}</span>)}</div>
-      {drop!==null&&<div>下落前 {yen(before)}円 → 下落後 {yen(after)}円　<strong>下落幅 {yen(drop)}円</strong></div>}
+      <div>年間可処分所得 {before===null?"—":yen(before)+"円"} → {after===null?"—":yen(after)+"円"}　<strong>変化量 {change===null?"—":(change>0?"＋":change<0?"−":"")+yen(Math.abs(change))+"円"}</strong></div>
     </>}</figcaption>
   </figure>;
 }
 
-/** 3D・差額図と同じ1万円格子から、制度の切替点と下落額を表示する。 */
+/** 可処分所得・可処分所得差の図と同じ1万円格子から、制度境界と前後の可処分所得の変化量を示す。 */
 export default function SalaryDecisionMapPage({datasetState:state,calculator,inputs}){
   const household=useMemo(()=>JSON.stringify(inputs)||"",[inputs]);
   if(!state)return null;

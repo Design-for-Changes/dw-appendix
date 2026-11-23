@@ -15,7 +15,7 @@ export default function SalaryPlaneAxes({max}) {
       <text x={xPlot(t,max)} y={BOTTOM+29} textAnchor="middle">{t.toLocaleString("ja-JP")}</text>
       <text x={LEFT-12} y={yPlot(t,max)+5} textAnchor="end">{t.toLocaleString("ja-JP")}</text></g>)}
     <path d={`M${LEFT} ${TOP}V${BOTTOM}H${RIGHT}`} stroke="#3b505a" fill="none"/>
-    <text className="decision-axis" x={(LEFT+RIGHT)/2} y={HEIGHT-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
-    <text className="decision-axis" transform={`translate(21 ${(TOP+BOTTOM)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+    <text className="decision-axis" x={(LEFT+RIGHT)/2} y={HEIGHT-15} textAnchor="middle">世帯主の年間給与（万円）</text>
+    <text className="decision-axis" transform={`translate(21 ${(TOP+BOTTOM)/2}) rotate(-90)`} textAnchor="middle">配偶者の年間給与（万円）</text>
   </>;
 }

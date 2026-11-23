@@ -1,4 +1,5 @@
 import { TraceTable } from "./TraceTable";
+import { serviceChargeName } from "../data/paperBenefitTerms";
 
 const n = value => value.toLocaleString("ja-JP");
 const yen = value => n(value) + "円";
@@ -52,7 +53,7 @@ export default function TraceAllowances({point,inputs}) {
   }
   const amounts=children.map(c=>gradeAmount[c.tccaGrade]);
   t.push(["所得判定前の月額","児童別の月額を合計（1級58,450円、2級38,930円、非該当0円）",children.map((c,i)=>"子"+(i+1)+"（"+(c.tccaGrade==="not"?"非該当":c.tccaGrade+"級")+"）"+n(amounts[i])).join(" ＋ "),yen(tcca.monthlyBeforeIncomeYen)]);
-  t.push(["特別児童扶養手当の年額","所得停止なら0円、停止がなければ月額 × 12",n(tcca.monthlyYen)+" × 12"+(tcca.stoppedBy.length?"（停止："+tcca.stoppedBy.map(c=>who(c.id)).join("・")+"）":""),yen(tcca.annualYen)]);
+  t.push(["特児の年額","所得停止なら0円、停止がなければ月額 × 12",n(tcca.monthlyYen)+" × 12"+(tcca.stoppedBy.length?"（停止："+tcca.stoppedBy.map(c=>who(c.id)).join("・")+"）":""),yen(tcca.annualYen)]);
 
   const welfare=[];
   function appendWelfareCheck(check) {
@@ -76,7 +77,7 @@ export default function TraceAllowances({point,inputs}) {
     welfare.push([child+"の年額","障害要件に該当し、所得停止がなければ月額16,560円 × 12",
       "障害要件："+(children[i].welfareEligible?"該当":"非該当")+"、所得停止："+(result.incomeEligible?"なし":"あり")+"；"+n(result.monthlyYen)+" × 12",yen(result.annualYen)]);
   });
-  welfare.push(["障害児福祉手当の年額","児童別の年額合計",sum(b.welfareChildren.map(c=>c.annualYen)),yen(b.welfare)]);
+  welfare.push(["児福の年額","児童別の年額合計",sum(b.welfareChildren.map(c=>c.annualYen)),yen(b.welfare)]);
 
   const ranked=children.map((c,i)=>({age:c.age,id:i+1})).sort((a,b)=>b.age-a.age);
   const monthly=ranked.map((c,i)=>i>=2?30000:c.age<3?15000:10000);
@@ -85,8 +86,8 @@ export default function TraceAllowances({point,inputs}) {
   general.push(["児童手当の年額","児童別月額の合計 × 12","("+sum(monthly)+") × 12",yen(b.childAllowance)]);
 
   return <>
-    <TraceTable caption="特別児童扶養手当" rows={t}/>
-    <TraceTable caption="障害児福祉手当" rows={welfare}/>
+    <TraceTable caption="特児" rows={t}/>
+    <TraceTable caption="児福" rows={welfare}/>
     <TraceTable caption="児童手当" rows={general}/>
   </>;
 }
@@ -96,21 +97,22 @@ export function TraceServiceBurden({point,inputs}) {
   if (point?.status!=="calculated" || point.protocol!=="paper-2029" || !inputs?.children) return null;
   const {service:s,roles,headTax,spouseTax}=point.details;
   const children=inputs.children, parents={head:headTax,spouse:spouseTax};
+  const chargeName=serviceChargeName(s.otherServiceMonthlyYen);
   const service=[];
   for (const [id,tax] of Object.entries(parents)) {
     const dep=children.filter((c,i)=>roles.taxDependentOf[i]===id), under=dep.filter(c=>c.age<16).length, older=dep.length-under;
-    service.push([who(id)+"の判定用所得割","市町村民税所得割 − 19,800 × 16歳未満の扶養人数 − 7,200 × 16～18歳の扶養人数（下限0円）",
+    service.push([who(id)+"の判定用所得割額","市町村民税所得割 − 19,800 × 16歳未満の扶養人数 − 7,200 × 16～18歳の扶養人数（下限0円）",
       "max(0, "+n(tax.residentTax.municipalIncomeLevyYen)+" − 19,800 × "+under+" − 7,200 × "+older+")",yen(tax.serviceLevyYen)]);
   }
-  service.push(["世帯の判定用所得割","両親の判定用所得割の合計",sum([headTax.serviceLevyYen,spouseTax.serviceLevyYen]),yen(s.assessmentLevyYen)]);
+  service.push(["世帯の合計所得割額","父母の判定用所得割額の合計",sum([headTax.serviceLevyYen,spouseTax.serviceLevyYen]),yen(s.assessmentLevyYen)]);
   const taxable=headTax.serviceTaxable||spouseTax.serviceTaxable;
   const parentStatus=Object.entries(parents).map(([id,tax])=>who(id)+"："+(!tax.serviceTaxable?"非課税":
     tax.residentTax.perCapitaYen>0 && tax.residentTax.incomeLevyYen===0?"課税（均等割のみ）":"課税")).join("、");
-  service.push(["世帯の月額上限","非課税世帯は0円。課税世帯は判定用所得割28万円未満なら4,600円、以上なら37,200円",
-    parentStatus+" → "+(taxable?"課税世帯（判定用所得割"+yen(s.assessmentLevyYen)+(s.assessmentLevyYen<280000?" < ":" ≥ ")+"280,000円）":"非課税世帯"),yen(s.householdCapYen)]);
+  service.push(["世帯の月額上限","非課税世帯は0円。課税世帯は合計所得割額28万円未満なら4,600円、以上なら37,200円",
+    parentStatus+" → "+(taxable?"課税世帯（合計所得割額"+yen(s.assessmentLevyYen)+(s.assessmentLevyYen<280000?" < ":" ≥ ")+"280,000円）":"非課税世帯"),yen(s.householdCapYen)]);
   const day=children.map((c,i)=>{
     const free=c.age>=3&&c.age<=5, value=c.serviceUser&&!free?(c.serviceAmountYen??inputs.serviceAmountYen):0;
-    service.push(["子"+(i+1)+"の通所負担（月・上限前）","不利用または3～5歳の無償対象なら0円、それ以外は入力額",
+    service.push(["子"+(i+1)+"の通所負担（月額・世帯上限適用前）","不利用または3～5歳の無償対象なら0円、それ以外は入力額",
       !c.serviceUser?"不利用":free?c.age+"歳・無償対象":"利用・"+n(c.serviceAmountYen??inputs.serviceAmountYen)+"円",yen(value)]);
     return value;
   });
@@ -119,7 +121,7 @@ export function TraceServiceBurden({point,inputs}) {
     sum([...day,s.otherServiceMonthlyYen].filter(v=>v!==0)),yen(before)]);
   service.push(["上限適用による軽減相当額（月）","max(0, 合算対象額 − 世帯上限)","max(0, "+n(before)+" − "+n(s.householdCapYen)+")",yen(before-s.monthly)]);
   service.push(["上限適用後の月額自己負担","min(合算対象額, 世帯上限)","min("+n(before)+", "+n(s.householdCapYen)+")",yen(s.monthly)]);
-  service.push(["サービス利用者負担の年額","最終月額 × 12",n(s.monthly)+" × 12",yen(s.annual)]);
+  service.push([chargeName+"の年額","最終月額 × 12",n(s.monthly)+" × 12",yen(s.annual)]);
 
-  return <TraceTable caption="サービス利用者負担" rows={service}/>;
+  return <TraceTable caption={chargeName} rows={service}/>;
 }

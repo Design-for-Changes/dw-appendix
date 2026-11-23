@@ -14,15 +14,15 @@ const section={axis:"head",fixedWan:600,maxSalaryWan:7,points:[null,70000,85000,
 test("断面の横軸は動かす親の給与、縦軸は可処分所得。表と図から同じ境界を選べる",()=>{
   const pick=jest.fn();
   const {container,rerender}=render(<IncomeSectionChart section={section} onSelectEvent={pick}/>);
-  expect(screen.getByText("配偶者の給与収入：年600万円（固定）")).toBeVisible();
-  expect(screen.getByRole("img",{name:/横軸 世帯主の給与収入.*縦軸 世帯の可処分所得/})).toBeInTheDocument();
+  expect(screen.getByText("配偶者の年間給与：600万円（固定）")).toBeVisible();
+  expect(screen.getByRole("img",{name:/横軸 世帯主の年間給与.*縦軸 世帯の可処分所得/})).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button",{name:"3 → 4"}));
   fireEvent.click(container.querySelector('[data-event-salary="4"]'));
   expect(pick.mock.calls).toEqual([[4],[4]]);
   rerender(<IncomeSectionChart section={section} selectedAfterWan={4} onSelectEvent={pick}/>);
   const row=screen.getByRole("button",{name:"3 → 4",pressed:true}).closest("tr");
-  expect(within(row).getByText("特別児童扶養手当")).toBeInTheDocument();
-  expect(within(row).getByText("障害児福祉手当")).toBeInTheDocument();
+  expect(within(row).getByText("特児")).toBeInTheDocument();
+  expect(within(row).getByText("児福")).toBeInTheDocument();
   expect(within(row).getByText("55,000")).toBeInTheDocument();
   expect(screen.getByText("下落なし")).toBeVisible();
   const detail=screen.getByRole("img",{name:/選択した切替点の詳細/});
@@ -39,7 +39,7 @@ test("未到達は架空の座標や矢印にせず、欠測をまたいで線�
   const s={...section,axis:"spouse",points:[20000,40000,null,130000,75000,90000,null,null],
     events:[{...event,retreatAtWan:null,retreatWan:null,recoveryAtWan:null,recoveryWan:null,interveningDrops:0}]};
   render(<IncomeSectionChart section={s} selectedAfterWan={4} onSelectEvent={()=>{}}/>);
-  expect(screen.getByText("世帯主の給与収入：年600万円（固定）")).toBeVisible();
+  expect(screen.getByText("世帯主の年間給与：600万円（固定）")).toBeVisible();
   const overview=screen.getByRole("img",{name:/給与と可処分所得の断面：横軸 配偶者/});
   expect(overview.querySelector('[data-series="net"]').getAttribute("d").match(/M/g)).toHaveLength(2);
   expect(screen.getByRole("cell",{name:"未回復"})).toBeInTheDocument();

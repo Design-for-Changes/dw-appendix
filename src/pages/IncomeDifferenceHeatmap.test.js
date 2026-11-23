@@ -19,7 +19,7 @@ beforeEach(()=>{
   spy=jest.spyOn(HTMLCanvasElement.prototype,"getContext").mockReturnValue(ctx);
 });
 afterEach(()=>spy.mockRestore());
-const canvas=()=>screen.getByRole("img",{name:/横軸：世帯主の給与収入/});
+const canvas=()=>screen.getByRole("img",{name:/横軸：世帯主の年間給与/});
 function setRect(c){
   c.getBoundingClientRect=()=>({left:10,top:15,width:300,height:300});
 }

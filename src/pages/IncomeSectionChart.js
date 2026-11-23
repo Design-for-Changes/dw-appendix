@@ -1,10 +1,11 @@
 import {useId} from "react";
+import {PAPER_BOUNDARY_LABELS} from "../data/paperBenefitTerms.js";
 import "./IncomeSectionChart.css";
 
 const systemStyle={
-  "N01-1":["特別児童扶養手当","#a72344"],
-  "N01-2":["障害児福祉手当","#13498b"],
-  "N02/N03":["通所等の負担上限","#13764f"],
+  "N01-1":[PAPER_BOUNDARY_LABELS["N01-1"],"#a72344"],
+  "N01-2":[PAPER_BOUNDARY_LABELS["N01-2"],"#13498b"],
+  "N02/N03":[PAPER_BOUNDARY_LABELS["N02/N03"],"#13764f"],
 };
 const numberFormat=new Intl.NumberFormat("ja-JP",{maximumFractionDigits:4});
 const num=n=>numberFormat.format(n);
@@ -52,7 +53,7 @@ function IncomePlot({section,selected,onSelectEvent,focus=false}){
     inRun=true;
   }
   const yt=ticks(yMin,yMax,focus?4:5,1);
-  const axisText=movingName(axis)+"の給与収入（万円／年）";
+  const axisText=movingName(axis)+"の年間給与（万円）";
   // Explicit arrowheads stay inside the plot even for a downward or leftwards arrow.
   const marker=(key,color)=><marker id={uid+key} key={key} viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill={color}/></marker>;
   const arrow=(key,color,x1,y1,x2,y2,label)=><g key={key} aria-label={label} data-measure={key}><title>{label}</title><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="2" markerEnd={"url(#"+uid+key+")"}/></g>;
@@ -90,10 +91,10 @@ export default function IncomeSectionChart({section,selectedAfterWan=null,onSele
   const selected=events.find(ev=>ev.afterWan===selectedAfterWan);
   return <section className="income-section-chart" aria-label="世帯の可処分所得の断面図">
     <h3>可処分所得の断面図</h3>
-    <figure><figcaption>{fixedName(axis)}の給与収入：年{num(fixedWan)}万円（固定）</figcaption><IncomePlot section={section} selected={selected} onSelectEvent={onSelectEvent}/></figure>
+    <figure><figcaption>{fixedName(axis)}の年間給与：{num(fixedWan)}万円（固定）</figcaption><IncomePlot section={section} selected={selected} onSelectEvent={onSelectEvent}/></figure>
     {events.length===0?<p>この断面では対象制度の切替えはありません。</p>:<>
       <div className="income-section-table-scroll"><table><caption>制度の切替えと可処分所得</caption>
-        <thead><tr><th scope="col">{movingName(axis)}給与の変化（万円）</th><th scope="col">制度</th><th scope="col">下落幅（円）</th><th scope="col">後退幅（万円）</th><th scope="col">回復幅（万円）</th></tr></thead>
+        <thead><tr><th scope="col">{movingName(axis)}の年間給与の変化（万円）</th><th scope="col">制度</th><th scope="col">下落幅（円）</th><th scope="col">後退幅（万円）</th><th scope="col">回復幅（万円）</th></tr></thead>
         <tbody>{events.map(ev=><tr key={ev.afterWan} className={selected===ev?"is-selected":undefined}>
           <th scope="row"><button type="button" aria-pressed={selected===ev} onClick={()=>onSelectEvent(ev.afterWan)}>{num(ev.beforeWan)} → {num(ev.afterWan)}</button></th>
           <td>{ev.systems.map(id=><span className="income-system-label" key={id}><i aria-hidden="true" style={{background:systemStyle[id][1]}}/>{systemStyle[id][0]}</span>)}</td>

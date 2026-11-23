@@ -41,7 +41,7 @@ test("共通の給与格子を使い、各制度の線を夫婦の給与全域�
   expect(systems.map(path=>path.dataset.system)).toEqual(["N01-1","N01-2","N02/N03"]);
   expect(systems.every(path=>/^M.+L/.test(path.getAttribute("d")))).toBe(true);
   expect(new Set(systems.map(path=>path.getAttribute("stroke"))).size).toBe(3);
-  for(const label of ["特別児童扶養手当","障害児福祉手当","通所等の負担上限"]) {
+  for(const label of ["特児","児福","通所負担の上限"]) {
     expect(within(screen.getByRole("list",{name:"制度別の凡例"})).getByText(label)).toBeVisible();
   }
   expect(within(screen.getByRole("list",{name:"制度別の凡例"})).getAllByRole("listitem")).toHaveLength(3);
@@ -125,7 +125,7 @@ test("世帯主の増収で特児が停止する境界では実際の隣接座�
   finish({"N01-1":[[x-.5,199.5,x-.5,200.5]]});
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
   const caption=map.closest("figure").querySelector("figcaption");
-  expect(within(caption).getByText("特別児童扶養手当：支給 → 停止")).toBeVisible();
+  expect(within(caption).getByText("特児：支給 → 停止")).toBeVisible();
   expect(caption).toHaveTextContent(`（${x-1}, 200）→（${x}, 200）万円`);
 });
 
@@ -141,8 +141,8 @@ test("配偶者の増収により児福が停止する境界では、先に停�
   finish({"N01-2":[[379.5,y-.5,380.5,y-.5]]});
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
   const caption=map.closest("figure").querySelector("figcaption");
-  expect(within(caption).queryByText("特別児童扶養手当：支給 → 停止")).toBeNull();
-  expect(within(caption).getByText("障害児福祉手当：支給 → 停止")).toBeVisible();
+  expect(within(caption).queryByText("特児：支給 → 停止")).toBeNull();
+  expect(within(caption).getByText("児福：支給 → 停止")).toBeVisible();
   expect(caption).toHaveTextContent(new RegExp(`380[,、]\\s*${y-1}`));
   expect(caption).toHaveTextContent(new RegExp(`380[,、]\\s*${y}`));
 });
@@ -158,7 +158,7 @@ test("サービスの実負担が1,000円のままでも負担上限の切り替
   finish({"N02/N03":[[811.5,199.5,811.5,200.5]]},undefined,grid);
   const map=plot();fireEvent.keyDown(map,{key:"ArrowRight"});
   const caption=map.closest("figure").querySelector("figcaption");
-  expect(within(caption).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
+  expect(within(caption).getByText("通所負担の上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
   expect(caption).toHaveTextContent("年間可処分所得 7,694,776円 → 7,702,028円 変化量 ＋7,252円");
   expect(map.querySelector("path[data-outcome='level']")).toBeNull();
 });

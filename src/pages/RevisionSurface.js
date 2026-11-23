@@ -42,7 +42,7 @@ export function RevisionSurface({ inputs, head, spouse, point, calculator, onSel
   if(comparison)return <section id="income-difference-plot" aria-label="可処分所得差の分布">{state?.surface?<>
     <IncomeDifferenceHeatmap surface={state.surface} grid={datasetState?.grid} lookupPair={lookupPair}/>
   </>:pending}</section>;
-  return <figure id="salary-surface-plot" className="revision-surface" aria-label="夫婦の給与収入と世帯の可処分所得の3Dグラフ">
+  return <figure id="salary-surface-plot" className="revision-surface" aria-label="夫婦の年間給与と世帯の可処分所得の3Dグラフ">
     {state?.surface?<SalarySurfaceMesh surface={state.surface} calculator={calculator} onSelectSalary={onSelectSalary} fixedTotal={fixedTotal} head={head} spouse={spouse} selectedZ={valueOf(point)}/>:pending}
   </figure>;
 }

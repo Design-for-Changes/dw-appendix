@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import functionCatalog from "../data/calculation-function-catalog.json";
 import CalculationCallMap from "./CalculationCallMap";
+import { PAPER_TERM_KEY } from "../data/paperBenefitTerms";
 
 // 完全ID（ファイル＋階層名）で結ぶ。同名の補助関数を別ファイルの説明へ誤接続しない。
 const FLOW = [
-  { id: "household", name: "世帯と給与系列", description: "世帯条件を正規化し、世帯主給与を1万円刻みで変化させる。", functions: ["src/calc/household.js:buildHousehold", "src/calc/computePoint.js:computeSeries"] },
+  { id: "household", name: "世帯と給与系列", description: "世帯条件を正規化し、世帯主の年間給与を1万円刻みで変化させる。", functions: ["src/calc/household.js:buildHousehold", "src/calc/computePoint.js:computeSeries"] },
   { id: "payroll", name: "給与所得・社会保険料", description: "給与所得控除、所得金額調整控除、年齢別の社会保険料を計算する。", functions: ["src/calc/household.js:calcOne", "src/calc/socialInsurance.js:calculateSocialInsuranceComponents"] },
   { id: "tax", name: "所得控除・税額", description: "本人・配偶者・扶養親族の控除から所得税・住民税を計算する。", functions: ["src/calc/deductions.js:calcDependentDeductionFromRows", "src/calc/deductions.js:calcSpouseDeductionFromRows", "src/calc/taxes.js:getIncomeTaxParts", "src/calc/taxes.js:getResidentTaxParts"] },
   { id: "cash", name: "現金給付", description: "制度固有の判定所得・扶養人数から手当の支給可否と額を求める。児童手当等の処理は統合集計内にある。", functions: ["src/calc/allowances.js:calcTccaComputedLocal", "src/calc/computePoint.js:computePoint.calcWelfareAdjustedIncomeDetail", "src/calc/allowances.js:calcBasicDisabilityPensionYenFor", "src/calc/computePoint.js:computePoint"] },
@@ -14,7 +15,7 @@ const FLOW = [
   { id: "disposable", name: "可処分所得の集計", description: "税・社会保険料控除後の手取額に給付と費用負担を合成する。", functions: ["src/calc/computePoint.js:computePoint"] },
   { id: "cliffs", name: "低下・回復の抽出", description: "表示用はdetectCliffsからexplainCliffCausesを呼び、原因とQ/R点を記録する。detectCliffCauseRowsは別の報告用処理である。", functions: ["src/calc/cliffCauseAnalysis.js:explainCliffCauses", "scripts/generate-appendix-data.mjs:detectCliffs", "src/calc/cliffCauseAnalysis.js:detectCliffCauseRows"] },
   { id: "optimal", name: "参考：旧版の調整モデル", description: "提出稿の再現用。今回の現行制度のケース比較には使用しない。", functions: ["src/calc/optimalModel.js:computeOptimalModel", "src/calc/illustrativeAdjustment.js:computeIllustrativeAdjustment", "src/calc/illustrativeAdjustment.js:summarizeAdjustmentImpact"] },
-  { id: "conditions", name: "拡張条件の生成と欠損確認", description: "家族31構成、配偶者給与3条件、利用額3条件を列挙する。N04必須入力の未確定を0円に置き換えず、結果未算出として保持する。", functions: ["scripts/generate-revision-scenarios.mjs:enumerateFamilyProfiles", "scripts/generate-revision-scenarios.mjs:generateRevisionScenarios"] },
+  { id: "conditions", name: "拡張条件の生成と欠損確認", description: "家族31構成、配偶者の年間給与3条件、利用額3条件を列挙する。N04必須入力の未確定を0円に置き換えず、結果未算出として保持する。", functions: ["scripts/generate-revision-scenarios.mjs:enumerateFamilyProfiles", "scripts/generate-revision-scenarios.mjs:generateRevisionScenarios"] },
   { id: "data", name: "表示データ生成", description: "計算内訳を必要項目に整理し、曲線と給与点別内訳を圧縮JSONに保存する。", functions: ["scripts/generate-appendix-data.mjs:compactBreakdown", "scripts/generate-appendix-data.mjs:writeGzipJSON"] },
 ];
 
@@ -23,14 +24,14 @@ const flowAnchor = (flow) => `calculation-flow-${flow.id}`;
 const anchorHref = (id) => `#${encodeURIComponent(id)}`;
 // The revised two-income engine is distinct from the archived one-income series.
 const currentFlow = [
-  ["household","両親の給与（各万円／年）、児童別条件","範囲と組合せを検証し、給与点ごとの計算器を作る。","validateRevisionHousehold","createRevisionCalculator"],
-  ["payroll","各人の給与 → 給与所得・保険料（円／年）","給与控除と所得金額調整控除を適用する。保険料は年収を12等分して親ごとの標準報酬等級と本人負担額を求める。","revisionSalaryRecord","src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029","src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029"],
+  ["household","父母それぞれの年間給与（万円）、児童別条件","範囲と組合せを検証し、給与点ごとの計算器を作る。","validateRevisionHousehold","createRevisionCalculator"],
+  ["payroll","各人の年間給与 → 給与所得・保険料（円／年）","給与控除と所得金額調整控除を適用する。保険料は年間給与を12等分して親ごとの標準報酬等級と本人負担額を求める。","revisionSalaryRecord","src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029","src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029"],
   ["tax","各人の所得・扶養 → 税額と制度判定用所得割（円／年）","所得税、住民税、森林環境税を算定。前年所得による通所の判定額は給与から差し引く税額とは分ける。","revisionParentTax"],
   ["cash","各親の判定所得・扶養人数＋各児の障害要件 → 年間手当（円）","特児は受給資格者とその配偶者を判定する。児福は子本人（無所得・配偶者なし）と、生計を維持する両親を個別に判定し、親の一方でもその人の限度額以上なら停止とする。","revisionCashBenefits","src/calc/specialChildAllowance.js:calculateSpecialChildAllowance","src/calc/disabledChildWelfareAllowance.js:calculateDisabledChildWelfareAllowance"],
   ["service","世帯の判定用所得割＋対象負担（円／月）→ 利用者負担（円／年）","本モデルの同一保護者に係る合算対象額に世帯の月額上限を適用し、12か月分を差し引く。","revisionServiceBurden"],
-  ["disposable","夫婦の給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
+  ["disposable","夫婦の年間給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
   ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
-  ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最小差・最大差と夫婦の給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
+  ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最小差・最大差と夫婦それぞれの年間給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
 ];
 const discussionFlow = [
   ["隣接する給与点の判定区分 → 制度別・判定対象者別の変化点","収支が下がったか否かを問わず、判定区分が変わった点を抽出する。判定できない区間をまたいで変化を推定しない。","src/calc/paperChangePoints.js:scanPaperChangePoints"],
@@ -100,6 +101,7 @@ export default function CalculationReferenceAppendix({ catalog = functionCatalog
       {internalLink("calculation-function-list", `関数・クラス一覧（${catalog.functionCount}関数・${catalog.classCount}クラス）`)}
     </nav>
     <h3 id="calculation-flow-current" tabIndex={-1}><a href="#revision-scenarios">Appendix Eの給与2軸シミュレーター</a>の計算式</h3>
+    <p>{PAPER_TERM_KEY}</p>
     <div className="appendix-table-wrap"><table className="appendix-table"><caption>入力から年額への計算表（現行制度のみ）</caption>
     <thead><tr><th scope="col">入力 → 出力</th><th scope="col">計算内容</th><th scope="col">担当する関数</th></tr></thead>
     <tbody>{currentFlow.map(([id,values,rule,...functions])=><tr key={id}><th scope="row">{values}</th><td data-label="計算内容">{rule}</td><td data-label="関数">{functions.map(name=>{

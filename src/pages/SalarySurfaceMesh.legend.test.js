@@ -26,6 +26,7 @@ test("凡例の単独選択は共通線の実際の描画色を一色にし、�
   const paletteSize=()=>gl.uniform1i.mock.calls.filter(([name])=>name==="inkCount").map(([,value])=>value).pop();
   try {
     const result=render(<SalarySurfaceMesh surface={surface} head={0} spouse={0} selectedZ={10}/>);
+    for (const parent of ["世帯主","配偶者"]) expect(await screen.findByText(parent+"の年間給与（万円）")).toBeVisible();
     const legend=within(screen.getByRole("group",{name:"福祉制度の境界線"}));
     const all=legend.getByRole("button",{name:"すべて"}), aButton=legend.getByRole("button",{name:special.label});
     expect(legend.getAllByRole("button")).toHaveLength(4);

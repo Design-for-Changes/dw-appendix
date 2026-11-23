@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
+import {PAPER_TERM_KEY} from "../data/paperBenefitTerms.js";
 import { REVISION_INCOME_DESIGN as design, readSalaryWan, salaryBounds } from "../data/revisionIncomeDesign";
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import { RevisionSurface } from "./RevisionSurface";
@@ -104,9 +105,11 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
     setChildren(prev=>prev.map((c,j)=>j===i?{...c,...delta}:c));
   }
   const sharedPlot={inputs,datasetState};
-  return <section id="salary-surface" className="revision-simulator" aria-label="夫婦の給与収入と世帯の可処分所得">
+  const terms=<p><small>{PAPER_TERM_KEY}</small></p>;
+  return <section id="salary-surface" className="revision-simulator" aria-label="夫婦の年間給与と世帯の可処分所得">
     <details className="revision-conditions" open={conditionsOpen} onToggle={e=>setConditionsOpen(e.currentTarget.open)}>
       <summary>世帯と子どもの条件</summary>
+      {conditionsOpen&&terms}
       <div className="revision-fields"><label>子どもの人数<select value={children.length} onChange={(e) => setChildren(Array.from({ length: Number(e.target.value) }, (_, i) => children[i] || blankChild()))}>{[1, 2, 3].map((n) => <option key={n} value={n}>{n}人</option>)}</select></label></div>
       {children.map((c, i) => <ChildFields key={i} index={i} child={c} update={delta=>updateChild(i,delta)} />)}
       {error && <p role="alert">入力条件を確認してください：{error}</p>}
@@ -117,6 +120,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
         aria-selected={view===id} aria-controls={pointId+"-panel-"+id} tabIndex={view===id?0:-1}
         onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
     </div>
+    {!conditionsOpen&&terms}
     {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
       {plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
         id==="difference"?<RevisionSurface {...sharedPlot} comparison/>:
@@ -124,7 +128,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
     </div>)}
     {view==="income"&&<section className="revision-point" aria-label="点P"><h3>点P</h3>
       <div className="point-salary-fields">{design.salary.axes.map((name,i)=>{
-        const id=pointId+"-salary-"+i, caption=name+"（万円／年）";
+        const id=pointId+"-salary-"+i, caption=name+"（万円）";
         return <div className="point-salary-field" key={name}>
           <label id={id+"-label"} htmlFor={id}>{caption}</label>
           <input id={id} type="number" min={min} max={max} step="1" value={income[i]} onChange={e=>changeIncome(i,e.target.value)}/>
@@ -133,8 +137,8 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
             onChange={e=>changeIncome(i,e.target.value)}/>
         </div>;
       })}</div>
-      <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与収入総額を固定して夫婦間の配分を変える</label>
-      <p aria-live="polite">{incomesValid ? `世帯の給与収入総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
+      <label className="revision-check"><input type="checkbox" checked={fixedTotal !== null} disabled={fixedTotal === null && !incomesValid} onChange={(e) => setFixedTotal(e.target.checked ? total : null)} />世帯の給与総額を固定して夫婦間の配分を変える</label>
+      <p aria-live="polite">{incomesValid ? `世帯の給与総額：${fmt(total)}万円／年` : `${fmt(min)}～${fmt(max)}万円の整数を入力してください。`}</p>
       {recipient&&<p>特児の受給資格者・子の税扶養：{PARENT_NAME[recipient]}</p>}
     {point && <><div className="revision-result" aria-live="polite"><strong>{design.outcome.axis}</strong>
       {point.status !== "calculated" ? <><span>{point.status==="excluded"?"この給与点は試算対象外":"この給与点は未算定"}</span><ul>{point.reasons.map((r,i)=><li key={i}>{r}</li>)}</ul></> : <span>{fmt(point.studyDisposableWan)}<small> 万円／年</small></span>}

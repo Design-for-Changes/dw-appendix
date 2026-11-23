@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "revision": "fa176d754b7298bca7895a69923504e765937de6e4114e267fade367ae0b3923",
+  "revision": "23ba3a1ec41113017876a6fe5f1d07bfbe846f71f552644f3e5dbe2022675029",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
@@ -141,7 +141,7 @@
     },
     {
       "file": "src/calc/salarySurfaceSystems.js",
-      "sha256": "a90ea71f52bdbfcbbfbc0820a7d437b110f9646779e44791cf67999cad5ea472"
+      "sha256": "3e94ab4a44cda8e2929c7b16a8ad08e883fcb15f0d6502a2c76ddd7dc7bb535a"
     },
     {
       "file": "src/calc/serviceBurdenLimits.js",
@@ -3246,8 +3246,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 11,
-      "endLine": 11,
+      "line": 12,
+      "endLine": 12,
       "role": "内部関数",
       "signature": "yen(n)",
       "description": "円額を桁区切りにし、未記録の値と0円を区別する。",
@@ -3261,8 +3261,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 13,
-      "endLine": 13,
+      "line": 14,
+      "endLine": 14,
       "role": "内部関数",
       "signature": "person(id)",
       "description": "計算器の世帯員IDを判定対象者の表示名にする。",
@@ -3276,8 +3276,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 17,
-      "endLine": 23,
+      "line": 18,
+      "endLine": 24,
       "role": "内部モジュール間",
       "signature": "writeSurfaceAmounts(target, offset, point)",
       "description": "算定された世帯合計の年額を整数円で格納する。欠測を支給・負担の0円と扱わない。",
@@ -3291,8 +3291,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 26,
-      "endLine": 33,
+      "line": 27,
+      "endLine": 34,
       "role": "内部モジュール間",
       "signature": "surfaceChangeMask(amounts, offsetA, offsetB)",
       "description": "比較できる世帯合計の年額が1円でも変わった制度だけを返す。人別判定・上限・純収支はマスクに使わない。",
@@ -3306,8 +3306,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 36,
-      "endLine": 42,
+      "line": 37,
+      "endLine": 43,
       "role": "内部関数",
       "signature": "allowanceState(c, child, stopped)",
       "description": "手当の一人分の判定について役割、制限への該当、所得・限度額を表示する。",
@@ -3321,8 +3321,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 44,
-      "endLine": 48,
+      "line": 45,
+      "endLine": 49,
       "role": "内部関数",
       "signature": "capState(s)",
       "description": "世帯のサービス月額上限と、給与額とは異なる判定用所得割を表示する。",
@@ -3336,8 +3336,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 50,
-      "endLine": 88,
+      "line": 51,
+      "endLine": 89,
       "role": "内部モジュール間",
       "signature": "describeSurfaceChanges(before, after)",
       "description": "二つの算定済み給与点で世帯の支給・負担年額が変わった制度を、金額と変化理由の両方で説明する。",
@@ -3351,8 +3351,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 59,
-      "endLine": 66,
+      "line": 60,
+      "endLine": 67,
       "role": "内部関数",
       "signature": "compareReasons(prior, next, field, child, oldReasons, newReasons)",
       "description": "世帯の支給額変更を説明するのに必要な、判定前後で結論の変わった人だけを列挙する。",
@@ -3366,8 +3366,8 @@
       "kind": "function",
       "file": "src/calc/salarySurfaceSystems.js",
       "category": "統合計算",
-      "line": 68,
-      "endLine": 71,
+      "line": 69,
+      "endLine": 72,
       "role": "内部関数",
       "signature": "addBenefit(sys, prior, next, oldReasons, newReasons)",
       "description": "複数人・複数児の判定に変化があっても、世帯の年額は各制度につき一度だけ示す。",
@@ -11040,7 +11040,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:allowanceState",
       "to": "src/calc/salarySurfaceSystems.js:person",
-      "line": 39,
+      "line": 40,
       "column": 40,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11050,7 +11050,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:allowanceState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 41,
+      "line": 42,
       "column": 67,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11060,7 +11060,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:allowanceState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 41,
+      "line": 42,
       "column": 86,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11070,7 +11070,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:capState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 46,
+      "line": 47,
       "column": 17,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11080,7 +11080,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:capState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 46,
+      "line": 47,
       "column": 40,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11090,7 +11090,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:capState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 46,
+      "line": 47,
       "column": 72,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11100,7 +11100,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:capState",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 47,
+      "line": 48,
       "column": 62,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11110,7 +11110,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:writeSurfaceAmounts",
-      "line": 53,
+      "line": 54,
       "column": 3,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -11122,7 +11122,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:writeSurfaceAmounts",
-      "line": 54,
+      "line": 55,
       "column": 3,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -11134,7 +11134,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:surfaceChangeMask",
-      "line": 55,
+      "line": 56,
       "column": 14,
       "resultUse": "mask に格納",
       "arguments": [
@@ -11146,7 +11146,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges.addBenefit",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 69,
+      "line": 70,
       "column": 45,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11156,7 +11156,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges.addBenefit",
       "to": "src/calc/salarySurfaceSystems.js:yen",
-      "line": 70,
+      "line": 71,
       "column": 25,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11166,7 +11166,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges.compareReasons",
-      "line": 74,
+      "line": 75,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -11181,7 +11181,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges.addBenefit",
-      "line": 75,
+      "line": 76,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -11195,7 +11195,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges.addBenefit",
-      "line": 84,
+      "line": 85,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -11209,7 +11209,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:capState",
-      "line": 86,
+      "line": 87,
       "column": 61,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -11219,7 +11219,7 @@
     {
       "from": "src/calc/salarySurfaceSystems.js:describeSurfaceChanges",
       "to": "src/calc/salarySurfaceSystems.js:capState",
-      "line": 86,
+      "line": 87,
       "column": 87,
       "resultUse": "式の一部として使用",
       "arguments": [

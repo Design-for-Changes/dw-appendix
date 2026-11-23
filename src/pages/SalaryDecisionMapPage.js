@@ -1,14 +1,15 @@
 import {useMemo} from "react";
+import {PAPER_BOUNDARY_LABELS} from "../data/paperBenefitTerms.js";
 import {UNKNOWN_PLANE_NET_YEN} from "../calc/salaryPlaneRecovery";
 import {useSessionParameter} from "./salarySimulatorSession";
 import SalaryPlaneAxes,{WIDTH,HEIGHT,LEFT,RIGHT,TOP,BOTTOM,viewBox,xPlot,yPlot,toSalaryPlanePath as toPath} from "./SalaryPlaneAxes";
 import "./salary-decision-map.css";
 
 const SYSTEMS=[
-  {id:"N01-1",label:"特別児童扶養手当",color:"#a72344",weight:7},
-  {id:"N01-2",label:"障害児福祉手当",color:"#13498b",weight:4.5},
-  {id:"N02/N03",label:"通所等の負担上限",color:"#13764f",weight:2.5},
-];
+  {id:"N01-1",color:"#a72344",weight:7},
+  {id:"N01-2",color:"#13498b",weight:4.5},
+  {id:"N02/N03",color:"#13764f",weight:2.5},
+].map(s=>({...s,label:PAPER_BOUNDARY_LABELS[s.id]}));
 const yen=n=>n.toLocaleString("ja-JP");
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
@@ -87,7 +88,7 @@ function DecisionFigure({map,grid,calculator,household}){
   }
   return <figure className="decision-figure" aria-label="制度境界・可処分所得の変化量">
     <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}</ul>
-    <svg viewBox={viewBox} width={WIDTH} height={HEIGHT} role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
+    <svg viewBox={viewBox} width={WIDTH} height={HEIGHT} role="img" aria-label="横軸：世帯主の年間給与、縦軸：配偶者の年間給与（万円）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
       <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。</desc>
       <SalaryPlaneAxes max={max}/>
       {geometry.systems.map(s=><path key={s.id} data-system={s.id} d={s.path} fill="none" stroke={s.color} strokeWidth={s.weight} vectorEffect="non-scaling-stroke"/>)}

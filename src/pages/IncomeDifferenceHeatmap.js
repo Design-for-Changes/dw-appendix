@@ -93,15 +93,15 @@ export default function IncomeDifferenceHeatmap({surface,grid,lookupPair,differe
     <figcaption>年間可処分所得差（設定した世帯 − 同じ給与・家族構成で子に障害がない世帯）</figcaption>
     {failed&&<p role="alert">この環境では平面図を描画できません。</p>}
     <div className="diff-map-frame" style={{aspectRatio:W+" / "+H}}>
-      <div className="diff-map-raster" style={plotBox}><canvas ref={canvas} width={width} height={width} style={{width:rasterSize,height:rasterSize}} role="img" tabIndex="0" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入。色は障害の有無による可処分所得差"
+      <div className="diff-map-raster" style={plotBox}><canvas ref={canvas} width={width} height={width} style={{width:rasterSize,height:rasterSize}} role="img" tabIndex="0" aria-label="横軸：世帯主の年間給与、縦軸：配偶者の年間給与。色は障害の有無による可処分所得差"
         onPointerMove={e=>{const q=readPosition(e);setHover(old=>old?.[0]===q?.[0]&&old?.[1]===q?.[1]?old:q);}}
         onClick={e=>setHover(readPosition(e))} onKeyDown={key}/></div>
       <svg className="diff-map-axes" viewBox={viewBox} aria-hidden="true">
         <rect x={L} y={T} width={R-L} height={B-T} fill="none" stroke="#6e8084"/>
         {stepTicks.map(x=><g key={x}><path d={`M${sx(x)} ${B}v6 M${L} ${sy(x)}h-6`} stroke="#486468"/>
           <text x={sx(x)} y={B+25} textAnchor="middle">{fmt(x)}</text><text x={L-10} y={sy(x)+5} textAnchor="end">{fmt(x)}</text></g>)}
-        <text className="diff-axis-title" x={(L+R)/2} y={H-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
-        <text className="diff-axis-title" transform={`translate(21 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+        <text className="diff-axis-title" x={(L+R)/2} y={H-15} textAnchor="middle">世帯主の年間給与（万円）</text>
+        <text className="diff-axis-title" transform={`translate(21 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の年間給与（万円）</text>
         <ExtremeOverlay surface={surface} sx={sx} sy={sy} valid={valid}/>
       </svg>
     </div>

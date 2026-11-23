@@ -1,9 +1,10 @@
+import {PAPER_BOUNDARY_LABELS} from "../data/paperBenefitTerms.js";
 // 線は給与1万円の隣接比較。世帯の手当支給額／上限適用後の利用者負担額が実際に変わった地点だけ。
 export const SURFACE_SYSTEMS = [
-  {id:"N01-1", label:"特別児童扶養手当", color:"#b22d51", bit:1},
-  {id:"N01-2", label:"障害児福祉手当", color:"#005da8", bit:2},
-  {id:"N02/N03", label:"障害福祉サービス・障害児通所支援の利用者負担", color:"#00765d", bit:4},
-];
+  {id:"N01-1", color:"#b22d51", bit:1},
+  {id:"N01-2", color:"#005da8", bit:2},
+  {id:"N02/N03", color:"#00765d", bit:4},
+].map(s=>({...s,label:PAPER_BOUNDARY_LABELS[s.id]}));
 const [special,welfare,services]=SURFACE_SYSTEMS;
 export const SURFACE_AMOUNT_COUNT=SURFACE_SYSTEMS.length;
 export const UNKNOWN_SURFACE_AMOUNT=-1;

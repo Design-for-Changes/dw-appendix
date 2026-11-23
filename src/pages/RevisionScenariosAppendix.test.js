@@ -9,7 +9,7 @@ afterEach(() => jest.restoreAllMocks());
 test("Gはシミュレーター単独の入口とし、研究資料・旧UIを表示も取得もしない", () => {
   const fetchSpy = jest.spyOn(global, "fetch");
   const { container } = render(<RevisionScenariosAppendix />);
-  const simulator = screen.getByRole("region", { name: "夫婦の給与収入と世帯の可処分所得" });
+  const simulator = screen.getByRole("region", { name: "夫婦の年間給与と世帯の可処分所得" });
   expect(container.querySelector("#revision-scenarios")?.children).toHaveLength(1);
   expect(simulator.parentElement).toHaveAttribute("id", "revision-scenarios");
   expect(simulator).toHaveAttribute("id","salary-surface");

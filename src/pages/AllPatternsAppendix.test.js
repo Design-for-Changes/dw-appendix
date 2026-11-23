@@ -26,6 +26,10 @@ beforeEach(() => {
 test("差額は年額・符号付きで、最小点と最大点それぞれに夫婦の給与を表示", () => {
   render(<AllPatternsAppendix/>);
   expect(screen.getByText("全15通り")).toBeVisible();
+  expect(screen.getByText("特別児童扶養手当（特児）、障害児福祉手当（児福）、障害児通所支援の利用者負担（通所負担）")).toBeVisible();
+  for (const parent of ["世帯主","配偶者"]) {
+    expect(screen.getAllByRole("columnheader",{name:new RegExp(parent+"の年間給与\\s*（万円）")})).toHaveLength(2);
+  }
   const slider = fee()[0];
   expect(slider).toHaveAttribute("min","0");
   expect(slider).toHaveAttribute("max","37200");

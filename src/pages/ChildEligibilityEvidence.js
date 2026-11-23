@@ -20,7 +20,7 @@ export default function ChildEligibilityEvidence() {
         <caption>児童1人の障害要件：制度基準に照らした{CHILD_ELIGIBILITY_OPTIONS.length}通り（所得制限の適用前）</caption>
         <thead><tr><th scope="col">特別児童扶養手当の障害等級</th><th scope="col">障害児福祉手当の障害要件</th><th scope="col">所得税法上の障害者区分</th></tr></thead>
         <tbody>{CHILD_ELIGIBILITY_OPTIONS.map(({ id, tccaGrade, welfareEligible, taxStatus }) => <tr key={id}>
-          <td data-label="特児の障害等級">{tccaGrade === "not" ? "非該当" : tccaGrade + "級"}</td>
+          <td data-label="特別児童扶養手当の障害等級">{tccaGrade === "not" ? "非該当" : tccaGrade + "級"}</td>
           <td data-label="障害児福祉手当の障害要件">{welfareEligible ? "該当" : "非該当"}</td>
           <td data-label="所得税法上の障害者区分">{taxLabels[taxStatus]}</td>
         </tr>)}</tbody>

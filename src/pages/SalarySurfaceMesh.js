@@ -257,7 +257,7 @@ function Axes({scene,cursor,surface,extremes}) {
     const nx=(out[0]-m[0])/len,ny=(out[1]-m[1])/len;
     const vertical=axis===zName;
     const lm=at(w<520?.33:.47);
-    const labelX=vertical ? clamp(b[0],44,w-44) : clamp(lm[0]+nx*38,42,w-42);
+    const labelX=vertical ? clamp(b[0],44,w-44) : clamp(lm[0]+nx*38,axis.length*8,w-axis.length*8);
     const labelY=vertical ? clamp(b[1]-13,14,h-4) : clamp(lm[1]+ny*36+5,14,h-4);
     return <g key={axis} className="salary-mesh-axis"><line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]}/>
       {values.map(([t,value])=>{const [x,y]=at(t);return <g key={t}><line x1={x} y1={y} x2={x+nx*4} y2={y+ny*4}/>
@@ -267,8 +267,8 @@ function Axes({scene,cursor,surface,extremes}) {
   };
   const fractions=w<410?[0,.5,1]:[0,1/3,2/3,1], ticks=fractions.map(t=>[t,max*t]);
   return <svg aria-hidden="true" viewBox={'0 0 '+w+' '+h}>
-    {axisTicks("世帯主給与",t=>P(2*t-1,-1,0),difference?ticks.slice(1):ticks,t=>P(2*t-1,-1.2,0))}
-    {axisTicks("配偶者給与",t=>P(-1,2*t-1,0),ticks.slice(1),t=>P(-1.2,2*t-1,0))}
+    {axisTicks("世帯主の年間給与（万円）",t=>P(2*t-1,-1,0),difference?ticks.slice(1):ticks,t=>P(2*t-1,-1.2,0))}
+    {axisTicks("配偶者の年間給与（万円）",t=>P(-1,2*t-1,0),ticks.slice(1),t=>P(-1.2,2*t-1,0))}
     {axisTicks(zName,t=>P(-1,-1,low+(high-low)*t),zTicks(scene,difference).filter(z=>difference||z!==0).map(z=>[(z-low)/(high-low),z]),t=>P(-1.2,-1.2,low+(high-low)*t))}
     <text className="salary-mesh-unit" x={w-12} y="20" textAnchor="end">万円／年</text>
     {extremes?.map(({label,px,py})=><g key={label} className="salary-mesh-extreme"><circle cx={px} cy={py} r="4" />

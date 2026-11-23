@@ -49,7 +49,7 @@ test("収支合計を最初に示し、社保、税、各手当、サービス�
   expect(screen.getAllByRole("table").map(t=>t.caption.textContent)).toEqual([
     "世帯の可処分所得（円／年）","世帯主の社会保険料（本人負担）","配偶者の社会保険料（本人負担）",
     "世帯主の税額計算（円／年）","配偶者の税額計算（円／年）",
-    "特別児童扶養手当","障害児福祉手当","児童手当","サービス利用者負担",
+    "特児","児福","児童手当","通所負担",
   ]);
   expect(trace.querySelector("tbody tr th")).toHaveTextContent("世帯の可処分所得（試算対象分）");
 });
@@ -58,13 +58,13 @@ test("サービスの課税区分と月額負担：所得割0円でも均等割�
   const both={...inputs,children:[8,12].map(age=>({...inputs.children[0],age,serviceAmountYen:37200}))};
   const engine=createRevisionCalculator(both), renderAt=head=><HouseholdCalculationTrace point={engine.evaluate(head,0)} inputs={both}/>;
   const {rerender}=render(renderAt(255));
-  const caption="サービス利用者負担";
-  expect(row(caption,"世帯の判定用所得割").cells[3]).toHaveTextContent(/^0円$/);
+  const caption="通所負担";
+  expect(row(caption,"世帯の合計所得割額").cells[3]).toHaveTextContent(/^0円$/);
   expect(row(caption,"世帯の月額上限").cells[2]).toHaveTextContent("世帯主：非課税、配偶者：非課税 → 非課税世帯");
   expect(row(caption,"合算対象の月額（上限前）").cells[2]).toHaveTextContent(/^37,200 ＋ 37,200$/);
   expect(row(caption,"上限適用後の月額自己負担").cells[3]).toHaveTextContent(/^0円$/);
   rerender(renderAt(256));
-  expect(row(caption,"世帯の判定用所得割").cells[3]).toHaveTextContent(/^0円$/);
+  expect(row(caption,"世帯の合計所得割額").cells[3]).toHaveTextContent(/^0円$/);
   expect(row(caption,"世帯の月額上限").cells[2]).toHaveTextContent("世帯主：課税（均等割のみ）、配偶者：非課税 → 課税世帯");
   expect(row(caption,"世帯の月額上限").cells[3]).toHaveTextContent(/^4,600円$/);
   expect(row(caption,"上限適用後の月額自己負担").cells[3]).toHaveTextContent(/^4,600円$/);

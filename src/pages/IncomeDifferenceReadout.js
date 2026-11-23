@@ -22,8 +22,8 @@ export function DifferenceExtrema({surface,grid,shown,lookupPair}) {
       : "設定した給与範囲に、障害がない世帯の可処分所得を下回る点はありません。"}</p>}
     <div className="diff-point-table-wrap"><table className="diff-point-table">
       <caption>給与点別の年間収入・可処分所得</caption>
-      <thead><tr><th scope="col">給与点</th><th scope="col">世帯主の<br/>給与収入</th><th scope="col">配偶者の<br/>給与収入</th>
-        <th scope="col">世帯の<br/>給与収入合計</th><th scope="col">世帯所得<br/>（夫婦の給与所得の合計）</th>
+      <thead><tr><th scope="col">給与点</th><th scope="col">世帯主の<br/>年間給与</th><th scope="col">配偶者の<br/>年間給与</th>
+        <th scope="col">世帯の<br/>給与総額</th><th scope="col">世帯所得<br/>（夫婦の給与所得の合計）</th>
         <th scope="col">設定した世帯の<br/>可処分所得</th><th scope="col">子に障害がない世帯の<br/>可処分所得</th><th scope="col">可処分所得差</th></tr></thead>
       <tbody>{rows.map(([label,p])=>{
         const {headWan,spouseWan}=p,i=spouseWan*width+headWan;

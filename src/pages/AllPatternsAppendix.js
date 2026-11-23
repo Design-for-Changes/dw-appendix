@@ -1,4 +1,5 @@
 import { Fragment, useMemo } from "react";
+import {PAPER_TERM_KEY} from "../data/paperBenefitTerms.js";
 import { compareAllPatterns } from "../calc/allPatternsComparison";
 import { CHILD_ELIGIBILITY_OPTIONS } from "../data/childEligibilityOptions";
 import { useSessionParameter } from "./salarySimulatorSession";
@@ -36,6 +37,7 @@ export default function AllPatternsAppendix() {
   }
   const setPage = next => setSettings(old => ({...old, page: next}));
   return <section className="appendix-panel all-patterns" aria-label="全パターンの可処分所得差">
+    <p><small>{PAPER_TERM_KEY}</small></p>
     <div className="all-patterns-count"><label>子どもの人数 <select value={count}
       onChange={e => {const next = Number(e.target.value); setSettings(old => ({...old, count: next, page: 0}));}}>
       {[1, 2, 3].map(n => <option key={n} value={n}>{n}人</option>)}
@@ -70,7 +72,7 @@ export default function AllPatternsAppendix() {
             <th scope="colgroup" colSpan="3">最小点</th><th scope="colgroup" colSpan="3">最大点</th></tr>
           <tr>{children.map(i => <th key={i} scope="col">子ども{i + 1}</th>)}
             {["min", "max"].map(key => <Fragment key={key}><th scope="col">差額<br/>（円／年）</th>
-              <th scope="col">世帯主給与<br/>（万円／年）</th><th scope="col">配偶者給与<br/>（万円／年）</th></Fragment>)}</tr>
+              <th scope="col">世帯主の年間給与<br/>（万円）</th><th scope="col">配偶者の年間給与<br/>（万円）</th></Fragment>)}</tr>
         </thead>
         <tbody>{rows.slice(start, start + PAGE_SIZE).map((row, index) =>
           <tr key={row.profileIds.join("|")}><th scope="row">{format.format(start + index + 1)}</th>

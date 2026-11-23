@@ -62,6 +62,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
 test("外部ナビからの表示指定とタブの選択要求を区別し、給与入力を保持する",()=>{
   const changeView=jest.fn();
   const {rerender}=render(<RevisionIncomePlane graphView="difference" onGraphViewChange={changeView}/>);
+  expect(screen.getByText("特別児童扶養手当（特児）、障害児福祉手当（児福）、障害児通所支援の利用者負担（通所負担）")).toBeVisible();
   expect(screen.getByRole("tab",{name:"可処分所得差"})).toHaveAttribute("aria-selected","true");
   expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
   fireEvent.keyDown(screen.getByRole("tab",{name:"可処分所得差"}),{key:"Home"});
@@ -75,9 +76,9 @@ test("外部ナビからの表示指定とタブの選択要求を区別し、�
 const change = (el, value) => fireEvent.change(el, { target: { value } });
 const child = (i) => within(screen.getByRole("group", { name: "子ども" + i }));
 const combination = (i) => child(i).getByRole("combobox", { name: "障害の組み合わせ" });
-const serviceSlider = (i) => child(i).getByRole("slider",{name:/通所支援の月額負担/});
-const salaryNumber = (parent,scope=screen) => scope.getByRole("spinbutton",{name:parent+"の給与収入（万円／年）"});
-const salarySlider = (parent,scope=screen) => scope.getByRole("slider",{name:parent+"の給与収入（万円／年）"});
+const serviceSlider = (i) => child(i).getByRole("slider",{name:/通所負担（月額・多子軽減後・世帯上限適用前）/});
+const salaryNumber = (parent,scope=screen) => scope.getByRole("spinbutton",{name:parent+"の年間給与（万円）"});
+const salarySlider = (parent,scope=screen) => scope.getByRole("slider",{name:parent+"の年間給与（万円）"});
 const renderWithPoint = () => render(<RevisionIncomePlane />);
 const conditions = () => screen.getByText("世帯と子どもの条件",{selector:"summary"}).closest("details");
 const openConditions = () => { if (!conditions().open) fireEvent.click(conditions().querySelector("summary")); };
@@ -133,8 +134,8 @@ test("3Dの給与入力と1万円刻みのスライダーを双方向に連動�
 test("総額固定で配分を変え、入力範囲外の結果を残さない", () => {
   renderWithPoint();
   drawGraph();
-  const head = screen.getByRole("spinbutton", { name: /世帯主の給与収入/ });
-  const spouse = screen.getByRole("spinbutton", { name: /配偶者の給与収入/ });
+  const head = screen.getByRole("spinbutton", { name: /世帯主の年間給与/ });
+  const spouse = screen.getByRole("spinbutton", { name: /配偶者の年間給与/ });
   change(head, "1470"); change(spouse, "1330");
   expect(screen.getByText(/総額：2,800万円/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("checkbox", { name: /総額を固定/ }));
@@ -170,11 +171,11 @@ test("点Pは初期表示から可視で、3Dの境界選択が両方の給与�
     fireEvent.click(fixed);
     act(()=>current().onSelectSalary(360,120));
     expect(fixed).not.toBeChecked();
-    expect(p.getByRole("spinbutton",{name:/世帯主の給与収入/})).toHaveValue(360);
-    expect(p.getByRole("spinbutton",{name:/配偶者の給与収入/})).toHaveValue(120);
+    expect(p.getByRole("spinbutton",{name:/世帯主の年間給与/})).toHaveValue(360);
+    expect(p.getByRole("spinbutton",{name:/配偶者の年間給与/})).toHaveValue(120);
     expect(current()).toMatchObject({head:360,spouse:120,point:{studyDisposableWan:savedPoint().result.studyDisposableWan}});
     expect(savedPoint()).toMatchObject({headSalaryWan:360,spouseSalaryWan:120});
-    change(p.getByRole("spinbutton",{name:/配偶者の給与収入/}),"");
+    change(p.getByRole("spinbutton",{name:/配偶者の年間給与/}),"");
     expect(current()).toMatchObject({head:null,spouse:null,point:null});
   } finally { surface.mockRestore(); }
 });

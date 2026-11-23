@@ -1,8 +1,9 @@
 .diff-heatmap { width:100%; max-width:none; margin:1.1rem 0; color:#233b43; font-variant-numeric:tabular-nums; }
 .diff-heatmap figcaption { margin:0 0 .3rem; font-weight:650; }
-.diff-map-frame { position:relative; width:100%; aspect-ratio:1000/625; max-width:88rem; }
-.diff-map-frame canvas { position:absolute; left:9.9%; top:3.2%; width:87.5%; height:85.44%; max-width:none; image-rendering:pixelated; cursor:crosshair; touch-action:manipulation; }
-.diff-map-frame canvas:focus-visible { outline:2px solid #133d4a; outline-offset:2px; }
+.diff-map-frame { position:relative; width:100%; }
+.diff-map-raster { position:absolute; overflow:hidden; }
+.diff-map-raster canvas { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); max-width:none; image-rendering:pixelated; cursor:crosshair; touch-action:manipulation; }
+.diff-map-raster:focus-within { outline:2px solid #133d4a; outline-offset:2px; }
 .diff-heatmap .diff-map-frame .diff-map-axes { position:absolute; inset:0; display:block; width:100%; height:100%; max-width:none; pointer-events:none; }
 .diff-heatmap .diff-map-axes text { fill:#233b43; font:16px system-ui,sans-serif; font-variant-numeric:tabular-nums; }
 .diff-heatmap .diff-map-axes .diff-axis-title { font-size:18px; font-weight:650; }

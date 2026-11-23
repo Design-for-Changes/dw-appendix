@@ -76,6 +76,9 @@ test("両方向の制度線を黒線で覆わず、制度線を選ぶと負の�
   const map=plot(),base=map.querySelector("rect");
   const left=Number(base.getAttribute("x")),top=Number(base.getAttribute("y"));
   const width=Number(base.getAttribute("width")),height=Number(base.getAttribute("height"));
+  expect(width).toBe(height);
+  const [, ,viewWidth,viewHeight]=map.getAttribute("viewBox").split(" ").map(Number);
+  expect(map).not.toHaveAttribute("preserveAspectRatio","none");
   const sx=x=>left+x*width/1500,sy=y=>top+(1500-y)*height/1500;
   const svgCoords=([x1,y1,x2,y2])=>[sx(x1),sy(y1),sx(x2),sy(y2)];
   const segs=p=>Array.from(p.getAttribute("d").matchAll(/M([^M]+)/g),m=>m[1].match(/-?\d+(?:\.\d+)?/g).map(Number));
@@ -84,8 +87,9 @@ test("両方向の制度線を黒線で覆わず、制度線を選ぶと負の�
   expect(map.closest("figure")).not.toHaveTextContent("制度切替時の可処分所得の下落");
   const welfareLine=map.querySelector("path[data-system='N01-2']");
   for(const seg of [vertical(907),horizontal(907)])expect(segs(welfareLine).some(actual=>sameSegment(actual,svgCoords(seg)))).toBe(true);
-  map.getBoundingClientRect=()=>({left:0,top:0,width:1032,height:720});
-  fireEvent.click(map,{clientX:sx(600),clientY:sy(906.5)});
+  const scale=.8;
+  map.getBoundingClientRect=()=>({left:10,top:20,width:scale*viewWidth,height:scale*viewHeight});
+  fireEvent.click(map,{clientX:10+scale*sx(600),clientY:20+scale*sy(906.5)});
   const caption=map.closest("figure").querySelector("figcaption");
   expect(caption).toHaveTextContent("年間可処分所得 11,419,020円 → 11,227,552円 変化量 −191,468円");
   expect(caption).toHaveTextContent(/600[,、]\s*906/);

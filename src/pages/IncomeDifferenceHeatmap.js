@@ -2,8 +2,9 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import "./IncomeDifferenceHeatmap.css";
 import {DifferenceExtrema} from "./IncomeDifferenceReadout";
 import {DIFFERENCE_PALETTE,differenceHeatmapPixels} from "./prepareSalaryGraphDrawing.js";
+import {WIDTH as W,HEIGHT as H,LEFT as L,RIGHT as R,TOP as T,BOTTOM as B,viewBox,xPlot,yPlot} from "./SalaryPlaneAxes";
 
-const W=1000,H=625,L=99,R=974,T=20,B=554;
+const plotBox={left:L/W*100+"%",top:T/H*100+"%",width:(R-L)/W*100+"%",height:(B-T)/H*100+"%"};
 const format=new Intl.NumberFormat("ja-JP",{maximumFractionDigits:4});
 const fmt=v=>Number.isFinite(v)?format.format(v):"—";
 const signed=v=>(v>0?"＋":v<0?"−":"")+fmt(Math.abs(v));
@@ -59,7 +60,10 @@ export default function IncomeDifferenceHeatmap({surface,grid,lookupPair,differe
   const canvas=useRef(null),[failed,setFailed]=useState(false),[hover,setHover]=useState(null);
   const {width,heights}=surface,max=width-1;
   const stepTicks=useMemo(()=>ticks(max),[max]),bound=boundOf(surface);
-  const sx=v=>L+(v+.5)/width*(R-L),sy=v=>B-(v+.5)/width*(B-T);
+  const sx=v=>xPlot(v,max||1),sy=v=>yPlot(v,max||1);
+  // The ends of both axes pass through the centres of the first and last pixels.
+  // Crop the outer half pixels so salary coordinates match the boundary map exactly.
+  const rasterSize=(max>0?width/max:1)*100+"%";
   const valid=(x,y)=>Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<width&&y<width&&(x!==0||y!==0)&&Number.isFinite(heights[y*width+x]);
   useEffect(()=>{
     setHover(null);
@@ -88,16 +92,16 @@ export default function IncomeDifferenceHeatmap({surface,grid,lookupPair,differe
   return <figure className="diff-heatmap" aria-label="可処分所得差の平面図">
     <figcaption>年間可処分所得差（設定した世帯 − 同じ給与・家族構成で子に障害がない世帯）</figcaption>
     {failed&&<p role="alert">この環境では平面図を描画できません。</p>}
-    <div className="diff-map-frame">
-      <canvas ref={canvas} width={width} height={width} role="img" tabIndex="0" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入。色は障害の有無による可処分所得差"
+    <div className="diff-map-frame" style={{aspectRatio:W+" / "+H}}>
+      <div className="diff-map-raster" style={plotBox}><canvas ref={canvas} width={width} height={width} style={{width:rasterSize,height:rasterSize}} role="img" tabIndex="0" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入。色は障害の有無による可処分所得差"
         onPointerMove={e=>{const q=readPosition(e);setHover(old=>old?.[0]===q?.[0]&&old?.[1]===q?.[1]?old:q);}}
-        onClick={e=>setHover(readPosition(e))} onKeyDown={key}/>
-      <svg className="diff-map-axes" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" preserveAspectRatio="none">
+        onClick={e=>setHover(readPosition(e))} onKeyDown={key}/></div>
+      <svg className="diff-map-axes" viewBox={viewBox} aria-hidden="true">
         <rect x={L} y={T} width={R-L} height={B-T} fill="none" stroke="#6e8084"/>
         {stepTicks.map(x=><g key={x}><path d={`M${sx(x)} ${B}v6 M${L} ${sy(x)}h-6`} stroke="#486468"/>
           <text x={sx(x)} y={B+25} textAnchor="middle">{fmt(x)}</text><text x={L-10} y={sy(x)+5} textAnchor="end">{fmt(x)}</text></g>)}
-        <text className="diff-axis-title" x={(L+R)/2} y={H-10} textAnchor="middle">世帯主の給与収入（万円／年）</text>
-        <text className="diff-axis-title" transform={`translate(23 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
+        <text className="diff-axis-title" x={(L+R)/2} y={H-15} textAnchor="middle">世帯主の給与収入（万円／年）</text>
+        <text className="diff-axis-title" transform={`translate(21 ${(T+B)/2}) rotate(-90)`} textAnchor="middle">配偶者の給与収入（万円／年）</text>
         <ExtremeOverlay surface={surface} sx={sx} sy={sy} valid={valid}/>
       </svg>
     </div>

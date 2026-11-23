@@ -1,5 +1,6 @@
-// Coordinates on both E salary planes are independent annual salaries in 万円.
-export const WIDTH=1032, HEIGHT=720, LEFT=83, RIGHT=998, TOP=28, BOTTOM=639;
+// Both salary axes span the same 0–1,500万円: one increment must occupy the same length.
+export const WIDTH=1032, LEFT=83, RIGHT=998, TOP=28, BOTTOM=TOP+(RIGHT-LEFT), HEIGHT=BOTTOM+81;
+export const viewBox=`0 0 ${WIDTH} ${HEIGHT}`;
 export const xPlot=(v,max)=>LEFT+v/max*(RIGHT-LEFT), yPlot=(v,max)=>BOTTOM-v/max*(BOTTOM-TOP);
 export function toSalaryPlanePath(segments,max,digits=3) {
   return segments.map(([a,b,c,d])=>"M"+xPlot(a,max).toFixed(digits)+" "+yPlot(b,max).toFixed(digits)+

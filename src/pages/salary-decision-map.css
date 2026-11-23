@@ -2,7 +2,7 @@
 .decision-legend{display:flex;flex-wrap:wrap;gap:.55rem 1.6rem;list-style:none;padding:0;margin:.7rem 0;font-size:1rem;font-weight:600}
 .decision-legend li,.decision-figure figcaption span{display:inline-flex;align-items:center;gap:.45rem}
 .decision-legend i,.decision-figure figcaption i{display:inline-block;width:1.6rem;height:3px}
-.decision-figure svg{display:block;width:100%;height:auto;aspect-ratio:1032 / 720;background:#fff;overflow:visible}
+.decision-figure svg{display:block;width:100%;height:auto;background:#fff;overflow:visible}
 .decision-figure svg:focus-visible{outline:2px solid #31596a;outline-offset:2px}
 .decision-figure text{fill:#243b46;font:16px system-ui,sans-serif;font-variant-numeric:tabular-nums}
 .decision-figure text.decision-axis{font-weight:650;font-size:18px}

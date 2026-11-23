@@ -1,6 +1,7 @@
 import React from "react";
 import {render,screen,fireEvent,within} from "@testing-library/react";
 import IncomeDifferenceHeatmap from "./IncomeDifferenceHeatmap";
+import SalaryPlaneAxes,{viewBox} from "./SalaryPlaneAxes";
 
 const W=3;
 const surface={width:W,min:-1,max:1,validCount:8,negativeCount:3,
@@ -69,6 +70,15 @@ test("最大・最小が複数あるときも各代表給与点の画素中央�
   const {container}=render(<IncomeDifferenceHeatmap surface={chart} grid={gridFor(Int32Array.from(amounts))}/>);
   const svg=container.querySelector(".diff-map-axes"),box=svg.querySelector("rect");
   const left=+box.getAttribute("x"),top=+box.getAttribute("y"),width=+box.getAttribute("width"),height=+box.getAttribute("height");
+  // Both maps must have the exact same coordinate system, not just a square outer frame.
+  const {container:boundary}=render(<svg><SalaryPlaneAxes max={chart.width-1}/></svg>);
+  for(const attr of ["x","y","width","height"])expect(box.getAttribute(attr)).toBe(boundary.querySelector("rect").getAttribute(attr));
+  expect(svg).toHaveAttribute("viewBox",viewBox);
+  expect(svg).not.toHaveAttribute("preserveAspectRatio","none");
+  expect(width).toBe(height);
+  const image=container.querySelector("canvas");
+  expect(parseFloat(image.style.width)).toBeCloseTo(100*chart.width/(chart.width-1));
+  expect(image.style.height).toBe(image.style.width);
   expect(svg.querySelectorAll("g[data-difference-extreme]")).toHaveLength(2);
   for(const [kind,signed] of [["maximum","＋50,000,001円"],["minimum","−446,401円"]]){
     const markers=svg.querySelectorAll('g[data-difference-extreme="'+kind+'"]');
@@ -77,8 +87,8 @@ test("最大・最小が複数あるときも各代表給与点の画素中央�
     const translate=transform.match(/^translate\(\s*([\d.]+)[\s,]+([\d.]+)\s*\)$/);
     expect(translate).not.toBeNull();
     const {headWan,spouseWan}=chart[kind];
-    expect(+translate[1]).toBeCloseTo(left+(headWan+.5)*width/chart.width,2);
-    expect(+translate[2]).toBeCloseTo(top+(chart.width-1-spouseWan+.5)*height/chart.width,2);
+    expect(+translate[1]).toBeCloseTo(left+headWan*width/(chart.width-1),2);
+    expect(+translate[2]).toBeCloseTo(top+(chart.width-1-spouseWan)*height/(chart.width-1),2);
     expect(markers[0].querySelector("title")).toHaveTextContent(signed);
   }
 });

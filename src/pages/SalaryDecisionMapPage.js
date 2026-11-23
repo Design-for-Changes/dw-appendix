@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {UNKNOWN_PLANE_NET_YEN} from "../calc/salaryPlaneRecovery";
 import {useSessionParameter} from "./salarySimulatorSession";
-import SalaryPlaneAxes,{WIDTH,HEIGHT,LEFT,RIGHT,TOP,BOTTOM,xPlot,yPlot,toSalaryPlanePath as toPath} from "./SalaryPlaneAxes";
+import SalaryPlaneAxes,{WIDTH,HEIGHT,LEFT,RIGHT,TOP,BOTTOM,viewBox,xPlot,yPlot,toSalaryPlanePath as toPath} from "./SalaryPlaneAxes";
 import "./salary-decision-map.css";
 
 const SYSTEMS=[
@@ -87,7 +87,7 @@ function DecisionFigure({map,grid,calculator,household}){
   }
   return <figure className="decision-figure" aria-label="制度境界・可処分所得の変化量">
     <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}</ul>
-    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
+    <svg viewBox={viewBox} width={WIDTH} height={HEIGHT} role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
       <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。</desc>
       <SalaryPlaneAxes max={max}/>
       {geometry.systems.map(s=><path key={s.id} data-system={s.id} d={s.path} fill="none" stroke={s.color} strokeWidth={s.weight} vectorEffect="non-scaling-stroke"/>)}

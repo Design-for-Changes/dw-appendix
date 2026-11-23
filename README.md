@@ -7,7 +7,7 @@
 ## 概要
 障害児を在宅で養育するモデル世帯に複数の給付・負担制度を適用し、夫婦それぞれの給与収入と子どもの条件に応じて、世帯の可処分所得がどう変わるかを試算する。
 
-[E：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。[制度境界のみ（2D）](https://design-for-changes.github.io/dw-appendix/#system-boundaries)では、各制度の所得区分が切り替わる位置を示す。[G：全パターン比較](https://design-for-changes.github.io/dw-appendix/#all-patterns)は、障害要件の組み合わせごとに、対照世帯との年間の可処分所得差の最小点・最大点を示す。
+[E：モデル世帯シミュレーター](https://design-for-changes.github.io/dw-appendix/#revision-scenarios)では夫婦の給与を独立に変えられる。[G：全パターン比較](https://design-for-changes.github.io/dw-appendix/#all-patterns)は、障害要件の組み合わせごとに、対照世帯との年間の可処分所得差の最小点・最大点を示す。
 
 ## 再現性
 - `src/calc/computePoint.js`：給与点ごとの計算を組み合わせる入口。税・社会保険・手当・医療・教育の計算は同ディレクトリのモジュールに分離。

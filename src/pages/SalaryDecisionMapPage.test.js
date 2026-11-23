@@ -43,6 +43,7 @@ test("共通の給与格子を使い、各制度の線を夫婦の給与全域�
   for(const label of ["特別児童扶養手当","障害児福祉手当","通所等の負担上限"]) {
     expect(within(screen.getByRole("list",{name:"制度別の凡例"})).getByText(label)).toBeVisible();
   }
+  expect(within(screen.getByRole("list",{name:"制度別の凡例"})).getAllByRole("listitem")).toHaveLength(3);
   fireEvent.keyDown(map,{key:"ArrowRight"});
   fireEvent.keyDown(map,{key:"Enter"});
   expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
@@ -59,7 +60,7 @@ test("該当境界がなければ平面図に切替なしと表示する",()=>{
   expect(screen.getByText("この条件では対象制度の切り替わりはありません。")).toBeVisible();
 });
 
-test("両方向の実下落を同じXY平面に示し、線をクリックして下落幅・前後の給与と可処分所得を読む",()=>{
+test("両方向の制度線を黒線で覆わず、制度線を選ぶと下落幅・前後の給与と可処分所得を読める",()=>{
   const {calculator,finish}=draw();
   const horizontal=y=>[599.5,y-.5,600.5,y-.5],vertical=x=>[x-.5,599.5,x-.5,600.5];
   const pair=line=>({drop:[line(907)],recovery:[line(937)],dropMasks:[2],recoveryDropIndex:[0]});
@@ -78,10 +79,10 @@ test("両方向の実下落を同じXY平面に示し、線をクリックして
   const svgCoords=([x1,y1,x2,y2])=>[sx(x1),sy(y1),sx(x2),sy(y2)];
   const segs=p=>Array.from(p.getAttribute("d").matchAll(/M([^M]+)/g),m=>m[1].match(/-?\d+(?:\.\d+)?/g).map(Number));
   const sameSegment=(actual,expected)=>actual.length===4&&actual.every((n,i)=>Math.abs(n-expected[i])<.01);
-  const drops=map.querySelectorAll("path[data-outcome='drop']");
-  expect(drops).toHaveLength(1);
-  for(const seg of [vertical(907),horizontal(907)])expect(segs(drops[0]).some(actual=>sameSegment(actual,svgCoords(seg)))).toBe(true);
-  expect(map.querySelector("path[data-outcome='level']")).toBeNull();
+  expect(map.querySelector("path[data-outcome]")).toBeNull();
+  expect(map.closest("figure")).not.toHaveTextContent("制度切替時の可処分所得の下落");
+  const welfareLine=map.querySelector("path[data-system='N01-2']");
+  for(const seg of [vertical(907),horizontal(907)])expect(segs(welfareLine).some(actual=>sameSegment(actual,svgCoords(seg)))).toBe(true);
   map.getBoundingClientRect=()=>({left:0,top:0,width:1032,height:720});
   fireEvent.click(map,{clientX:sx(600),clientY:sy(906.5)});
   const caption=map.closest("figure").querySelector("figcaption");
@@ -96,6 +97,20 @@ test("両方向の実下落を同じXY平面に示し、線をクリックして
   expect(screen.queryByRole("radio")).toBeNull();
   expect(screen.queryByRole("spinbutton")).toBeNull();
   expect(screen.queryByText(/点P/)).toBeNull();
+});
+
+test("連続する制度線上でもキーボードで1万円刻みに給与点を選べる",()=>{
+  const {finish}=draw();
+  finish({"N01-2":[[596.5,906.5,603.5,906.5]]});
+  const map=plot(),caption=map.closest("figure").querySelector("figcaption");
+  fireEvent.keyDown(map,{key:"ArrowRight"});
+  expect(caption).toHaveTextContent("（597, 906）→（597, 907）");
+  fireEvent.keyDown(map,{key:"ArrowRight"});
+  expect(caption).toHaveTextContent("（598, 906）→（598, 907）");
+  fireEvent.keyDown(map,{key:"ArrowLeft"});
+  expect(caption).toHaveTextContent("（597, 906）→（597, 907）");
+  fireEvent.keyDown(map,{key:"ArrowLeft"});
+  expect(caption).toHaveTextContent("（603, 906）→（603, 907）");
 });
 
 test("世帯主の増収で特児が停止する境界では実際の隣接座標と判定を示す",()=>{

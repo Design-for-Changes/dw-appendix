@@ -1,10 +1,10 @@
 .salary-mesh { width: 100%; margin: 0; color: #223d40; }
 .salary-mesh-legend { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .38rem; padding: .5rem clamp(.45rem, 1vw, .9rem); border-bottom: 1px solid #dce4e2; }
 .salary-mesh-legend-title { margin-right: .1rem; font-size: .875rem; font-weight: 650; }
-:is(.salary-mesh, .policy-boundary-figure) .salary-mesh-legend button { display: inline-flex; align-items: center; gap: .35rem; min-height: 1.95rem; margin: 0; padding: .15rem .48rem; border: 1px solid #bdc9c6; border-radius: .32rem; background: white; font-size: .875rem; color: #29423f; cursor: pointer; }
-:is(.salary-mesh, .policy-boundary-figure) .salary-mesh-legend button[aria-pressed="true"] { border-color: #284c46; background: #e7f0ec; box-shadow: inset 0 0 0 1px #284c46; font-weight: 650; }
-:is(.salary-mesh, .policy-boundary-figure) .salary-mesh-legend button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-:is(.salary-mesh, .policy-boundary-figure) .salary-mesh-legend button:disabled { opacity: .55; cursor: default; }
+.salary-mesh .salary-mesh-legend button { display: inline-flex; align-items: center; gap: .35rem; min-height: 1.95rem; margin: 0; padding: .15rem .48rem; border: 1px solid #bdc9c6; border-radius: .32rem; background: white; font-size: .875rem; color: #29423f; cursor: pointer; }
+.salary-mesh .salary-mesh-legend button[aria-pressed="true"] { border-color: #284c46; background: #e7f0ec; box-shadow: inset 0 0 0 1px #284c46; font-weight: 650; }
+.salary-mesh .salary-mesh-legend button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.salary-mesh .salary-mesh-legend button:disabled { opacity: .55; cursor: default; }
 .salary-mesh-legend button i { width: 1rem; height: .24rem; flex: none; border-radius: .1rem; }
 .salary-mesh-stage { position: relative; width: 100%; height: var(--salary-plot-height); touch-action: none; cursor: grab; background: #fff; overflow: hidden; box-sizing: border-box; }
 .salary-mesh-stage:active { cursor: grabbing; }

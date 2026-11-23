@@ -24,6 +24,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
   const tab=name=>screen.getByRole("tab",{name});
   try{
     renderWithPoint();
+    expect(screen.getAllByRole("tab").map(tab=>tab.textContent)).toEqual(["可処分所得（3D）","制度境界・下落（2D）","可処分所得差"]);
     expect(screen.getAllByRole("region",{name:"点P"})).toHaveLength(1);
     expect(screen.getAllByRole("button",{name:"グラフを描画"})).toHaveLength(1);
     expect(surface).not.toHaveBeenCalled();expect(boundaries).not.toHaveBeenCalled();

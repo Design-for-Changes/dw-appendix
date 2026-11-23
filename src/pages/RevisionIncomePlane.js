@@ -3,7 +3,6 @@ import { REVISION_INCOME_DESIGN as design, readSalaryWan, salaryBounds } from ".
 import { createRevisionCalculator } from "../calc/revisionEngine";
 import { RevisionSurface } from "./RevisionSurface";
 import SalaryDecisionMapPage from "./SalaryDecisionMapPage";
-import PolicyBoundariesOnly from "./PolicyBoundariesOnly";
 import {useSalaryGraphDataset} from "./salaryGraphDataset";
 import { useSessionParameter } from "./salarySimulatorSession";
 import { blankChild, usePaperHousehold } from "./paperHouseholdSession";
@@ -20,7 +19,6 @@ const initialPoint = ["200", "0"];
 const GRAPH_VIEWS = [
   ["income","可処分所得（3D）"],
   ["boundaries","制度境界・下落（2D）"],
-  ["systems","制度境界のみ（2D）"],
   ["difference","可処分所得差"],
 ];
 
@@ -39,7 +37,7 @@ export function ChildFields({ index, child, update }) {
 }
 
 
-/** 4図の世帯条件は一度の描画で確定する。給与格子と制度境界は必要な図を開いたときに計算する。 */
+/** 3図は同じ世帯条件・給与格子を共有する。 */
 export default function RevisionIncomePlane({graphView,onGraphViewChange,comparison=false}) {
   const pointId=useId();
   const [localView,setLocalView]=useState(comparison?"difference":"income");
@@ -83,7 +81,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
     setVisited(old=>!drawn ? (old.length?[]:old) : old.includes(view)?old:[...old,view]);
   },[drawn,view]);
   const plotted=id=>drawn&&(view===id||visited.includes(id));
-  const datasetState=useSalaryGraphDataset(inputs,drawn&&(view!=="systems"||visited.some(id=>id!=="systems")));
+  const datasetState=useSalaryGraphDataset(inputs,drawn);
   const [conditionsOpen,setConditionsOpen]=useState(()=>!drawn);
   useEffect(()=>{
     if (lastDrawnKey !== null && lastDrawnKey !== inputKey) setLastDrawnKey(drawn ? inputKey : null);
@@ -120,7 +118,7 @@ export default function RevisionIncomePlane({graphView,onGraphViewChange,compari
         onClick={()=>changeView(id)} onKeyDown={event=>navigateTabs(event,index)}>{label}</button>)}
     </div>
     {GRAPH_VIEWS.map(([id])=><div key={id} id={pointId+"-panel-"+id} role="tabpanel" aria-labelledby={pointId+"-tab-"+id} hidden={view!==id}>
-      {plotted(id)&&(id==="systems"?<PolicyBoundariesOnly inputs={inputs}/>:id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
+      {plotted(id)&&(id==="boundaries"?<SalaryDecisionMapPage {...sharedPlot} calculator={calculator}/>:
         id==="difference"?<RevisionSurface {...sharedPlot} comparison/>:
         <RevisionSurface {...sharedPlot} {...{calculator,point,head,spouse,fixedTotal}} onSelectSalary={selectSalary}/>)}
     </div>)}

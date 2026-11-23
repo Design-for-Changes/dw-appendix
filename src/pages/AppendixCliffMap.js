@@ -19,7 +19,7 @@ const APPENDIX_PAGES = [
   { mode: "patterns", letter: "G", label: "全パターン比較", hash: "#all-patterns" },
 ];
 
-const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",systems:"#system-boundaries",difference:"#disability-income-difference"};
+const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",difference:"#disability-income-difference"};
 function graphForHash(hash){
   if(hash==="#salary-surface")return "income";
   return Object.keys(GRAPH_HASH).find(k=>GRAPH_HASH[k]===hash);
@@ -36,7 +36,7 @@ export default function AppendixCliffMap() {
   const graphView=(viewMode==="scenarios" && graphForHash(window.location.hash)) || (Object.hasOwn(GRAPH_HASH,lastGraph)?lastGraph:"income");
   useEffect(() => {
     const followHash = () => {
-      if(["#current","#optimal"].includes(window.location.hash)) window.history.replaceState(null,"",GRAPH_HASH.income);
+      if(["#current","#optimal","#system-boundaries"].includes(window.location.hash)) window.history.replaceState(null,"",GRAPH_HASH.income);
       setViewMode(viewModeForHash(window.location.hash));
       const graph=graphForHash(window.location.hash);
       if(graph)setLastGraph(graph);

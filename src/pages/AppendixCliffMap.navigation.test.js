@@ -93,12 +93,23 @@ test.each(pages)("$hashの直接リンクで$letterの見出し・番号・押�
   }
 });
 
-test.each(["","#current","#optimal"])("トップ・旧入口 %s は現行Eを開く", hash => {
+test.each(["","#current","#optimal","#system-boundaries"])("トップ・旧入口 %s は現行Eを開く", hash => {
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap />);
   expectSelectedPage(simulator);
   expect(window.location.hash).toBe(hash ? simulator.hash : "");
+  expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent("income");
   expect(screen.queryByRole("region",{name:"表示ケース"})).toBeNull();
+});
+
+test("廃止した図を開いていたセッションではEの先頭に戻り、保存済みの給与は保持する", () => {
+  const prefix="dw-appendix:salary-surface:v1:";
+  window.sessionStorage.setItem(prefix+"graphView",JSON.stringify("systems"));
+  window.sessionStorage.setItem(prefix+"income",JSON.stringify(["803","116"]));
+  render(<AppendixCliffMap/>);
+  expectSelectedPage(simulator);
+  expect(screen.getByRole("region",{name:"モデル条件"})).toHaveTextContent("income");
+  expect(JSON.parse(window.sessionStorage.getItem(prefix+"income"))).toEqual(["803","116"]);
 });
 
 test("上部メニューはA〜Gの順で関数資料と全パターン比較が並ぶ", () => {
@@ -109,7 +120,7 @@ test("上部メニューはA〜Gの順で関数資料と全パターン比較が
   );
 });
 
-test.each([["#salary-decision-map","boundaries"],["#system-boundaries","systems"],["#disability-income-difference","difference"]])("直リンク%sをE内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
+test.each([["#salary-decision-map","boundaries"],["#disability-income-difference","difference"]])("直リンク%sをE内の同じ図で開き、別ページを経由しても復帰する",(hash,view)=>{
   window.history.replaceState(null,"","/"+hash);
   render(<AppendixCliffMap/>);
   expect(pageButton(simulator)).toHaveAttribute("aria-pressed","true");

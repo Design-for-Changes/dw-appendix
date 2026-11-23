@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
-  "revision": "a5ee166dc83a5bb42bc2ec5fc906dd9006ffda562ed5decfea7ecb9b954c07e9",
+  "revision": "fa176d754b7298bca7895a69923504e765937de6e4114e267fade367ae0b3923",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 220,
+  "functionCount": 212,
   "classCount": 0,
   "sources": [
     {
@@ -106,14 +106,6 @@
     {
       "file": "src/calc/paperSalaryTaxInputs2029.js",
       "sha256": "f7b14def62b639ccb181729ea1eb68974fc888095a70713d22e78f2bb82f34b1"
-    },
-    {
-      "file": "src/calc/policyAdditionalBands.js",
-      "sha256": "12f9173a81477a27672b77982840266c56db4899936608dfb8237d8b2e67725f"
-    },
-    {
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "sha256": "fbbeacfaf18ac3f6fc7a19c95eabbbb9595554b0444088904f20a4e73f8b34fb"
     },
     {
       "file": "src/calc/revisionCoverage.js",
@@ -2536,128 +2528,6 @@
       "role": "計算エントリ",
       "signature": "calculatePaperSalaryTaxInputs2029({ annualSalaryYen, eligibleForIncomeAdjustment } = {})",
       "description": "一人分の給与収入 → 給与所得 → 所得税の基礎控除。すべて円／年。 本稿の給与のみ・国内居住者・各人の給与上限1,500万円に限定する。 障害者等又は子（23歳未満の扶養親族）による所得金額調整控除の 資格は呼出元が明示する。この控除は扶養控除の帰属とは別判定。 給与0円でも入力としては有効。世帯の原点除外はこの個人計算の責務ではない。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyAdditionalBands.js:housingBand",
-      "name": "housingBand",
-      "qualifiedName": "housingBand",
-      "kind": "function",
-      "file": "src/calc/policyAdditionalBands.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 23,
-      "endLine": 26,
-      "role": "内部関数",
-      "signature": "housingBand(annual)",
-      "description": "公営住宅の控除後世帯所得（年額）を、法定の月収基準に対応する8区分に分ける。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier",
-      "name": "createAdditionalPolicyClassifier",
-      "qualifiedName": "createAdditionalPolicyClassifier",
-      "kind": "function",
-      "file": "src/calc/policyAdditionalBands.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 34,
-      "endLine": 60,
-      "role": "内部モジュール間",
-      "signature": "createAdditionalPolicyClassifier(children)",
-      "description": "Eの給与・同居扶養条件（両親45歳・給与のみ、無所得の子1～3人）について、購入・診療・ 入居の事実を仮定せず所得軸だけを分類する。各区分は1始まり、未設定は0。",
-      "params": [
-        "{object[]} children 子の年齢と税法上の障害者区分。"
-      ],
-      "returns": "{object} 各層の利用可否と、高給与親（同額時は世帯主）・他方の親の順に受け取った個別判定値から区分を符号化する関数。"
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:parentRecord",
-      "name": "parentRecord",
-      "qualifiedName": "parentRecord",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 18,
-      "endLine": 21,
-      "role": "内部関数",
-      "signature": "parentRecord(t)",
-      "description": "各制度の所得判定に必要な親別の税・所得・保険料を、Eと同じ計算結果から取り出す。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "name": "createPolicyOnlyClassifier",
-      "qualifiedName": "createPolicyOnlyClassifier",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 24,
-      "endLine": 68,
-      "role": "内部モジュール間",
-      "signature": "createPolicyOnlyClassifier(inputs, maxSalaryWan=MAX)",
-      "description": "Conditional policy classifications, not actual service uptake, payable expenses, or disposable income.",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
-      "name": "classify",
-      "qualifiedName": "createPolicyOnlyClassifier.classify",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 52,
-      "endLine": 66,
-      "role": "内部関数",
-      "signature": "classify(x, y, out)",
-      "description": "一組の夫婦給与について各制度の区分を2語に格納する。非該当・未設定は0とする。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "name": "buildPolicyOnlyMap",
-      "qualifiedName": "buildPolicyOnlyMap",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 73,
-      "endLine": 114,
-      "role": "内部モジュール間",
-      "signature": "buildPolicyOnlyMap(inputs, {maxSalaryWan=MAX,onProgress}={})",
-      "description": "Consecutive adjacent 1万円 cells with the same *directed* change are merged, never interpolated. A segment [x1,y1,x2,y2,before,after] lies halfway between neighboring valid salaries; its class indices are 1-based. No financial height is read.",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "name": "lower",
-      "qualifiedName": "buildPolicyOnlyMap.lower",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 83,
-      "endLine": 83,
-      "role": "内部関数",
-      "signature": "lower(i)",
-      "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
-      "params": [],
-      "returns": ""
-    },
-    {
-      "id": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "name": "upper",
-      "qualifiedName": "buildPolicyOnlyMap.upper",
-      "kind": "function",
-      "file": "src/calc/policyOnlyBoundaries.js",
-      "category": "制度ごとの所得区分の境界",
-      "line": 83,
-      "endLine": 83,
-      "role": "内部関数",
-      "signature": "upper(i)",
-      "description": "格子点が代表する給与区間の下端・上端を描画範囲内に収める。",
       "params": [],
       "returns": ""
     },
@@ -10263,118 +10133,6 @@
       "resultUse": "式の一部として使用",
       "arguments": [
         "salaryIncomeYen"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "to": "src/calc/paperSalaryBands.js:createPaperSalaryBands",
-      "line": 25,
-      "column": 39,
-      "resultUse": "{wages,band,first:lo,last:hi} に格納",
-      "arguments": [
-        "maxSalaryWan"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "to": "src/calc/revisionEngine.js:createRevisionCalculator",
-      "line": 29,
-      "column": 15,
-      "resultUse": "model に格納",
-      "arguments": [
-        "{protocol:\"paper-2029\",children,serviceAmountYen:inputs.serviceAmountYen??0}"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "to": "src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier",
-      "line": 44,
-      "column": 20,
-      "resultUse": "additional に格納",
-      "arguments": [
-        "children"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier.classify",
-      "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 61,
-      "column": 15,
-      "resultUse": "cap に格納",
-      "arguments": [
-        "h.serviceLevy+l.serviceLevy",
-        "h.taxable||l.taxable"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier",
-      "line": 74,
-      "column": 27,
-      "resultUse": "{layers,classify} に格納",
-      "arguments": [
-        "inputs",
-        "maxSalaryWan"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 94,
-      "column": 48,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "s.startVertical[x]"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 94,
-      "column": 79,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "y-1"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 98,
-      "column": 43,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "s.startHorizontal"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.upper",
-      "line": 98,
-      "column": 73,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "x-1"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 105,
-      "column": 55,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "s.startHorizontal"
-      ]
-    },
-    {
-      "from": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap",
-      "to": "src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap.lower",
-      "line": 111,
-      "column": 59,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "s.startVertical[x]"
       ]
     },
     {

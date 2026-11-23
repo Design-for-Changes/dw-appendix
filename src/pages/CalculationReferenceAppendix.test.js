@@ -67,6 +67,10 @@ test("新稿計算表と受け渡し図から適切な関数と実引数に到�
   const changePoint=targetFor(within(discussion).getByRole("link",{name:"scanPaperChangePoints"}));
   expect(changePoint).toBeInTheDocument();
   expect(targetFor(within(changePoint).getByRole("link",{name:"↩ 考察：制度の変化点"}))).toBe(document.getElementById("calculation-flow-discussion"));
+  const grid=within(current).getByRole("row",{name:/E：夫婦それぞれの年間給与/});
+  for(const name of ["createPaperGraphEvaluator.evaluateGraphPoint","createDisabilityIncomeComparison.evaluateGraphPair","buildSalaryGraphDataset"]){
+    expect(targetFor(within(grid).getByRole("link",{name}))).toBeInTheDocument();
+  }
   const extrema=within(current).getByRole("row",{name:/G：Eの給与点別/});
   for(const name of ["groupCells","compareAllPatterns","comparePatternEnvelopes"]){
     const target=targetFor(within(extrema).getByRole("link",{name}));

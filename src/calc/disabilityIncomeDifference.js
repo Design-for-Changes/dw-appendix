@@ -13,7 +13,8 @@ function uncalculated(status,reasons) {
  * @param {object} inputs シミュレーターのモデル世帯条件（子ども1～3人、各人の税扶養・利用額等）。
  * @returns {object} 比較用の evaluate(世帯主給与万円,配偶者給与万円) と対照世帯の設定。
  */
-export function createDisabilityIncomeComparison(inputs,{createCalculator=createRevisionCalculator}={}) {
+export function createDisabilityIncomeComparison(inputs,{createCalculator:injectedCalculator}={}) {
+  const createCalculator=injectedCalculator===undefined ? createRevisionCalculator : injectedCalculator;
   const observedInputs={...inputs,protocol:inputs?.protocol??"paper-2029"};
   const observed=createCalculator(observedInputs);
   const baselineInputs={...observedInputs,serviceAmountYen:0,otherServiceMonthlyYen:0,
@@ -44,17 +45,26 @@ export function createDisabilityIncomeComparison(inputs,{createCalculator=create
     return {status:"calculated",reasons:[],allowanceRecipient:da.roles.allowanceRecipient,differenceYen,withYen,withoutYen,taxSavingYen,extraBenefitsYen,
       extraServiceYen,insuranceSavingYen};
   }
-  /** モデル世帯の収支・制度判定と、対照世帯との差を、同じ二給与の評価結果から返す。 */
-  function evaluatePair(headWan,spouseWan) {
+  /** モデル世帯と対照世帯に同じ読出しを使う。図用も通常の内訳照合を通す。 */
+  function evaluateWith(headWan,spouseWan,read) {
     if(headWan===0 && spouseWan===0) {
       const reasons=["夫婦とも給与0円の原点は試算対象外です。"];
       return {observedPoint:{status:"excluded",reasons},comparisonPoint:uncalculated("excluded",reasons)};
     }
-    const observedPoint=observed.evaluate(headWan,spouseWan);
-    const baselinePoint=identical?observedPoint:baseline.evaluate(headWan,spouseWan);
+    const observedPoint=read(observed,headWan,spouseWan);
+    const baselinePoint=identical?observedPoint:read(baseline,headWan,spouseWan);
     return {observedPoint,comparisonPoint:comparePoints(observedPoint,baselinePoint)};
   }
-  return {evaluate:(head,spouse)=>evaluatePair(head,spouse).comparisonPoint,evaluatePair,baselineInputs};
+  /** 個別点の説明に使う、親別の役割・計算根拠を含む全明細を読む。 */
+  const readDetail=(calc,x,y)=>calc.evaluate(x,y);
+  const readGraph=injectedCalculator===undefined
+    ? (calc,x,y)=>calc.evaluateGraphPoint ? calc.evaluateGraphPoint(x,y) : calc.evaluate(x,y)
+    : readDetail;
+  /** 個別点の詳細と、二世帯の収支差を同時に返す。 */
+  const evaluatePair=(x,y)=>evaluateWith(x,y,readDetail);
+  /** 図の集計用に必要な内訳に限って計算し、二世帯の収支差を照合する。 */
+  const evaluateGraphPair=(x,y)=>evaluateWith(x,y,readGraph);
+  return {evaluate:(head,spouse)=>evaluatePair(head,spouse).comparisonPoint,evaluatePair,evaluateGraphPair,baselineInputs};
 }
 
 /**

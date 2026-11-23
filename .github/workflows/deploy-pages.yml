@@ -39,7 +39,9 @@ jobs:
           node --experimental-default-type=module scripts/audit-all-patterns.mjs
 
       - name: Build
-        run: npm run build
+        run: |
+          export REACT_APP_APPENDIX_UPDATED_ON="$(TZ=Asia/Tokyo git log -1 --date=format-local:%Y-%m-%d --format=%cd)"
+          npm run build
         env:
           CI: "false"
 

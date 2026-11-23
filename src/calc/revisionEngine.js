@@ -1,7 +1,7 @@
 import { calcWelfareAllowanceLimitObligorYen } from "./allowances.js";
 import { calculateSpecialChildAllowance, salaryOnlySpecialChildIncome } from "./specialChildAllowance.js";
 import { calculateDisabledChildWelfareAllowance, calculateWelfareSalaryAssessment } from "./disabledChildWelfareAllowance.js";
-import { calculateHouseholdInsurance2029 } from "./householdInsurance2029.js";
+import { calculateHouseholdInsurance2029, calculateParentInsurance2029 } from "./householdInsurance2029.js";
 import { calculatePaperSalaryTaxInputs2029, PAPER_SALARY_POLICY_2029 } from "./paperSalaryTaxInputs2029.js";
 import { calcServiceAssessmentLevyYen, getChildDayServiceCapYen, isFreeDayServiceAge, MAX_SERVICE_YEN } from "./serviceBurdenLimits.js";
 import { calculateSocialInsuranceComponents } from "./socialInsurance.js";
@@ -14,6 +14,7 @@ import { getIncomeTaxParts, getResidentTaxParts } from "./taxes.js";
 const WAN = 10000;
 const AGE_OF_PARENTS = 45;
 const MAX_WAGE = 1500;
+const CURRENT_ORDINARY_SPOUSE_LIMIT = 620000;
 // 国税庁 No.1195、地方税法上の配偶者特別控除。各行は高所得側の合計所得が
 // 900万円以下、950万円以下、1,000万円以下の順。帯の上端は「以下」。
 export const REVISION_SPOUSE_DEDUCTION_TABLE = [
@@ -106,6 +107,11 @@ function archivedPremiums(salaryWan) {
     prevSocial:Math.round(calculateSocialInsuranceComponents(salaryWan,AGE_OF_PARENTS,"s2").totalWan*WAN)};
 }
 
+/** 配偶者の所得が属する控除表の行番号（上限を含む）。該当なしは -1。 */
+function spouseDeductionRow(incomeYen) {
+  return REVISION_SPOUSE_DEDUCTION_TABLE.findIndex(entry => incomeYen <= entry[0] * WAN);
+}
+
 /**
  * 1人の所得と配偶者所得から普通／特別の配偶者控除を選択する。
  * @param {number} own 本人の合計所得（円）。
@@ -115,7 +121,7 @@ function archivedPremiums(salaryWan) {
  */
 function revisionSpouseDeduction(own, partner, ordinaryLimit) {
   const band = own <= 9000000 ? 0 : own <= 9500000 ? 1 : own <= 10000000 ? 2 : -1;
-  const row = REVISION_SPOUSE_DEDUCTION_TABLE.find(entry => partner <= entry[0] * WAN);
+  const row = REVISION_SPOUSE_DEDUCTION_TABLE[spouseDeductionRow(partner)];
   if (band < 0 || !row) return {kind:"none", it:0, lt:0, specialLT:0, difference:0};
   const it = row[1][band]*WAN, lt = row[2][band]*WAN;
   const ordinary = partner <= ordinaryLimit;
@@ -137,11 +143,11 @@ function revisionParentTax(person, partner, dependents, claimsSpouse, archived) 
   const special = dependents.filter(c => c.taxStatus === "special").length;
   const childIT = (older*38 + ordinary*27 + special*75)*WAN;
   const childLT = (older*33 + ordinary*26 + special*53)*WAN;
-  const spouse = revisionSpouseDeduction(person.income, claimsSpouse ? partner.income : Infinity, 620000);
-  const previousOrdinaryLimit = person.steady2029 ? 620000 : 580000;
+  const spouse = revisionSpouseDeduction(person.income, claimsSpouse ? partner.income : Infinity, CURRENT_ORDINARY_SPOUSE_LIMIT);
+  const previousOrdinaryLimit = person.steady2029 ? CURRENT_ORDINARY_SPOUSE_LIMIT : 580000;
   const prevSpouse = revisionSpouseDeduction(person.prevIncome, claimsSpouse ? partner.prevIncome : Infinity, previousOrdinaryLimit);
   // 「同一生計配偶者」の有無は、配偶者控除額そのものではない。本研究は夫婦同居・同一生計・給与のみ。
-  const familySpouse = (!archived || claimsSpouse) && partner.income <= 620000;
+  const familySpouse = (!archived || claimsSpouse) && partner.income <= CURRENT_ORDINARY_SPOUSE_LIMIT;
   const prevFamilySpouse = (!archived || claimsSpouse) && partner.prevIncome <= previousOrdinaryLimit;
   // 所得・控除を整数円で差し引いてから税計算器に渡す。万円単位での減算は境界で
   // 999.999…円を作り、課税所得の千円未満切捨てが一段ずれることがある。
@@ -212,23 +218,91 @@ function revisionCashBenefits(children, claimant, other, additionalSupportedCoun
   return {tcca, welfare, childAllowance, specialChildAllowance, welfareChildren, additionalSupportedCount, claimantLimitYen:limit, obligorLimitYen:obligorLimit, otherLimitYen:otherLimit, tccaOK, welfareOK};
 }
 
-/**
- * 在宅の同一保護者・同一負担区分に限り、利用額と世帯の最終月額上限の小さい方を年換算する。
- * @param {Array<object>} children 児童別の年齢、多子軽減等適用後の通所・上限前負担（円／月）。
- * @param {number} otherServiceMonthlyYen 同じ保護者・上限下にあるその他の合算対象額（円／月）。
- * @param {Array<object>} adults 両親が個別に算定したサービス判定用所得割と課税状況。
- * @returns {object} 年間最終負担（円）、月額・上限（円／月）、判定所得割（円／年）。
- */
-function revisionServiceBurden(children, otherServiceMonthlyYen, adults) {
-  const levy = adults.reduce((sum,t)=>sum+t.serviceLevyYen,0);
-  const cap = getChildDayServiceCapYen(levy, adults.some(t=>t.serviceTaxable));
+/** 子の年齢・利用による上限適用前月額と利用の有無を世帯ごとに確定する。 */
+function revisionServiceUsage(children, otherServiceMonthlyYen) {
   // 各児入力は多子軽減等を適用した後・上限前。3～5歳は年度当初年齢に基づく無償対象通所のみを仮定。
   const day = children.reduce((sum,c)=>sum + (c.serviceUser && !isFreeDayServiceAge(c.age) ? c.serviceAmountYen : 0),0);
-  const monthly = Math.min(day+otherServiceMonthlyYen,cap);
   // 就学前無償だけの利用を除く。利用料0円という入力も「利用していない」ことは意味しない。
   const hasCapApplicableServiceUse=otherServiceMonthlyYen>0 || children.some(c=>c.serviceUser && !isFreeDayServiceAge(c.age));
+  return {day,otherServiceMonthlyYen,hasCapApplicableServiceUse};
+}
+
+/** 同じ保護者の対象負担をまとめ、両親の所得割と課税状況から決まる世帯上限を適用して年換算する。 */
+function revisionServiceBurden({day,otherServiceMonthlyYen,hasCapApplicableServiceUse}, head, spouse) {
+  const levy = head.serviceLevyYen + spouse.serviceLevyYen;
+  const cap = getChildDayServiceCapYen(levy, head.serviceTaxable || spouse.serviceTaxable);
+  const monthly = Math.min(day+otherServiceMonthlyYen,cap);
   return {annual:monthly*12, monthly, dayMonthlyBeforeCapYen:day, otherServiceMonthlyYen, householdCapYen:cap,
     assessmentLevyYen:levy, hasCapApplicableServiceUse};
+}
+
+/** 給与・税・保険・支給年額・サービスの実負担を円で合算。万円への変換は最後に行う。 */
+function revisionNetYen(salary,tax,social,benefits,service) {
+  return salary-tax-social+benefits.tcca+benefits.welfare+benefits.childAllowance-service.annual;
+}
+
+/**
+ * 論文用1万円格子専用。個人税・所得制限を同じ給与と配偶者所得帯で再利用し、世帯合計は各点で算定する。
+ * 詳細表示用 evaluate の代用ではない。個人を独立評価できない勤務・国保条件の旧仕様には使わない。
+ * @param {object[]} children 検証済みの児童別条件。所得停止前の障害要件と年齢は格子内で固定。
+ * @param {object} serviceUsage 同じ保護者で通算する上限前の利用料と利用の有無。
+ * @param {object} roles 配偶者控除の申告者。受給資格者と児童の税扶養先は給与の高い方（同額は世帯主）。
+ * @param {Function} wageRecord 個人給与1本（万円）を当年・前年の所得（円）に変換する論文用計算器。
+ * @returns {Function} 給与2本（万円）から、グラフ・対照世帯との円検算に必要な項目だけを返す計算器。
+ */
+function createPaperGraphEvaluator(children,serviceUsage,roles,wageRecord) {
+  const wages=[], cached=[], noChildren=[];
+  const branchCount=(REVISION_SPOUSE_DEDUCTION_TABLE.length+1)*2;
+  // もう片方の親を「所得制限に該当しない」値にして本人の判定だけを取り出す。制度判定や支給額の算式は複製しない。
+  const passing={allowanceIncomeYen:0,allowanceFuyo:0,olderDependentCount:0,welfareMaintainerIncomeYen:0};
+  let full;
+
+  /** 2029静学比較では当年＝前年。給与・保険料はこの親だけで決まり、相手の所得は同一生計要件と控除表の行だけで効く。 */
+  function graphWage(salaryWan) {
+    requireInteger(salaryWan,0,MAX_WAGE,"給与収入（万円、1万円刻み）");
+    if (wages[salaryWan]) return wages[salaryWan];
+    const wage=wageRecord(salaryWan), social=calculateParentInsurance2029(wage.salaryYen).annual.totalYen;
+    const sameLiving=Number(wage.income <= CURRENT_ORDINARY_SPOUSE_LIMIT);
+    const deductionBand=(spouseDeductionRow(wage.income)+1)*2+sameLiving;
+    return wages[salaryWan]={...wage,salaryWan,social,prevSocial:social,sameLiving,deductionBand};
+  }
+
+  /** 受給資格者（本稿では子全員の税扶養先）と他方の親を分け、控除申告者・相手の所得帯に応じた本人の結果を保存する。 */
+  function graphParent(own,partner,claimant,files) {
+    const key=(claimant?branchCount:0)+(files?partner.deductionBand:partner.sameLiving);
+    const bySalary=cached[key] ?? (cached[key]=[]);
+    if (bySalary[own.salaryWan]) return bySalary[own.salaryWan];
+    const tax=revisionParentTax(own,partner,claimant?children:noChildren,files,false);
+    const benefits=full.tcca || full.welfare ? revisionCashBenefits(children,claimant?tax:passing,claimant?passing:tax,0,"head","both") : full;
+    // 詳細計算と同じ法6/7条の役割・児福の扶養義務者判定。実IDは金額に影響せず、同額時も実際の受給者名は世帯側で決める。
+    return bySalary[own.salaryWan]={
+      totalTaxYen:tax.totalTaxYen, serviceTaxable:tax.serviceTaxable, serviceLevyYen:tax.serviceLevyYen,
+      tccaPass:benefits.tccaOK, welfarePass:benefits.welfareOK,
+    };
+  }
+
+  /**
+   * 原点は除外。各人の支給可否を制度ごとに組み合わせて、サービスには両親の所得割を合算する。
+   * @param {number} headWan 世帯主の年間給与（0～1,500万円、1万円刻み）。
+   * @param {number} spouseWan 配偶者の年間給与（同範囲）。
+   * @returns {object} 算定状態・世帯可処分所得（万円）と、制度境界・世帯間差の内訳照合に必要な金額（円）・受給資格者。
+   */
+  function evaluateGraphPoint(headWan,spouseWan) {
+    const head=graphWage(headWan), spouse=graphWage(spouseWan);
+    if (headWan===0 && spouseWan===0) return {status:"excluded",studyDisposableWan:null,reasons:["夫婦とも給与0円の原点は試算対象外です。"]};
+    if (!full) full=revisionCashBenefits(children,passing,passing,0,"head","both");
+    const headHigher=headWan>=spouseWan, recipient=headHigher?"head":"spouse";
+    const filing=roles.spouseDeductionClaimant==="highest-salary"?recipient:roles.spouseDeductionClaimant;
+    const ht=graphParent(head,spouse,headHigher,filing==="head"), st=graphParent(spouse,head,!headHigher,filing==="spouse");
+    const benefits={tcca:ht.tccaPass && st.tccaPass ? full.tcca : 0,
+      welfare:ht.welfarePass && st.welfarePass ? full.welfare : 0, childAllowance:full.childAllowance};
+    const service=revisionServiceBurden(serviceUsage,ht,st);
+    const net=revisionNetYen(head.salaryYen+spouse.salaryYen,ht.totalTaxYen+st.totalTaxYen,head.social+spouse.social,benefits,service);
+    return {status:"calculated",studyDisposableWan:net/WAN,details:{
+      headTax:{totalTaxYen:ht.totalTaxYen},spouseTax:{totalTaxYen:st.totalTaxYen},
+      coverage:{head:{social:head.social},spouse:{social:spouse.social}},roles:{allowanceRecipient:recipient},benefits,service}};
+  }
+  return evaluateGraphPoint;
 }
 
 /**
@@ -240,6 +314,7 @@ export function createRevisionCalculator(input) {
   const {children, otherServiceMonthlyYen, protocol, roles, insurance} = validateRevisionHousehold(input);
   const archived = protocol === "legacy-v2";
   const steady2029 = protocol === "paper-2029";
+  const serviceUsage = revisionServiceUsage(children,otherServiceMonthlyYen);
   const wages = new Map();
   /** 一度計算した個人給与の基礎値を二つの軸で共有する。親の扶養・給付の判定値は共有しない。 */
   function wageRecord(w) {
@@ -283,9 +358,9 @@ export function createRevisionCalculator(input) {
     const additional = steady2029 ? 0 : children.filter((c,i)=>taxDependentOf[i] !== recipient && c.maintainedByRecipient).length;
     if (steady2029) assigned.additionalMaintainedChildren = additional;
     const benefits = revisionCashBenefits(children,recipient === "head" ? ht : st,recipient === "head" ? st : ht, additional, recipient, maintainerId);
-    const service = revisionServiceBurden(children,otherServiceMonthlyYen,[ht,st]);
+    const service = revisionServiceBurden(serviceUsage,ht,st);
     const salary = head.salaryYen+spouse.salaryYen, tax = ht.totalTaxYen+st.totalTaxYen, social = head.social+spouse.social;
-    const disposableWan = (salary-tax-social+benefits.tcca+benefits.welfare+benefits.childAllowance-service.annual)/WAN;
+    const disposableWan = revisionNetYen(salary,tax,social,benefits,service)/WAN;
     return {status:"calculated", protocol, reasons:[], studyDisposableWan:disposableWan, disposableWan, recipient,
       breakdown:{ salaryWan:salary/WAN, taxWan:tax/WAN, socialWan:social/WAN, tccaWan:benefits.tcca/WAN,
         welfareWan:benefits.welfare/WAN, childAllowanceWan:benefits.childAllowance/WAN, serviceWan:service.annual/WAN },
@@ -293,7 +368,7 @@ export function createRevisionCalculator(input) {
         insuranceRateProxyFiscalYear:fixedInsurance.policy.proxyRateFiscalYear, indexedAllowanceAmountsAsOf:"2026-04"}} : {}),
       details:{headTax:ht, spouseTax:st, benefits, service, coverage,insurance:fixedInsurance ?? coverage,roles:assigned}};
   }
-  return {evaluate};
+  return steady2029 ? {evaluate,evaluateGraphPoint:createPaperGraphEvaluator(children,serviceUsage,roles,wageRecord)} : {evaluate};
 }
 
 /**

@@ -30,7 +30,8 @@ const currentFlow = [
   ["cash","各親の判定所得・扶養人数＋各児の障害要件 → 年間手当（円）","特児は受給資格者とその配偶者を判定する。児福は子本人（無所得・配偶者なし）と、生計を維持する両親を個別に判定し、親の一方でもその人の限度額以上なら停止とする。","revisionCashBenefits","src/calc/specialChildAllowance.js:calculateSpecialChildAllowance","src/calc/disabledChildWelfareAllowance.js:calculateDisabledChildWelfareAllowance"],
   ["service","世帯の判定用所得割＋対象負担（円／月）→ 利用者負担（円／年）","本モデルの同一保護者に係る合算対象額に世帯の月額上限を適用し、12か月分を差し引く。","revisionServiceBurden"],
   ["disposable","夫婦の年間給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
-  ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
+  ["grid","E：夫婦それぞれの年間給与 → 可処分所得・制度境界・可処分所得差","点Pと同じ算定式を用い、給与や扶養などの計算条件が同じ親の税額・手当の判定結果を再利用する。父母の給与を入れ替えても結果が変わらない設定では、入れ替えた点にも同じ世帯額と制度区分を用いる。三つの図は同じ1万円刻みの計算結果を参照する。","src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint","src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateGraphPair","src/calc/salaryGraphDataset.js:buildSalaryGraphDataset"],
+  ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。","evaluateRevisionSlice","classifyRevisionFalls"],
   ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最小差・最大差と夫婦それぞれの年間給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
 ];
 const discussionFlow = [

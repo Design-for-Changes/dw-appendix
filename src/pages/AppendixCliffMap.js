@@ -20,6 +20,9 @@ const APPENDIX_PAGES = [
 ];
 
 const GRAPH_HASH={income:"#revision-scenarios",boundaries:"#salary-decision-map",difference:"#disability-income-difference"};
+// Published builds use the release commit date in Japan, not the reader's clock.
+const updatedOn = process.env.REACT_APP_APPENDIX_UPDATED_ON || "2026-11-23";
+const [year, month, day] = updatedOn.split("-").map(Number);
 function graphForHash(hash){
   if(hash==="#salary-surface")return "income";
   return Object.keys(GRAPH_HASH).find(k=>GRAPH_HASH[k]===hash);
@@ -62,6 +65,7 @@ export default function AppendixCliffMap() {
         <p className="appendix-kicker">社会保障研究　投稿論文補足資料</p>
         <h1>障害児世帯における給付・負担のモデル世帯による試算と制度上の課題</h1>
         <p className="appendix-hero-subtitle">Web Appendix</p>
+        <small>最終更新日：<time dateTime={updatedOn}>{year}年{month}月{day}日</time></small>
       </section>
 
       <nav className="appendix-mode-tabs" aria-label="表示内容">

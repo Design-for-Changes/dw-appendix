@@ -1,11 +1,12 @@
 import {buildSalaryGraphDataset} from "./salaryGraphDataset.js";
-import {createRevisionCalculator} from "./revisionEngine.js";
+import * as revisionEngine from "./revisionEngine.js";
 import {buildSalarySurfaceGrid} from "./salarySurfaceGrid.js";
 import {buildSalaryDecisionMap,decisionCodes} from "./salaryDecisionMap.js";
 import {buildDisabilityDifferenceSurface,createDisabilityIncomeComparison} from "./disabilityIncomeDifference.js";
 import {UNKNOWN_PLANE_NET_YEN} from "./salaryPlaneRecovery.js";
 import "../pages/salarySurface.worker.js";
 
+const {createRevisionCalculator}=revisionEngine;
 const normal={age:8,tccaGrade:"not",taxStatus:"none",welfareEligible:false,serviceUser:false,serviceAmountYen:0,
   taxDependentOf:"highest-salary",maintainedBy:null};
 const inputs={protocol:"paper-2029",serviceAmountYen:0,roles:{allowanceRecipient:"highest-salary",welfareMaintainer:"both",
@@ -27,6 +28,65 @@ test.each([[inputs,2],[{...inputs,children:[normal]},1]])("各世帯の全評価
   expect(r.grid.differenceYen[0]).toBe(UNKNOWN_PLANE_NET_YEN);
   expect(r.grid.decisionCodes[0]).toBe(0);
   expect(progress).toHaveBeenLastCalledWith(64,64);
+});
+
+test.each([
+  ["paper-2029",undefined,true],["paper-2029","none",true],
+  ["paper-2029","head",false],["paper-2029","spouse",false],["legacy-v2","head",false],["v3","head",false],
+])("%s 配偶者控除 %s: 支給・税・回復の境界を含む両軸で全点独立計算と同一",(protocol,filing,symmetric)=>{
+  // 1点ずつ実在の給与へ写像し、大格子の主要な判定境界・片働き・同給点を小さな直積に収める。
+  const wages=[0,123,360,600,781,782,904,906,907,937,1500],n=wages.length;
+  const household={...inputs,protocol,roles:{spouseDeductionClaimant:filing},
+    children:[{...inputs.children[0],taxDependentOf:"head"}, {...normal,age:16,taxDependentOf:"spouse"}]};
+  const original=createRevisionCalculator,seen=[];
+  const direct=config=>{
+    const calc=original(config);
+    return {evaluate:(x,y)=>calc.evaluate(wages[x],wages[y]),
+      evaluateGraphPoint(){throw new Error("外部計算器にはモデル固有の省略を適用しない");}};
+  };
+  const range={maxSalaryWan:n-1},expectedProgress=[],actualProgress=[];
+  const expected=buildSalaryGraphDataset(household,{...range,createCalculator:direct,
+    onProgress:(...p)=>expectedProgress.push(p)});
+  // 組込計算器でだけ、論文条件で対称な家族の上三角（対角は含み原点を除く）で評価が足りる。
+  const instrumented=jest.spyOn(revisionEngine,"createRevisionCalculator").mockImplementation(config=>{
+    const calc=original(config),calls=[];seen.push(calls);
+    const wrap=fn=>(x,y)=>{calls.push([x,y]);return fn(wages[x],wages[y]);};
+    return {evaluate:wrap(calc.evaluate),...(calc.evaluateGraphPoint?{evaluateGraphPoint:wrap(calc.evaluateGraphPoint)}:{})};
+  });
+  try {
+    const actual=buildSalaryGraphDataset(household,{...range,onProgress:(...p)=>actualProgress.push(p)});
+    expect(actual).toEqual(expected); // 円額、欠測、極値の代表点/件数、図の各線分と順序を含む。
+    expect(actualProgress).toEqual(expectedProgress);
+    expect(seen).toHaveLength(2);
+    for(const calls of seen){
+      expect(calls).toHaveLength(symmetric?n*(n+1)/2-1:n*n-1);
+      expect(calls).not.toContainEqual([0,0]);
+      if(symmetric)expect(calls.every(([x,y])=>x>=y)).toBe(true);
+    }
+    if(protocol==="paper-2029" && (filing==="head" || filing==="spouse")){
+      expect(actual.grid.netYen.some((v,i)=>v!==actual.grid.netYen[(i%n)*n+Math.floor(i/n)])).toBe(true);
+    }
+  } finally {instrumented.mockRestore();}
+});
+
+test("将来同じ制度区分に複数の実額があっても、反対側の異なる年額・境界を取り違えない",()=>{
+  const family={...inputs,roles:{}},range={maxSalaryWan:4},calls=[];
+  const varied=config=>{
+    const calc=createRevisionCalculator(config);
+    return {evaluate(x,y){
+      calls.push([x,y]);
+      const p=calc.evaluate(x,y),extra=(x+y)%2;
+      // 両親に対称で上限区分は不変だが、同一区分に0円・1円の負担差を生じさせる。
+      return {...p,studyDisposableWan:(Math.round(p.studyDisposableWan*10000)-extra)/10000,
+        details:{...p.details,service:{...p.details.service,annual:p.details.service.annual+extra}}};
+    }};
+  };
+  const expected=buildSalaryGraphDataset(family,{...range,createCalculator:varied});calls.length=0;
+  const instrumented=jest.spyOn(revisionEngine,"createRevisionCalculator").mockImplementation(varied);
+  try {
+    expect(buildSalaryGraphDataset(family,range)).toEqual(expected);
+    expect(calls.some(([x,y])=>x<y)).toBe(true);
+  } finally {instrumented.mockRestore();}
 });
 
 test("給与点を児福停止境界のまわりに置き、共有格子・独立計算の3表示・下落と初回回復を照合する",()=>{

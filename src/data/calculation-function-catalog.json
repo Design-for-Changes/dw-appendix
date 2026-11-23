@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
-  "revision": "23ba3a1ec41113017876a6fe5f1d07bfbe846f71f552644f3e5dbe2022675029",
+  "revision": "88d226474da8dbeb4e2481ef74dd60f26853b74df14829d89835ff330e1018e8",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 212,
+  "functionCount": 224,
   "classCount": 0,
   "sources": [
     {
@@ -49,7 +49,7 @@
     },
     {
       "file": "src/calc/disabilityIncomeDifference.js",
-      "sha256": "8a60ae95e2a7e3b971ddcca8841348198365bbd9f828ecd3aa3c963f785c8548"
+      "sha256": "070e2133035b45c17c6c2ca9bf7a64d9a97020f5190a4749c05a150502f6bd21"
     },
     {
       "file": "src/calc/disabledChildWelfareAllowance.js",
@@ -73,7 +73,7 @@
     },
     {
       "file": "src/calc/householdInsurance2029.js",
-      "sha256": "5862975a897beb9bc291a48c05966e2333e3c652b973dafa52d046f112642c52"
+      "sha256": "ec49a60f3cd3601530af4dcbd0684fa64d5d177777b2e93b4693e1e7a369f701"
     },
     {
       "file": "src/calc/illustrativeAdjustment.js",
@@ -113,7 +113,7 @@
     },
     {
       "file": "src/calc/revisionEngine.js",
-      "sha256": "b4b059a10d7fa6ac10338059958b32c94bb6614a99878e5e24d2fa69e6f486b5"
+      "sha256": "7d35fa5b1e12993d8de9784ba75e6edfde8fa66c52dab5f725d2e8a7abfb31da"
     },
     {
       "file": "src/calc/revisionPayroll.js",
@@ -125,7 +125,7 @@
     },
     {
       "file": "src/calc/salaryGraphDataset.js",
-      "sha256": "3ecac06280204c1f1768e971d8e534c15999d60315d674e9482db8b110325550"
+      "sha256": "62098386e0553c9c2d0d21b49ac20ad4c0ec60ceded8cca4e785e45bbf4d8629"
     },
     {
       "file": "src/calc/salaryIncomeSection.js",
@@ -1630,9 +1630,9 @@
       "file": "src/calc/disabilityIncomeDifference.js",
       "category": "障害の有無による可処分所得差",
       "line": 16,
-      "endLine": 58,
+      "endLine": 68,
       "role": "内部モジュール間",
-      "signature": "createDisabilityIncomeComparison(inputs, {createCalculator=createRevisionCalculator}={})",
+      "signature": "createDisabilityIncomeComparison(inputs, {createCalculator:injectedCalculator}={})",
       "description": "同一の給与・家族構成・扶養申告先の2世帯を比較。対照世帯では全児童の障害要件と 障害福祉サービスの利用のみを解除し、通常の税、社会保険料、児童手当は両世帯とも計算する。",
       "params": [
         "{object} inputs シミュレーターのモデル世帯条件（子ども1～3人、各人の税扶養・利用額等）。"
@@ -1646,11 +1646,41 @@
       "kind": "function",
       "file": "src/calc/disabilityIncomeDifference.js",
       "category": "障害の有無による可処分所得差",
-      "line": 28,
-      "endLine": 46,
+      "line": 29,
+      "endLine": 47,
       "role": "内部関数",
       "signature": "comparePoints(a, b)",
       "description": "指定した二給与を両世帯に適用し、年間収支の差と、給付・税・保険・負担の寄与を円で返す。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateWith",
+      "name": "evaluateWith",
+      "qualifiedName": "createDisabilityIncomeComparison.evaluateWith",
+      "kind": "function",
+      "file": "src/calc/disabilityIncomeDifference.js",
+      "category": "障害の有無による可処分所得差",
+      "line": 49,
+      "endLine": 57,
+      "role": "内部関数",
+      "signature": "evaluateWith(headWan, spouseWan, read)",
+      "description": "モデル世帯と対照世帯に同じ読出しを使う。図用も通常の内訳照合を通す。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.readDetail",
+      "name": "readDetail",
+      "qualifiedName": "createDisabilityIncomeComparison.readDetail",
+      "kind": "function",
+      "file": "src/calc/disabilityIncomeDifference.js",
+      "category": "障害の有無による可処分所得差",
+      "line": 59,
+      "endLine": 59,
+      "role": "内部関数",
+      "signature": "readDetail(calc, x, y)",
+      "description": "個別点の説明に使う、親別の役割・計算根拠を含む全明細を読む。",
       "params": [],
       "returns": ""
     },
@@ -1661,11 +1691,26 @@
       "kind": "function",
       "file": "src/calc/disabilityIncomeDifference.js",
       "category": "障害の有無による可処分所得差",
-      "line": 48,
-      "endLine": 56,
+      "line": 64,
+      "endLine": 64,
       "role": "内部関数",
-      "signature": "evaluatePair(headWan, spouseWan)",
-      "description": "モデル世帯の収支・制度判定と、対照世帯との差を、同じ二給与の評価結果から返す。",
+      "signature": "evaluatePair(x, y)",
+      "description": "個別点の詳細と、二世帯の収支差を同時に返す。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateGraphPair",
+      "name": "evaluateGraphPair",
+      "qualifiedName": "createDisabilityIncomeComparison.evaluateGraphPair",
+      "kind": "function",
+      "file": "src/calc/disabilityIncomeDifference.js",
+      "category": "障害の有無による可処分所得差",
+      "line": 66,
+      "endLine": 66,
+      "role": "内部関数",
+      "signature": "evaluateGraphPair(x, y)",
+      "description": "図の集計用に必要な内訳に限って計算し、二世帯の収支差を照合する。",
       "params": [],
       "returns": ""
     },
@@ -1676,8 +1721,8 @@
       "kind": "function",
       "file": "src/calc/disabilityIncomeDifference.js",
       "category": "障害の有無による可処分所得差",
-      "line": 65,
-      "endLine": 91,
+      "line": 75,
+      "endLine": 101,
       "role": "内部モジュール間",
       "signature": "buildDisabilityDifferenceSurface(calculator, {maxSalaryWan=1500,onProgress}={})",
       "description": "J用：給与1万円格子で可処分所得の世帯間差（障害の要件あり側－なし側）を評価する。 符号・最小点・最大点は整数円で判定し、描画用の高さだけを万円のFloat32に変換する。原点・未算定はNaN。 同率の点数はすべて数え、代表座標には配偶者給与が小さい方、次に世帯主給与が小さい方を記録する。",
@@ -2141,14 +2186,29 @@
       "returns": ""
     },
     {
+      "id": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "name": "calculateParentInsurance2029",
+      "qualifiedName": "calculateParentInsurance2029",
+      "kind": "function",
+      "file": "src/calc/householdInsurance2029.js",
+      "category": "主試算・夫婦別の社会保険料",
+      "line": 47,
+      "endLine": 50,
+      "role": "内部モジュール間",
+      "signature": "calculateParentInsurance2029(annualYen)",
+      "description": "論文の固定加入条件による親1人の内訳。両者とも無職の原点は世帯側で別途除外する。",
+      "params": [],
+      "returns": ""
+    },
+    {
       "id": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
       "name": "calculateHouseholdInsurance2029",
       "qualifiedName": "calculateHouseholdInsurance2029",
       "kind": "function",
       "file": "src/calc/householdInsurance2029.js",
       "category": "主試算・夫婦別の社会保険料",
-      "line": 53,
-      "endLine": 61,
+      "line": 59,
+      "endLine": 65,
       "role": "計算エントリ",
       "signature": "calculateHouseholdInsurance2029({headAnnualYen, spouseAnnualYen} = {})",
       "description": "両者に同一の仮定を適用する。給与が正＝就労し賃金以外の加入要件は充足、ゼロ＝非就労。 最低賃金から労働時間を推計したり、この研究上の条件を個人の資格認定に使ったりしない。 賞与・通勤費・他の報酬なし、給与年収を12等分、昇給なし。原点だけは計算しない。",
@@ -2632,8 +2692,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 31,
-      "endLine": 34,
+      "line": 32,
+      "endLine": 35,
       "role": "内部関数",
       "signature": "requireInteger(value, min, max, label)",
       "description": "円額・年齢・給与点の空欄や小数を暗黙にゼロまたは近い給与点として扱わない。",
@@ -2647,8 +2707,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 41,
-      "endLine": 78,
+      "line": 42,
+      "endLine": 79,
       "role": "内部モジュール間",
       "signature": "validateRevisionHousehold(input)",
       "description": "世帯条件を走査に先立ち検査する。サービスの利用を手当等級から導出しない。",
@@ -2664,8 +2724,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 85,
-      "endLine": 101,
+      "line": 86,
+      "endLine": 102,
       "role": "内部関数",
       "signature": "revisionSalaryRecord(salaryWan, steady2029=false)",
       "description": "給与1本から当年と前年の給与所得を作る。本人の加入・相手の扶養を給与所得には混ぜない。",
@@ -2681,11 +2741,26 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 104,
-      "endLine": 107,
+      "line": 105,
+      "endLine": 108,
       "role": "内部関数",
       "signature": "archivedPremiums(salaryWan)",
       "description": "v2の再現専用。新しい世帯条件からこの規則を自動選択しない。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/revisionEngine.js:spouseDeductionRow",
+      "name": "spouseDeductionRow",
+      "qualifiedName": "spouseDeductionRow",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 111,
+      "endLine": 113,
+      "role": "内部関数",
+      "signature": "spouseDeductionRow(incomeYen)",
+      "description": "配偶者の所得が属する控除表の行番号（上限を含む）。該当なしは -1。",
       "params": [],
       "returns": ""
     },
@@ -2696,8 +2771,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 116,
-      "endLine": 123,
+      "line": 122,
+      "endLine": 129,
       "role": "内部関数",
       "signature": "revisionSpouseDeduction(own, partner, ordinaryLimit)",
       "description": "1人の所得と配偶者所得から普通／特別の配偶者控除を選択する。",
@@ -2715,8 +2790,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 134,
-      "endLine": 176,
+      "line": 140,
+      "endLine": 182,
       "role": "内部関数",
       "signature": "revisionParentTax(person, partner, dependents, claimsSpouse, archived)",
       "description": "個人別に税を算定し、当年所得対応の税と、2026年度のサービス負担判定に用いる前年所得割を区別する。",
@@ -2736,8 +2811,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 188,
-      "endLine": 213,
+      "line": 194,
+      "endLine": 219,
       "role": "内部関数",
       "signature": "revisionCashBenefits(children, claimant, other, additionalSupportedCount, claimantId, maintainerId)",
       "description": "N01の本人・配偶者・扶養義務者を個人ごとに判定し、対象児の等級別額を年換算する。",
@@ -2752,23 +2827,117 @@
       "returns": "{object} 各手当の支給額（円／年）、本人と扶養義務者の限度額・可否。"
     },
     {
+      "id": "src/calc/revisionEngine.js:revisionServiceUsage",
+      "name": "revisionServiceUsage",
+      "qualifiedName": "revisionServiceUsage",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 222,
+      "endLine": 228,
+      "role": "内部関数",
+      "signature": "revisionServiceUsage(children, otherServiceMonthlyYen)",
+      "description": "子の年齢・利用による上限適用前月額と利用の有無を世帯ごとに確定する。",
+      "params": [],
+      "returns": ""
+    },
+    {
       "id": "src/calc/revisionEngine.js:revisionServiceBurden",
       "name": "revisionServiceBurden",
       "qualifiedName": "revisionServiceBurden",
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 222,
-      "endLine": 232,
+      "line": 231,
+      "endLine": 237,
       "role": "内部関数",
-      "signature": "revisionServiceBurden(children, otherServiceMonthlyYen, adults)",
-      "description": "在宅の同一保護者・同一負担区分に限り、利用額と世帯の最終月額上限の小さい方を年換算する。",
+      "signature": "revisionServiceBurden({day,otherServiceMonthlyYen,hasCapApplicableServiceUse}, head, spouse)",
+      "description": "同じ保護者の対象負担をまとめ、両親の所得割と課税状況から決まる世帯上限を適用して年換算する。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/revisionEngine.js:revisionNetYen",
+      "name": "revisionNetYen",
+      "qualifiedName": "revisionNetYen",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 240,
+      "endLine": 242,
+      "role": "内部関数",
+      "signature": "revisionNetYen(salary, tax, social, benefits, service)",
+      "description": "給与・税・保険・支給年額・サービスの実負担を円で合算。万円への変換は最後に行う。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/revisionEngine.js:createPaperGraphEvaluator",
+      "name": "createPaperGraphEvaluator",
+      "qualifiedName": "createPaperGraphEvaluator",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 253,
+      "endLine": 306,
+      "role": "内部関数",
+      "signature": "createPaperGraphEvaluator(children, serviceUsage, roles, wageRecord)",
+      "description": "論文用1万円格子専用。個人税・所得制限を同じ給与と配偶者所得帯で再利用し、世帯合計は各点で算定する。 詳細表示用 evaluate の代用ではない。個人を独立評価できない勤務・国保条件の旧仕様には使わない。",
       "params": [
-        "{Array<object>} children 児童別の年齢、多子軽減等適用後の通所・上限前負担（円／月）。",
-        "{number} otherServiceMonthlyYen 同じ保護者・上限下にあるその他の合算対象額（円／月）。",
-        "{Array<object>} adults 両親が個別に算定したサービス判定用所得割と課税状況。"
+        "{object[]} children 検証済みの児童別条件。所得停止前の障害要件と年齢は格子内で固定。",
+        "{object} serviceUsage 同じ保護者で通算する上限前の利用料と利用の有無。",
+        "{object} roles 配偶者控除の申告者。受給資格者と児童の税扶養先は給与の高い方（同額は世帯主）。",
+        "{Function} wageRecord 個人給与1本（万円）を当年・前年の所得（円）に変換する論文用計算器。"
       ],
-      "returns": "{object} 年間最終負担（円）、月額・上限（円／月）、判定所得割（円／年）。"
+      "returns": "{Function} 給与2本（万円）から、グラフ・対照世帯との円検算に必要な項目だけを返す計算器。"
+    },
+    {
+      "id": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "name": "graphWage",
+      "qualifiedName": "createPaperGraphEvaluator.graphWage",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 261,
+      "endLine": 268,
+      "role": "内部関数",
+      "signature": "graphWage(salaryWan)",
+      "description": "2029静学比較では当年＝前年。給与・保険料はこの親だけで決まり、相手の所得は同一生計要件と控除表の行だけで効く。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphParent",
+      "name": "graphParent",
+      "qualifiedName": "createPaperGraphEvaluator.graphParent",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 271,
+      "endLine": 282,
+      "role": "内部関数",
+      "signature": "graphParent(own, partner, claimant, files)",
+      "description": "受給資格者（本稿では子全員の税扶養先）と他方の親を分け、控除申告者・相手の所得帯に応じた本人の結果を保存する。",
+      "params": [],
+      "returns": ""
+    },
+    {
+      "id": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "name": "evaluateGraphPoint",
+      "qualifiedName": "createPaperGraphEvaluator.evaluateGraphPoint",
+      "kind": "function",
+      "file": "src/calc/revisionEngine.js",
+      "category": "改定版・二給与軸の制度計算",
+      "line": 290,
+      "endLine": 304,
+      "role": "内部関数",
+      "signature": "evaluateGraphPoint(headWan, spouseWan)",
+      "description": "原点は除外。各人の支給可否を制度ごとに組み合わせて、サービスには両親の所得割を合算する。",
+      "params": [
+        "{number} headWan 世帯主の年間給与（0～1,500万円、1万円刻み）。",
+        "{number} spouseWan 配偶者の年間給与（同範囲）。"
+      ],
+      "returns": "{object} 算定状態・世帯可処分所得（万円）と、制度境界・世帯間差の内訳照合に必要な金額（円）・受給資格者。"
     },
     {
       "id": "src/calc/revisionEngine.js:createRevisionCalculator",
@@ -2777,8 +2946,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 239,
-      "endLine": 297,
+      "line": 313,
+      "endLine": 372,
       "role": "計算エントリ",
       "signature": "createRevisionCalculator(input)",
       "description": "任意の二給与点に対する収支を返す計算器を用意する。世帯条件を固定し、同じ給与の基礎計算を再利用する。",
@@ -2794,8 +2963,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 245,
-      "endLine": 249,
+      "line": 320,
+      "endLine": 324,
       "role": "内部関数",
       "signature": "wageRecord(w)",
       "description": "一度計算した個人給与の基礎値を二つの軸で共有する。親の扶養・給付の判定値は共有しない。",
@@ -2809,8 +2978,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 256,
-      "endLine": 295,
+      "line": 331,
+      "endLine": 370,
       "role": "内部関数",
       "signature": "evaluate(headWan, spouseWan)",
       "description": "同じ給与点で全制度を評価し、年間収支（万円）と各判定（円）を返す。",
@@ -2827,8 +2996,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 304,
-      "endLine": 327,
+      "line": 379,
+      "endLine": 402,
       "role": "内部モジュール間",
       "signature": "classifyRevisionFalls(points)",
       "description": "隣り合う給与点を比較し、可処分所得の逆転とその初回回復を検出する。",
@@ -2844,8 +3013,8 @@
       "kind": "function",
       "file": "src/calc/revisionEngine.js",
       "category": "改定版・二給与軸の制度計算",
-      "line": 336,
-      "endLine": 341,
+      "line": 411,
+      "endLine": 416,
       "role": "内部モジュール間",
       "signature": "evaluateRevisionSlice(calculator, axis, fixedWan)",
       "description": "二つの給与軸のどちらかを固定し、0～1,500万円（両端を含む）の全点で逆転の位置・幅を得る。",
@@ -3142,17 +3311,32 @@
       "returns": ""
     },
     {
+      "id": "src/calc/salaryGraphDataset.js:rememberSurfacePoint",
+      "name": "rememberSurfacePoint",
+      "qualifiedName": "rememberSurfacePoint",
+      "kind": "function",
+      "file": "src/calc/salaryGraphDataset.js",
+      "category": "統合計算",
+      "line": 14,
+      "endLine": 23,
+      "role": "内部関数",
+      "signature": "rememberSurfacePoint(states, code, {details:{benefits,service}})",
+      "description": "図が読む3制度の実額だけを保存。区分が同じでも実額が異なる場合、その区分は再計算する。",
+      "params": [],
+      "returns": ""
+    },
+    {
       "id": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "name": "buildSalaryGraphDataset",
       "qualifiedName": "buildSalaryGraphDataset",
       "kind": "function",
       "file": "src/calc/salaryGraphDataset.js",
       "category": "統合計算",
-      "line": 19,
-      "endLine": 46,
+      "line": 31,
+      "endLine": 75,
       "role": "内部モジュール間",
       "signature": "buildSalaryGraphDataset(inputs, {maxSalaryWan=1500,onProgress,createCalculator}={})",
-      "description": "固定した家族条件につき、x＝世帯主給与、y＝配偶者給与を1万円刻みで一度だけ走査する。 各点で必要な実世帯・対照世帯の計算を一度ずつ（条件が同一なら計一度）行い、すべての図に共用する。",
+      "description": "固定した家族条件につき、x＝世帯主給与、y＝配偶者給与を1万円刻みで一度だけ走査する。 実世帯・対照世帯の各計算は高々一度行い、すべての図に共用する。対称条件では反対側の世帯合計を再利用する。",
       "params": [
         "{object} inputs モデル世帯の条件。給与範囲の既定は両軸0～1,500万円、原点は除外。",
         "{object} options maxSalaryWan、onProgress(done,total)、createCalculator（関数の検証用）。"
@@ -8580,7 +8764,7 @@
     {
       "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.comparePoints",
       "to": "src/calc/disabilityIncomeDifference.js:uncalculated",
-      "line": 31,
+      "line": 32,
       "column": 14,
       "resultUse": "呼出元にそのまま返す",
       "arguments": [
@@ -8589,9 +8773,9 @@
       ]
     },
     {
-      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluatePair",
+      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateWith",
       "to": "src/calc/disabilityIncomeDifference.js:uncalculated",
-      "line": 51,
+      "line": 52,
       "column": 73,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -8600,14 +8784,38 @@
       ]
     },
     {
-      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluatePair",
+      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateWith",
       "to": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.comparePoints",
-      "line": 55,
+      "line": 56,
       "column": 43,
       "resultUse": "式の一部として使用",
       "arguments": [
         "observedPoint",
         "baselinePoint"
+      ]
+    },
+    {
+      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluatePair",
+      "to": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateWith",
+      "line": 64,
+      "column": 29,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "x",
+        "y",
+        "readDetail"
+      ]
+    },
+    {
+      "from": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateGraphPair",
+      "to": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison.evaluateWith",
+      "line": 66,
+      "column": 34,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "x",
+        "y",
+        "readGraph"
       ]
     },
     {
@@ -9814,60 +10022,52 @@
       ]
     },
     {
-      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
+      "from": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
       "to": "src/calc/householdInsurance2029.js:checkAnnualPay",
-      "line": 54,
+      "line": 48,
       "column": 3,
       "resultUse": "返り値は受け取らない",
+      "arguments": [
+        "annualYen"
+      ]
+    },
+    {
+      "from": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "to": "src/calc/householdInsurance2029.js:insuredPerson",
+      "line": 49,
+      "column": 26,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "annualYen"
+      ]
+    },
+    {
+      "from": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "to": "src/calc/householdInsurance2029.js:dependentPerson",
+      "line": 49,
+      "column": 53,
+      "resultUse": "式の一部として使用",
+      "arguments": []
+    },
+    {
+      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
+      "to": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "line": 62,
+      "column": 16,
+      "resultUse": "head に格納",
       "arguments": [
         "headAnnualYen"
       ]
     },
     {
       "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "to": "src/calc/householdInsurance2029.js:checkAnnualPay",
-      "line": 55,
-      "column": 3,
-      "resultUse": "返り値は受け取らない",
+      "to": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "line": 63,
+      "column": 18,
+      "resultUse": "spouse に格納",
       "arguments": [
         "spouseAnnualYen"
       ]
-    },
-    {
-      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "to": "src/calc/householdInsurance2029.js:insuredPerson",
-      "line": 58,
-      "column": 36,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "headAnnualYen"
-      ]
-    },
-    {
-      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "to": "src/calc/householdInsurance2029.js:dependentPerson",
-      "line": 58,
-      "column": 67,
-      "resultUse": "式の一部として使用",
-      "arguments": []
-    },
-    {
-      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "to": "src/calc/householdInsurance2029.js:insuredPerson",
-      "line": 59,
-      "column": 40,
-      "resultUse": "式の一部として使用",
-      "arguments": [
-        "spouseAnnualYen"
-      ]
-    },
-    {
-      "from": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "to": "src/calc/householdInsurance2029.js:dependentPerson",
-      "line": 59,
-      "column": 73,
-      "resultUse": "式の一部として使用",
-      "arguments": []
     },
     {
       "from": "src/calc/illustrativeAdjustment.js:computeIllustrativeAdjustment",
@@ -10265,7 +10465,7 @@
     {
       "from": "src/calc/revisionEngine.js:validateRevisionHousehold",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 59,
+      "line": 60,
       "column": 28,
       "resultUse": "serviceAmountYen に格納",
       "arguments": [
@@ -10278,7 +10478,7 @@
     {
       "from": "src/calc/revisionEngine.js:validateRevisionHousehold",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 60,
+      "line": 61,
       "column": 34,
       "resultUse": "otherServiceMonthlyYen に格納",
       "arguments": [
@@ -10291,7 +10491,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/paperSalaryTaxInputs2029.js:calculatePaperSalaryTaxInputs2029",
-      "line": 88,
+      "line": 89,
       "column": 15,
       "resultUse": "s に格納",
       "arguments": [
@@ -10301,7 +10501,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:childOrDisabilityIncomeAdjustmentYen",
-      "line": 94,
+      "line": 95,
       "column": 22,
       "resultUse": "adjustment に格納",
       "arguments": [
@@ -10312,7 +10512,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:salaryIncomeBeforeAdjustmentYen",
-      "line": 96,
+      "line": 97,
       "column": 27,
       "resultUse": "prevGrossIncome に格納",
       "arguments": [
@@ -10323,7 +10523,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionSalaryRecord",
       "to": "src/calc/employmentIncome.js:salaryIncomeBeforeAdjustmentYen",
-      "line": 98,
+      "line": 99,
       "column": 23,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10334,7 +10534,7 @@
     {
       "from": "src/calc/revisionEngine.js:archivedPremiums",
       "to": "src/calc/socialInsurance.js:calculateSocialInsuranceComponents",
-      "line": 105,
+      "line": 106,
       "column": 29,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10346,7 +10546,7 @@
     {
       "from": "src/calc/revisionEngine.js:archivedPremiums",
       "to": "src/calc/socialInsurance.js:calculateSocialInsuranceComponents",
-      "line": 106,
+      "line": 107,
       "column": 27,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10356,21 +10556,31 @@
       ]
     },
     {
-      "from": "src/calc/revisionEngine.js:revisionParentTax",
-      "to": "src/calc/revisionEngine.js:revisionSpouseDeduction",
-      "line": 140,
-      "column": 18,
-      "resultUse": "spouse に格納",
+      "from": "src/calc/revisionEngine.js:revisionSpouseDeduction",
+      "to": "src/calc/revisionEngine.js:spouseDeductionRow",
+      "line": 124,
+      "column": 47,
+      "resultUse": "式の一部として使用",
       "arguments": [
-        "person.income",
-        "claimsSpouse ? partner.income : Infinity",
-        "620000"
+        "partner"
       ]
     },
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/revisionEngine.js:revisionSpouseDeduction",
-      "line": 142,
+      "line": 146,
+      "column": 18,
+      "resultUse": "spouse に格納",
+      "arguments": [
+        "person.income",
+        "claimsSpouse ? partner.income : Infinity",
+        "CURRENT_ORDINARY_SPOUSE_LIMIT"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:revisionParentTax",
+      "to": "src/calc/revisionEngine.js:revisionSpouseDeduction",
+      "line": 148,
       "column": 22,
       "resultUse": "prevSpouse に格納",
       "arguments": [
@@ -10382,7 +10592,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxDescriptions.js:calcBasicIncomeTaxDeductionR8FinalWan",
-      "line": 148,
+      "line": 154,
       "column": 94,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10392,7 +10602,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getIncomeTaxParts",
-      "line": 150,
+      "line": 156,
       "column": 14,
       "resultUse": "it に格納",
       "arguments": [
@@ -10403,7 +10613,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getResidentTaxParts",
-      "line": 151,
+      "line": 157,
       "column": 20,
       "resultUse": "resident に格納",
       "arguments": [
@@ -10414,7 +10624,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/taxes.js:getResidentTaxParts",
-      "line": 156,
+      "line": 162,
       "column": 24,
       "resultUse": "prevResident に格納",
       "arguments": [
@@ -10425,7 +10635,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/serviceBurdenLimits.js:calcServiceAssessmentLevyYen",
-      "line": 167,
+      "line": 173,
       "column": 20,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10436,7 +10646,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/specialChildAllowance.js:salaryOnlySpecialChildIncome",
-      "line": 170,
+      "line": 176,
       "column": 24,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10446,7 +10656,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionParentTax",
       "to": "src/calc/disabledChildWelfareAllowance.js:calculateWelfareSalaryAssessment",
-      "line": 172,
+      "line": 178,
       "column": 32,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10456,7 +10666,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/specialChildAllowance.js:calculateSpecialChildAllowance",
-      "line": 190,
+      "line": 196,
       "column": 33,
       "resultUse": "specialChildAllowance に格納",
       "arguments": [
@@ -10466,7 +10676,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/allowances.js:calcWelfareAllowanceLimitObligorYen",
-      "line": 198,
+      "line": 204,
       "column": 24,
       "resultUse": "obligorLimit に格納",
       "arguments": [
@@ -10476,7 +10686,7 @@
     {
       "from": "src/calc/revisionEngine.js:revisionCashBenefits",
       "to": "src/calc/allowances.js:calcWelfareAllowanceLimitObligorYen",
-      "line": 199,
+      "line": 205,
       "column": 22,
       "resultUse": "otherLimit に格納",
       "arguments": [
@@ -10486,18 +10696,167 @@
     {
       "from": "src/calc/revisionEngine.js:revisionServiceBurden",
       "to": "src/calc/serviceBurdenLimits.js:getChildDayServiceCapYen",
-      "line": 224,
+      "line": 233,
       "column": 15,
       "resultUse": "cap に格納",
       "arguments": [
         "levy",
-        "adults.some(t=>t.serviceTaxable)"
+        "head.serviceTaxable || spouse.serviceTaxable"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "to": "src/calc/revisionEngine.js:requireInteger",
+      "line": 262,
+      "column": 5,
+      "resultUse": "返り値は受け取らない",
+      "arguments": [
+        "salaryWan",
+        "0",
+        "MAX_WAGE",
+        "\"給与収入（万円、1万円刻み）\""
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "to": "src/calc/householdInsurance2029.js:calculateParentInsurance2029",
+      "line": 264,
+      "column": 46,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "wage.salaryYen"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "to": "src/calc/revisionEngine.js:spouseDeductionRow",
+      "line": 266,
+      "column": 26,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "wage.income"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphParent",
+      "to": "src/calc/revisionEngine.js:revisionParentTax",
+      "line": 275,
+      "column": 15,
+      "resultUse": "tax に格納",
+      "arguments": [
+        "own",
+        "partner",
+        "claimant?children:noChildren",
+        "files",
+        "false"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphParent",
+      "to": "src/calc/revisionEngine.js:revisionCashBenefits",
+      "line": 276,
+      "column": 48,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "children",
+        "claimant?tax:passing",
+        "claimant?passing:tax",
+        "0",
+        "\"head\"",
+        "\"both\""
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "line": 291,
+      "column": 16,
+      "resultUse": "head に格納",
+      "arguments": [
+        "headWan"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphWage",
+      "line": 291,
+      "column": 43,
+      "resultUse": "spouse に格納",
+      "arguments": [
+        "spouseWan"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:revisionCashBenefits",
+      "line": 293,
+      "column": 21,
+      "resultUse": "full に代入",
+      "arguments": [
+        "children",
+        "passing",
+        "passing",
+        "0",
+        "\"head\"",
+        "\"both\""
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphParent",
+      "line": 296,
+      "column": 14,
+      "resultUse": "ht に格納",
+      "arguments": [
+        "head",
+        "spouse",
+        "headHigher",
+        "filing===\"head\""
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:createPaperGraphEvaluator.graphParent",
+      "line": 296,
+      "column": 70,
+      "resultUse": "st に格納",
+      "arguments": [
+        "spouse",
+        "head",
+        "!headHigher",
+        "filing===\"spouse\""
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:revisionServiceBurden",
+      "line": 299,
+      "column": 19,
+      "resultUse": "service に格納",
+      "arguments": [
+        "serviceUsage",
+        "ht",
+        "st"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createPaperGraphEvaluator.evaluateGraphPoint",
+      "to": "src/calc/revisionEngine.js:revisionNetYen",
+      "line": 300,
+      "column": 15,
+      "resultUse": "net に格納",
+      "arguments": [
+        "head.salaryYen+spouse.salaryYen",
+        "ht.totalTaxYen+st.totalTaxYen",
+        "head.social+spouse.social",
+        "benefits",
+        "service"
       ]
     },
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator",
       "to": "src/calc/revisionEngine.js:validateRevisionHousehold",
-      "line": 240,
+      "line": 314,
       "column": 74,
       "resultUse": "{children, otherServiceMonthlyYen, protocol, roles, insurance} に格納",
       "arguments": [
@@ -10505,9 +10864,20 @@
       ]
     },
     {
+      "from": "src/calc/revisionEngine.js:createRevisionCalculator",
+      "to": "src/calc/revisionEngine.js:revisionServiceUsage",
+      "line": 317,
+      "column": 24,
+      "resultUse": "serviceUsage に格納",
+      "arguments": [
+        "children",
+        "otherServiceMonthlyYen"
+      ]
+    },
+    {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:requireInteger",
-      "line": 246,
+      "line": 321,
       "column": 5,
       "resultUse": "返り値は受け取らない",
       "arguments": [
@@ -10520,7 +10890,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:revisionSalaryRecord",
-      "line": 247,
+      "line": 322,
       "column": 52,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10530,7 +10900,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:archivedPremiums",
-      "line": 247,
+      "line": 322,
       "column": 80,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10540,7 +10910,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
       "to": "src/calc/revisionEngine.js:revisionSalaryRecord",
-      "line": 247,
+      "line": 322,
       "column": 103,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10551,7 +10921,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
-      "line": 257,
+      "line": 332,
       "column": 22,
       "resultUse": "headWage に格納",
       "arguments": [
@@ -10561,7 +10931,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:createRevisionCalculator.wageRecord",
-      "line": 257,
+      "line": 332,
       "column": 56,
       "resultUse": "spouseWage に格納",
       "arguments": [
@@ -10571,7 +10941,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/householdInsurance2029.js:calculateHouseholdInsurance2029",
-      "line": 267,
+      "line": 342,
       "column": 41,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10581,7 +10951,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionCoverage.js:calculateHouseholdCoverage",
-      "line": 275,
+      "line": 350,
       "column": 7,
       "resultUse": "式の一部として使用",
       "arguments": [
@@ -10593,7 +10963,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionParentTax",
-      "line": 280,
+      "line": 355,
       "column": 16,
       "resultUse": "ht に格納",
       "arguments": [
@@ -10607,7 +10977,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionParentTax",
-      "line": 281,
+      "line": 356,
       "column": 16,
       "resultUse": "st に格納",
       "arguments": [
@@ -10621,7 +10991,7 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionCashBenefits",
-      "line": 285,
+      "line": 360,
       "column": 22,
       "resultUse": "benefits に格納",
       "arguments": [
@@ -10636,19 +11006,46 @@
     {
       "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
       "to": "src/calc/revisionEngine.js:revisionServiceBurden",
-      "line": 286,
+      "line": 361,
       "column": 21,
       "resultUse": "service に格納",
       "arguments": [
+        "serviceUsage",
+        "ht",
+        "st"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createRevisionCalculator.evaluate",
+      "to": "src/calc/revisionEngine.js:revisionNetYen",
+      "line": 363,
+      "column": 27,
+      "resultUse": "式の一部として使用",
+      "arguments": [
+        "salary",
+        "tax",
+        "social",
+        "benefits",
+        "service"
+      ]
+    },
+    {
+      "from": "src/calc/revisionEngine.js:createRevisionCalculator",
+      "to": "src/calc/revisionEngine.js:createPaperGraphEvaluator",
+      "line": 371,
+      "column": 52,
+      "resultUse": "式の一部として使用",
+      "arguments": [
         "children",
-        "otherServiceMonthlyYen",
-        "[ht,st]"
+        "serviceUsage",
+        "roles",
+        "wageRecord"
       ]
     },
     {
       "from": "src/calc/revisionEngine.js:evaluateRevisionSlice",
       "to": "src/calc/revisionEngine.js:classifyRevisionFalls",
-      "line": 340,
+      "line": 415,
       "column": 10,
       "resultUse": "呼出元にそのまま返す",
       "arguments": [
@@ -10886,7 +11283,7 @@
     {
       "from": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "to": "src/calc/disabilityIncomeDifference.js:createDisabilityIncomeComparison",
-      "line": 25,
+      "line": 37,
       "column": 14,
       "resultUse": "pair に格納",
       "arguments": [
@@ -10897,18 +11294,18 @@
     {
       "from": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "to": "src/calc/salarySurfaceGrid.js:buildSalarySurfaceGrid",
-      "line": 26,
+      "line": 44,
       "column": 16,
       "resultUse": "income に格納",
       "arguments": [
-        "{evaluate(x,y){\n    const index=y*width+x,{observedPoint,comparisonPoint}=pair.evaluatePair(x,y);\n    if(observedPoint.status===\"calculated\"){\n      netYen[index]=exactYen(Math.round(observedPoint.studyDisposableWan*10000));\n      codes[index]=decisionCodes(observedPoint);\n    }\n    if(comparisonPoint.status===\"calculated\")differenceYen[index]=exactYen(comparisonPoint.differenceYen);\n    return observedPoint;\n  }}",
+        "{evaluate(x,y){\n    const index=y*width+x;\n    if(states && x<y){\n      // 行順は変えず、既に走査した反対側の点から世帯合計だけ読む（親ID・個人明細は複製しない）。\n      const source=x*width+y,code=codes[source],state=states[code],net=netYen[source];\n      if(state && net!==UNKNOWN_PLANE_NET_YEN){\n        netYen[index]=net;differenceYen[index]=differenceYen[source];codes[index]=code;\n        state.studyDisposableWan=net/10000;\n        return state;\n      }\n    }\n    const {observedPoint,comparisonPoint}=pair.evaluateGraphPair(x,y);\n    if(observedPoint.status===\"calculated\"){\n      netYen[index]=exactYen(Math.round(observedPoint.studyDisposableWan*10000));\n      codes[index]=decisionCodes(observedPoint);\n      if(states && x>y)rememberSurfacePoint(states,codes[index],observedPoint);\n    }\n    if(comparisonPoint.status===\"calculated\")differenceYen[index]=exactYen(comparisonPoint.differenceYen);\n    return observedPoint;\n  }}",
         "{maxSalaryWan,onProgress}"
       ]
     },
     {
       "from": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "to": "src/calc/disabilityIncomeDifference.js:buildDisabilityDifferenceSurface",
-      "line": 37,
+      "line": 66,
       "column": 20,
       "resultUse": "comparison に格納",
       "arguments": [
@@ -10919,7 +11316,7 @@
     {
       "from": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "to": "src/calc/salaryDecisionMap.js:buildSalaryDecisionMapFromGrid",
-      "line": 43,
+      "line": 72,
       "column": 13,
       "resultUse": "map に格納",
       "arguments": [
@@ -10931,7 +11328,7 @@
     {
       "from": "src/calc/salaryGraphDataset.js:buildSalaryGraphDataset",
       "to": "src/calc/salaryPlaneRecovery.js:buildSalaryPlaneRecovery",
-      "line": 44,
+      "line": 73,
       "column": 20,
       "resultUse": "map.outcomeLines に代入",
       "arguments": [

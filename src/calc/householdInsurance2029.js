@@ -43,6 +43,12 @@ function dependentPerson() {
     pensionGrade:null, pensionStandardYen:null, monthly:{...zero}, annual:{...zero}};
 }
 
+/** 論文の固定加入条件による親1人の内訳。両者とも無職の原点は世帯側で別途除外する。 */
+export function calculateParentInsurance2029(annualYen) {
+  checkAnnualPay(annualYen);
+  return annualYen > 0 ? insuredPerson(annualYen) : dependentPerson();
+}
+
 /**
  * 両者に同一の仮定を適用する。給与が正＝就労し賃金以外の加入要件は充足、ゼロ＝非就労。
  * 最低賃金から労働時間を推計したり、この研究上の条件を個人の資格認定に使ったりしない。
@@ -51,11 +57,9 @@ function dependentPerson() {
  * @returns {object} 親別の加入区分・等級・本人負担（月額・年額）、世帯年額及び採用料率の出典。
  */
 export function calculateHouseholdInsurance2029({headAnnualYen, spouseAnnualYen} = {}) {
-  checkAnnualPay(headAnnualYen);
-  checkAnnualPay(spouseAnnualYen);
   if (headAnnualYen === 0 && spouseAnnualYen === 0)
     return {status:"excluded", reason:"both-nonworking", head:null, spouse:null, totalYen:null, policy};
-  const head = headAnnualYen > 0 ? insuredPerson(headAnnualYen) : dependentPerson();
-  const spouse = spouseAnnualYen > 0 ? insuredPerson(spouseAnnualYen) : dependentPerson();
+  const head = calculateParentInsurance2029(headAnnualYen);
+  const spouse = calculateParentInsurance2029(spouseAnnualYen);
   return {status:"calculated", head, spouse, totalYen:head.annual.totalYen+spouse.annual.totalYen, policy};
 }

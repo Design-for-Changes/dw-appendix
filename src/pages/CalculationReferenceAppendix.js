@@ -30,8 +30,7 @@ const currentFlow = [
   ["service","世帯の判定用所得割＋対象負担（円／月）→ 利用者負担（円／年）","本モデルの同一保護者に係る合算対象額に世帯の月額上限を適用し、12か月分を差し引く。","revisionServiceBurden"],
   ["disposable","夫婦の給与－税・保険料＋各手当－サービスの自己負担","上記で算定した項目のみを合算し、年額を万円で表示する。夫婦とも給与0円の点では値を返さない。","createRevisionCalculator.evaluate"],
   ["reverse","片方の給与を固定した断面 → 下落幅・回復点・回復幅","隣接する給与点で収支が下がった場合、その差と下落前の水準に初めて戻る給与点を求める。紙面の表5には、このうち福祉制度の給付減・負担増を伴う低下を掲載する。","evaluateRevisionSlice","classifyRevisionFalls"],
-  ["level","選んだ下落直前の可処分所得 → 給与平面の同水準線","隣接する給与点のうち一方だけが基準額以上になる境界を両軸で結ぶ。未算定点はまたがない。","src/calc/salaryLevelContour.js:buildSalaryLevelContour"],
-  ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最低差・最高差と夫婦の給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
+  ["pattern-extrema","G：Eの給与点別の税・手当・通所負担 → 障害要件別の最小差・最大差と夫婦の給与","同じ給与・家族構成で子どもに障害がない世帯と比較する。手当の所得判定・世帯の負担上限が同じ点をまとめ、税額差の両端に給付差を加え、設定した通所負担を引く。各パターンについて、全給与点での差の両端を求める。","scripts/generate-pattern-salary-envelopes.mjs:groupCells","src/calc/allPatternsComparison.js:compareAllPatterns","src/calc/allPatternsCore.js:comparePatternEnvelopes"],
 ];
 const discussionFlow = [
   ["E「制度境界のみ」：各給与点の所得区分 → 制度別の境界線","夫婦各1万円刻みの隣接する給与点を比較し、各制度の区分が切り替わる位置だけを結ぶ。支出額や可処分所得の下落幅は用いない。","src/calc/policyOnlyBoundaries.js:createPolicyOnlyClassifier","src/calc/policyAdditionalBands.js:createAdditionalPolicyClassifier","src/calc/policyOnlyBoundaries.js:buildPolicyOnlyMap"],

@@ -14,10 +14,10 @@ export function DifferenceExtrema({surface,grid,shown,lookupPair}) {
   const extremes=!!(minimum&&maximum),flat=extremes&&minimum.differenceYen===maximum.differenceYen;
   const rows=[];
   if(shown) rows.push(["図上の点",shown]);
-  if(extremes) rows.push(...(flat?[["最低＝最高",minimum]]:[["最低点",minimum],["最高点",maximum]]));
+  if(extremes) rows.push(...(flat?[["最小＝最大",minimum]]:[["最小点",minimum],["最大点",maximum]]));
   if(!rows.length)return null;
   return <section className="income-difference-extrema" aria-label="給与点の比較">
-    {extremes&&<p>{flat ? "全給与点で可処分所得差は"+signed(minimum.differenceYen)+"（最低＝最高）です。"
+    {extremes&&<p>{flat ? "全給与点で可処分所得差は"+signed(minimum.differenceYen)+"（最小＝最大）です。"
       : negativeCount ? "設定した世帯の可処分所得が下回るのは、全"+integer(validCount)+"給与点のうち"+integer(negativeCount)+"点です。"
       : "設定した給与範囲に、障害がない世帯の可処分所得を下回る点はありません。"}</p>}
     <div className="diff-point-table-wrap"><table className="diff-point-table">

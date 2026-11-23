@@ -35,8 +35,8 @@ function ExtremeOverlay({surface,sx,sy,valid}){
   const {minimum,maximum}=surface;
   if(!minimum||!maximum||!valid(minimum.headWan,minimum.spouseWan)||!valid(maximum.headWan,maximum.spouseWan))return null;
   if(minimum.differenceYen===maximum.differenceYen)return <text className="diff-extreme-label"
-    x={(L+R)/2} y={(T+B)/2} textAnchor="middle">全算定点：最高＝最低　{signed(minimum.differenceYen)}円／年</text>;
-  const marks=[["maximum","最高点",maximum],["minimum","最低点",minimum]].map(([id,label,p],i)=>{
+    x={(L+R)/2} y={(T+B)/2} textAnchor="middle">全算定点：最小＝最大　{signed(minimum.differenceYen)}円／年</text>;
+  const marks=[["maximum","最大点",maximum],["minimum","最小点",minimum]].map(([id,label,p],i)=>{
     const x=sx(p.headWan),y=sy(p.spouseWan),side=x<(L+R)/2?1:-1;
     return {id,label,p,x,y,side,tx:x+side*14,ty:clamp(y+(i?23:-14),T+18,B-7)};
   });

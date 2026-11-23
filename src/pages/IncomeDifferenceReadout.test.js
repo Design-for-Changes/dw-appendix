@@ -18,7 +18,7 @@ test("選択した世帯の極値だけを表示し、同率の場合は一例�
   render(<DifferenceExtrema surface={surface} grid={grid}/>);
   expect(screen.getByText(/全8給与点のうち3点/)).toBeInTheDocument();
   const table=screen.getByRole("table",{name:"給与点別の年間収入・可処分所得"});
-  const low=within(table).getByRole("row",{name:/最低点/}), high=within(table).getByRole("row",{name:/最高点/});
+  const low=within(table).getByRole("row",{name:/最小点/}), high=within(table).getByRole("row",{name:/最大点/});
   expect(within(low).getByRole("rowheader")).toHaveTextContent(/同額\s*3点の一例/);
   expect(within(low).getAllByRole("cell").map(c=>c.textContent)).toEqual(["2万円","1万円","3万円","0円","40,001円","40,002円","−1円"]);
   expect(within(high).getAllByRole("cell").map(c=>c.textContent)).toEqual(["1万円","2万円","3万円","0円","80,002円","80,000円","＋2円"]);
@@ -40,8 +40,8 @@ test.each([false,true])("給与収入と給与所得を区別し、同じ年収�
   render(<DifferenceExtrema surface={surface} grid={grid}/>);
   const table=screen.getByRole("table",{name:"給与点別の年間収入・可処分所得"});
   const cells=label=>within(within(table).getByRole("row",{name:label})).getAllByRole("cell").map(c=>c.textContent);
-  expect(cells(/最高点/)).toEqual([highX+"万円",highY+"万円","1,000万円","7,120,000円","8,798,764円","7,824,244円","＋974,520円"]);
-  expect(cells(/最低点/)).toEqual([swapped?"1,500万円":"0万円",swapped?"0万円":"1,500万円","1,500万円","12,900,000円","10,158,004円","10,298,704円","−140,700円"]);
+  expect(cells(/最大点/)).toEqual([highX+"万円",highY+"万円","1,000万円","7,120,000円","8,798,764円","7,824,244円","＋974,520円"]);
+  expect(cells(/最小点/)).toEqual([swapped?"1,500万円":"0万円",swapped?"0万円":"1,500万円","1,500万円","12,900,000円","10,158,004円","10,298,704円","−140,700円"]);
 });
 
 test("未算定の整数円を0円や負の所得とせず、実額の単点計算がある場合だけ表示できる",()=>{
@@ -61,7 +61,7 @@ test.each([
   [1,746,195,1079220,900120,179100],
   [2,826,203,2177140,1800240,376900],
   [3,906,203,3267160,2700360,566800],
-])("子ども%i人の検算データの最高差を両方の給与配分で復算する",(n,high,low,differenceYen,extraBenefitsYen,taxSavingYen)=>{
+])("子ども%i人の検算データの最大差を両方の給与配分で復算する",(n,high,low,differenceYen,extraBenefitsYen,taxSavingYen)=>{
   const calc=createDisabilityIncomeComparison({serviceAmountYen:0,
     children:[7,10,12].slice(0,n).map(age=>({age,tccaGrade:"1",welfareEligible:true,taxStatus:"special",
       serviceUser:false,serviceAmountYen:0}))});

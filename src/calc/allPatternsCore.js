@@ -11,7 +11,7 @@ function earlier(a,b) {
  * 群ごとの税額差の両端にこの差を足し、全群を比較すれば、給与格子を間引かずに済む。
  * @param {object} conditions 子どもごとの年齢（0～17歳）と多子軽減後・世帯上限前の月額（円）。
  * @param {object} data Eと同じ給与格子・制度仕様から生成した点群ごとの税額差と給与座標。
- * @returns {object[]} 障害要件の順序付き組み合わせ別の最低・最高差（円／年）とその給与点（万円／年）。
+ * @returns {object[]} 障害要件の順序付き組み合わせ別の最小・最大差（円／年）とその給与点（万円／年）。
  */
 export function comparePatternEnvelopes({ages,fees},data) {
   if (!Array.isArray(ages) || !Array.isArray(fees) || ages.length<1 || ages.length>3 || ages.length!==fees.length ||

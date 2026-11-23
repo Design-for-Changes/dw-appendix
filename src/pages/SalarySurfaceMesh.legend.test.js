@@ -64,7 +64,7 @@ test.each([false,true])("JのWebGL描画は符号・0面だけを描き、Gの�
     expect(gl.uniform1i.mock.calls.some(([id])=>id==="ink")).toBe(false);
     expect(screen.getByText("可処分所得差",{selector:"svg text"})).toBeInTheDocument();
     expect(screen.getByText("0.0001",{selector:"svg text"})).toBeInTheDocument();
-    if(flat) expect(screen.getByText("最低＝最高")).toBeInTheDocument();
+    if(flat) expect(screen.getByText("最小＝最大")).toBeInTheDocument();
     result.unmount();
   }finally{context.mockRestore();}
 });

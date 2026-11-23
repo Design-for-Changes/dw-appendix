@@ -19,7 +19,7 @@ const range = (max) => Array.from({ length: max + 1 }, (_, i) => i);
 const initialPoint = ["200", "0"];
 const GRAPH_VIEWS = [
   ["income","可処分所得（3D）"],
-  ["boundaries","制度境界・下落・同水準線（2D）"],
+  ["boundaries","制度境界・下落（2D）"],
   ["systems","制度境界のみ（2D）"],
   ["difference","可処分所得差"],
 ];

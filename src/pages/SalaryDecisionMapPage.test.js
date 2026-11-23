@@ -1,17 +1,8 @@
 import {fireEvent,render,screen,within} from "@testing-library/react";
 import SalaryDecisionMapPage,{endpointsForBoundary} from "./SalaryDecisionMapPage";
 import {createRevisionCalculator} from "../calc/revisionEngine";
-import {useSalaryLevelContour} from "./salaryLevelContourState";
 
-jest.mock("./salaryLevelContourState",()=>({useSalaryLevelContour:jest.fn()}));
-// This view test supplies a contour explicitly. Its numerical construction and worker cache
-// are exercised separately; no Worker or script URL should be opened while selecting a line.
-beforeEach(()=>{
-  sessionStorage.clear();
-  useSalaryLevelContour.mockImplementation((_grid,levelYen)=>levelYen==null?
-    {status:"idle",segments:[],levelYen:null}:
-    {status:"ready",segments:[[580,940,590,940]],levelYen});
-});
+beforeEach(()=>sessionStorage.clear());
 
 function inputsFor(child={}) {
   return {protocol:"paper-2029",serviceAmountYen:0,
@@ -68,12 +59,11 @@ test("該当境界がなければ平面図に切替なしと表示する",()=>{
   expect(screen.getByText("この条件では対象制度の切り替わりはありません。")).toBeVisible();
 });
 
-test("両方向の実下落を同じXY平面に示し、線をクリックして下落幅・前後の給与と可処分所得・同水準線を読む",()=>{
+test("両方向の実下落を同じXY平面に示し、線をクリックして下落幅・前後の給与と可処分所得を読む",()=>{
   const {calculator,finish}=draw();
   const horizontal=y=>[599.5,y-.5,600.5,y-.5],vertical=x=>[x-.5,599.5,x-.5,600.5];
   const pair=line=>({drop:[line(907)],recovery:[line(937)],dropMasks:[2],recoveryDropIndex:[0]});
   // 給与軸を交換しても同じ906→907万円で児福が停止する例。
-  // 同水準線の基準は下落直前の実年額であり、下落後の年額でも下落差そのものでもない。
   for(const axis of ["head","spouse"]) {
     const net=w=>Math.round((axis==="head"?calculator.evaluate(w,600):calculator.evaluate(600,w)).studyDisposableWan*10000);
     expect([net(906),net(907)]).toEqual([11419020,11227552]);
@@ -95,13 +85,11 @@ test("両方向の実下落を同じXY平面に示し、線をクリックして
   map.getBoundingClientRect=()=>({left:0,top:0,width:1032,height:720});
   fireEvent.click(map,{clientX:sx(600),clientY:sy(906.5)});
   const caption=map.closest("figure").querySelector("figcaption");
-  for(const term of ["下落幅","191,468円","下落前","11,419,020円","下落後","11,227,552円","同水準線"])expect(caption).toHaveTextContent(term);
+  for(const term of ["下落幅","191,468円","下落前","11,419,020円","下落後","11,227,552円"])expect(caption).toHaveTextContent(term);
   expect(caption).toHaveTextContent(/600[,、]\s*906/);
   expect(caption).toHaveTextContent(/600[,、]\s*907/);
-  expect(useSalaryLevelContour).toHaveBeenLastCalledWith(grid,11419020);
-  const level=map.querySelector("path[data-outcome='level']");
-  expect(level).not.toBeNull();
-  expect(segs(level).some(pts=>sameSegment(pts,svgCoords([580,940,590,940])))).toBe(true);
+  expect(map.querySelector("path[data-outcome='level']")).toBeNull();
+  expect(map.closest("figure")).not.toHaveTextContent("同水準線");
   fireEvent.keyDown(map,{key:"ArrowRight"});
   expect(caption).toHaveTextContent(/906[,、]\s*600/);
   expect(caption).toHaveTextContent(/907[,、]\s*600/);
@@ -153,7 +141,6 @@ test("サービスの実負担が1,000円のままでも負担上限の切り替
   expect(within(caption).getByText("通所等の負担上限：一般1（月4,600円） → 一般2（月37,200円）")).toBeVisible();
   expect(caption).not.toHaveTextContent("下落幅");
   expect(map.querySelector("path[data-outcome='level']")).toBeNull();
-  expect(useSalaryLevelContour).toHaveBeenLastCalledWith(grid,null);
 });
 
 test("別タブから戻ると同じ世帯の境界選択を復元し、異なる世帯条件へは引き継がない",()=>{

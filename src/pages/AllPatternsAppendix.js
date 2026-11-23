@@ -49,7 +49,7 @@ export default function AllPatternsAppendix() {
           value={settings.fees[i]} onChange={v=>setChild("fees",i,v)}/>
       </fieldset>)}</div>
     <div className="all-patterns-summary">
-      <h3>可処分所得差の最低点・最高点 <small>全{format.format(rows.length)}通り</small></h3>
+      <h3>可処分所得差の最小点・最大点 <small>全{format.format(rows.length)}通り</small></h3>
       {lastPage > 0 && <nav className="all-patterns-pagination" aria-label="パターン表のページ切替">
         <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)}>前へ</button>
         <select aria-label="表示する行" value={page} onChange={e => setPage(Number(e.target.value))}>
@@ -67,7 +67,7 @@ export default function AllPatternsAppendix() {
         <thead>
           <tr><th scope="col" rowSpan="2">番号</th>
             <th scope="colgroup" colSpan={count}>障害要件（特児／児福／税）</th>
-            <th scope="colgroup" colSpan="3">最低点</th><th scope="colgroup" colSpan="3">最高点</th></tr>
+            <th scope="colgroup" colSpan="3">最小点</th><th scope="colgroup" colSpan="3">最大点</th></tr>
           <tr>{children.map(i => <th key={i} scope="col">子ども{i + 1}</th>)}
             {["min", "max"].map(key => <Fragment key={key}><th scope="col">差額<br/>（円／年）</th>
               <th scope="col">世帯主給与<br/>（万円／年）</th><th scope="col">配偶者給与<br/>（万円／年）</th></Fragment>)}</tr>

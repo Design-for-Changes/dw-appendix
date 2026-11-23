@@ -45,7 +45,7 @@ test("全児童を非該当とし、それ以外の年齢・親の役割・税�
   }
 });
 
-test("全員非該当・非利用なら年齢による児童手当等を残して差0、全有効点が最低・最高で同率",()=>{
+test("全員非該当・非利用なら年齢による児童手当等を残して差0、全有効点が最小・最大で同率",()=>{
   const c=createDisabilityIncomeComparison({serviceAmountYen:0,children:[normal(1),normal(9),normal(17)]});
   expect(c.evaluate(1200,1000)).toMatchObject(zeroFields);
   const m=buildDisabilityDifferenceSurface(c,{maxSalaryWan:4});
@@ -59,7 +59,7 @@ test("利用者の手当・税の認定がすべて非該当でも、利用負�
   expect(c.evaluate(1500,1500)).toMatchObject({...zeroFields,differenceYen:-60000,extraServiceYen:60000});
 });
 
-test("原点・未算定はゼロ差と区別。原点だけの面の最低・最高はnull",()=>{
+test("原点・未算定はゼロ差と区別。原点だけの面の最小・最大はnull",()=>{
   const c=createDisabilityIncomeComparison(family);
   expect(c.evaluate(0,0)).toMatchObject({status:"excluded",withYen:null,withoutYen:null,differenceYen:null});
   const v3=createDisabilityIncomeComparison({...family,protocol:"v3"}).evaluate(500,150);

@@ -33,7 +33,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
     expect(subscribe).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("boundary-plot")).not.toBeInTheDocument();
     expect(screen.queryByTestId("difference-plot")).not.toBeInTheDocument();
-    fireEvent.click(tab("制度境界・下落・同水準線（2D）"));
+    fireEvent.click(tab("制度境界・下落（2D）"));
     const boundary=screen.getByTestId("boundary-plot");expect(boundary).toBeVisible();
     expect(initial).not.toBeVisible();
     expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
@@ -43,7 +43,7 @@ test("3図は給与格子を共用するが点Pは可処分所得3D専用で、�
     expect(difference).toBeVisible();
     expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
     expect(surface.mock.calls.filter(([p])=>p.comparison).every(([p])=>!p.onSelectSalary)).toBe(true);
-    expect(screen.queryByText("全設定での最低差・最高差")).toBeNull();
+    expect(screen.queryByText("全設定での最小差・最大差")).toBeNull();
     fireEvent.click(tab("可処分所得（3D）"));
     expect(screen.getByTestId("income-plot")).toBe(initial);expect(initial).toBeVisible();
     expect(screen.getByTestId("difference-plot")).toBe(difference);
@@ -362,7 +362,7 @@ test.each([["spouse","head",false],["head","spouse",true],["highest-salary","spo
 test("差額ページには点Pの設定・詳細や全設定の極値を出さない",()=>{
   render(<RevisionIncomePlane comparison/>);
   expect(screen.queryByRole("region",{name:"点P"})).toBeNull();
-  expect(screen.queryByText("全設定での最低差・最高差")).toBeNull();
+  expect(screen.queryByText("全設定での最小差・最大差")).toBeNull();
   expect(screen.queryByLabelText("差額の内訳")).toBeNull();
 });
 

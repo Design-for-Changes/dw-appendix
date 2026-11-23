@@ -64,7 +64,10 @@ void main() {
   if (n.z < 0.0) n = -n;
   float light = 0.74 + 0.26*abs(dot(n, normalize(vec3(-0.55,-0.45,0.72))));
   vec3 base = mix(vec3(.52,.72,.78),vec3(.83,.90,.85),clamp(norm,0.0,1.0));
-  color=vec4(base*light,1.0);
+  // The transparent canvas uses premultiplied alpha. Keep only the frontmost
+  // face at each pixel so overlapping triangles do not darken on rotation.
+  const float faceAlpha = 0.52;
+  color=vec4(base*light*faceAlpha,faceAlpha);
 }`;
 
 // J passes the signed difference itself to the fragment shader. In particular,
@@ -122,7 +125,7 @@ void main(){
 
 function createRenderer(canvas, surface) {
   const difference=surface.kind==="disability-difference";
-  const gl = canvas.getContext("webgl2", {alpha:true, antialias:false, depth:true});
+  const gl = canvas.getContext("webgl2", {alpha:true, premultipliedAlpha:true, antialias:false, depth:true});
   if (!gl) throw Error("WebGL 2を利用できないため、立体図は表示できません。");
   const shaders = [], buffers = [], program = gl.createProgram();
   let fence = null;
@@ -321,7 +324,7 @@ export default function SalarySurfaceMesh({surface,head,spouse,selectedZ,calcula
     if (!difference || painted?.surface!==surface) return [];
     const {minimum,maximum}=surface;
     const specs=minimum && maximum && minimum.differenceYen===maximum.differenceYen
-      ? [["最低＝最高",minimum]] : [["最低",minimum],["最高",maximum]];
+      ? [["最小＝最大",minimum]] : [["最小点",minimum],["最大点",maximum]];
     return specs.flatMap(([label,p])=>{
       const anchor=p && visibleSalaryCursor(surface,painted.scene,p.headWan,p.spouseWan);
       return anchor?[{label,...anchor}]:[];

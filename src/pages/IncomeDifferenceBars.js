@@ -86,6 +86,6 @@ export default function IncomeDifferenceBars({surface,head,spouse,selectedZ,onSe
       <canvas ref={canvas} aria-hidden="true"/>
       {error?<p role="status">この環境では柱状図を描画できません。</p>:<Axes scene={scene} max={n} point={p}/>}
     </div>
-    <p className="income-bars-note">給与各{BAR_BIN_WAN}万円の区画内で、正の最高差を上に、負の最低差を下に示す（万円／年）。未算定点は除く。柱を選ぶと、その端値をとる給与の組み合わせを点Pに表示する。</p>
+    <p className="income-bars-note">給与各{BAR_BIN_WAN}万円の区画内で、正の最大差を上に、負の最小差を下に示す（万円／年）。未算定点は除く。柱を選ぶと、その端値をとる給与の組み合わせを点Pに表示する。</p>
   </section>;
 }

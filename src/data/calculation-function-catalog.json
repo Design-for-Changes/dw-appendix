@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
-  "revision": "6bf475fbe04a765042abb04c567c8e544ce81c2cee6c3fd9f9c2b51a45b97ec7",
+  "revision": "a5ee166dc83a5bb42bc2ec5fc906dd9006ffda562ed5decfea7ecb9b954c07e9",
   "scope": "src/calcと表示データ・条件・全パターン比較の生成スクリプトにある名前付き関数・クラス。匿名コールバック、画面部品、テスト・検証専用スクリプトは対象外。",
   "callScope": "対象ソースの名前付き関数が直接呼ぶ関数を、実装上の呼出箇所ごとに掲載。匿名コールバック内、ファイル直下、外部ライブラリ、動的に決まる呼出先は含めない。掲載順は実行履歴ではない。",
   "unitNote": "金額変数のWanは万円、Yenは円。年額・月額は関数の注記と引数・返り値を参照。",
-  "functionCount": 221,
+  "functionCount": 220,
   "classCount": 0,
   "sources": [
     {
@@ -21,11 +21,11 @@
     },
     {
       "file": "src/calc/allPatternsComparison.js",
-      "sha256": "ad4ac5bf4bc3a188089603b3676a80f1b93df10e1f5d048f0437c8c8507576dc"
+      "sha256": "33da73d307fd0d0cb5f79086530efc13537bce9e778ea2605572f799388a4dd7"
     },
     {
       "file": "src/calc/allPatternsCore.js",
-      "sha256": "7ebc3ae2780c4f8c4b61ca81339732a5e64d072fc0a6a40a2e5383aca58497b0"
+      "sha256": "4c1565df8324d2929cc6f2cda14b18c025b2639c39bbfaaf38ad808b4fed3e67"
     },
     {
       "file": "src/calc/allowances.js",
@@ -49,7 +49,7 @@
     },
     {
       "file": "src/calc/disabilityIncomeDifference.js",
-      "sha256": "34b4b9fbccf64b8ae2463fa65ecf5564f2a7c21b8610494f3e5294900cf6f40e"
+      "sha256": "8a60ae95e2a7e3b971ddcca8841348198365bbd9f828ecd3aa3c963f785c8548"
     },
     {
       "file": "src/calc/disabledChildWelfareAllowance.js",
@@ -138,10 +138,6 @@
     {
       "file": "src/calc/salaryIncomeSection.js",
       "sha256": "e5861e6547b0471d94c08ba2f24ef5eadccba5bd9636d876e78862050004ff63"
-    },
-    {
-      "file": "src/calc/salaryLevelContour.js",
-      "sha256": "a645b1d3ef2e8eb61ea4a7fd99dadf8428c29b75e10cb387deba1741cfcb0b61"
     },
     {
       "file": "src/calc/salaryPlaneRecovery.js",
@@ -509,7 +505,7 @@
       "params": [
         "{object} conditions 各児の年齢と通所負担月額。"
       ],
-      "returns": "{object[]} 選択した子どもの人数に対応する全パターンの可処分所得差の最低点・最高点。"
+      "returns": "{object[]} 選択した子どもの人数に対応する全パターンの可処分所得差の最小点・最大点。"
     },
     {
       "id": "src/calc/allPatternsCore.js:earlier",
@@ -542,7 +538,7 @@
         "{object} conditions 子どもごとの年齢（0～17歳）と多子軽減後・世帯上限前の月額（円）。",
         "{object} data Eと同じ給与格子・制度仕様から生成した点群ごとの税額差と給与座標。"
       ],
-      "returns": "{object[]} 障害要件の順序付き組み合わせ別の最低・最高差（円／年）とその給与点（万円／年）。"
+      "returns": "{object[]} 障害要件の順序付き組み合わせ別の最小・最大差（円／年）とその給与点（万円／年）。"
     },
     {
       "id": "src/calc/allPatternsCore.js:comparePatternEnvelopes.extrema",
@@ -1692,7 +1688,7 @@
       "endLine": 91,
       "role": "内部モジュール間",
       "signature": "buildDisabilityDifferenceSurface(calculator, {maxSalaryWan=1500,onProgress}={})",
-      "description": "J用：給与1万円格子で可処分所得の世帯間差（障害の要件あり側－なし側）を評価する。 符号・最低点・最高点は整数円で判定し、描画用の高さだけを万円のFloat32に変換する。原点・未算定はNaN。 同率の点数はすべて数え、代表座標には配偶者給与が小さい方、次に世帯主給与が小さい方を記録する。",
+      "description": "J用：給与1万円格子で可処分所得の世帯間差（障害の要件あり側－なし側）を評価する。 符号・最小点・最大点は整数円で判定し、描画用の高さだけを万円のFloat32に変換する。原点・未算定はNaN。 同率の点数はすべて数え、代表座標には配偶者給与が小さい方、次に世帯主給与が小さい方を記録する。",
       "params": [],
       "returns": ""
     },
@@ -3310,24 +3306,6 @@
         "{object} options axis は増やす親の給与軸、fixedWan は他方の年給与（万円）、maxSalaryWan は走査上限。"
       ],
       "returns": "{object} points は各年給与に対応する円単位の可処分所得（未算定はnull）。events は境界の直前・直後の値と"
-    },
-    {
-      "id": "src/calc/salaryLevelContour.js:buildSalaryLevelContour",
-      "name": "buildSalaryLevelContour",
-      "qualifiedName": "buildSalaryLevelContour",
-      "kind": "function",
-      "file": "src/calc/salaryLevelContour.js",
-      "category": "統合計算",
-      "line": 11,
-      "endLine": 44,
-      "role": "内部モジュール間",
-      "signature": "buildSalaryLevelContour({width,netYen}={}, levelYen)",
-      "description": "年間可処分所得を同一の高さ levelYen で水平に切ったときの給与平面上の境界。 1万円格子上で実際に計算した2点のうち片方だけが基準額以上なら、間の半目盛に描く。 隣り合う給与点の連続的な交差位置や特定の増収経路を推定するものではない。",
-      "params": [
-        "{object} grid width：格子幅、netYen[y*width+x]：世帯の年間可処分所得（整数円）。",
-        "{number} levelYen 下落直前など、比較に用いる単一の年額（整数円）。同額も到達とする。"
-      ],
-      "returns": "{{levelYen:number,segments:number[][]}} [世帯主給与1,配偶者給与1,世帯主給与2,配偶者給与2]（万円）。"
     },
     {
       "id": "src/calc/salaryPlaneRecovery.js:buildSalaryPlaneRecovery",

@@ -23,7 +23,7 @@ beforeEach(() => {
   });
 });
 
-test("差額は年額・符号付きで、最低点と最高点それぞれに夫婦の給与を表示", () => {
+test("差額は年額・符号付きで、最小点と最大点それぞれに夫婦の給与を表示", () => {
   render(<AllPatternsAppendix/>);
   expect(screen.getByText("全15通り")).toBeVisible();
   const slider = fee()[0];

@@ -59,7 +59,7 @@ export function createDisabilityIncomeComparison(inputs,{createCalculator=create
 
 /**
  * J用：給与1万円格子で可処分所得の世帯間差（障害の要件あり側－なし側）を評価する。
- * 符号・最低点・最高点は整数円で判定し、描画用の高さだけを万円のFloat32に変換する。原点・未算定はNaN。
+ * 符号・最小点・最大点は整数円で判定し、描画用の高さだけを万円のFloat32に変換する。原点・未算定はNaN。
  * 同率の点数はすべて数え、代表座標には配偶者給与が小さい方、次に世帯主給与が小さい方を記録する。
  */
 export function buildDisabilityDifferenceSurface(calculator,{maxSalaryWan=1500,onProgress}={}) {

@@ -60,7 +60,7 @@ test("円の読取りは表示用Float32の万円から逆算せず、共有整�
   expect(atCursor().slice(-3)).toEqual(["50,100,009円","100,008円","＋50,000,001円"]);
 });
 
-test("最高・最低が複数あるときも各代表給与点の画素中央に1個ずつ、整数円の符号つきの差を示す",()=>{
+test("最大・最小が複数あるときも各代表給与点の画素中央に1個ずつ、整数円の符号つきの差を示す",()=>{
   const low=-446401,high=50000001;
   // 閾値の示度ではなく給与格子の中心。(2,1)と(1,2)を入れ替えると結果が異なる。
   const amounts=[NaN,high,low, 0,0,high, 0,low,0];
@@ -88,17 +88,17 @@ test.each([0,12345])("全算定点が一律%i円なら、1点を極値とせず�
   const common={headWan:1,spouseWan:0,differenceYen:value,count:8};
   const {container}=render(<IncomeDifferenceHeatmap surface={{...surface,validCount:8,heights:Float32Array.from(all,v=>v/10000),
     min:value/10000,max:value/10000,minimum:common,maximum:common}} grid={gridFor(Int32Array.from(all))}/>);
-  expect(container.querySelector("figure")).toHaveTextContent("全算定点：最高＝最低");
+  expect(container.querySelector("figure")).toHaveTextContent("全算定点：最小＝最大");
   expect(container.querySelectorAll("[data-difference-extreme]")).toHaveLength(0);
-  expect(within(table()).getAllByRole("rowheader",{name:/最低＝最高/})).toHaveLength(1);
-  expect(within(table()).queryByRole("rowheader",{name:/最低点|最高点/})).toBeNull();
+  expect(within(table()).getAllByRole("rowheader",{name:/最小＝最大/})).toHaveLength(1);
+  expect(within(table()).queryByRole("rowheader",{name:/最小点|最大点/})).toBeNull();
   setRect(canvas());click(2,2);
   expect(atCursor().slice(-3)).toEqual([value===0?"100,008円":"112,353円","100,008円",value===0?"0円":"＋12,345円"]);
 });
 
-test("全点未算定であれば最低・最高の記号も全点同額の表示も出さない",()=>{
+test("全点未算定であれば最小・最大の記号も全点同額の表示も出さない",()=>{
   const {container}=render(<IncomeDifferenceHeatmap surface={{...surface,validCount:0,heights:new Float32Array(9).fill(NaN),
     min:null,max:null,minimum:null,maximum:null}}/>);
   expect(container.querySelectorAll("[data-difference-extreme]")).toHaveLength(0);
-  expect(container.querySelector("figure")).not.toHaveTextContent("全算定点：最高＝最低");
+  expect(container.querySelector("figure")).not.toHaveTextContent("全算定点：最小＝最大");
 });

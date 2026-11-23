@@ -128,7 +128,7 @@ test("他図から初めて制度図を開く場合も再描画は不要。同�
   const initialPlot=plot(), key=usePolicyBoundaryDataset.mock.calls.at(-1)[0];
   switchTo("可処分所得差");
   expect(initialPlot).not.toBeVisible();
-  switchTo("制度境界・下落・同水準線（2D）");
+  switchTo("制度境界・下落（2D）");
   expect(initialPlot).not.toBeVisible();
   switchTo("制度境界のみ（2D）");
   expect(plot()).toBe(initialPlot);

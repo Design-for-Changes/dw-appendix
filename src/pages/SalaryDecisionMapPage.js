@@ -1,7 +1,6 @@
 import {useMemo} from "react";
 import {UNKNOWN_PLANE_NET_YEN} from "../calc/salaryPlaneRecovery";
 import {useSessionParameter} from "./salarySimulatorSession";
-import {useSalaryLevelContour} from "./salaryLevelContourState";
 import SalaryPlaneAxes,{WIDTH,HEIGHT,LEFT,RIGHT,TOP,BOTTOM,xPlot,yPlot,toSalaryPlanePath as toPath} from "./SalaryPlaneAxes";
 import "./salary-decision-map.css";
 
@@ -10,7 +9,7 @@ const SYSTEMS=[
   {id:"N01-2",label:"障害児福祉手当",color:"#13498b",weight:4.5},
   {id:"N02/N03",label:"通所等の負担上限",color:"#13764f",weight:2.5},
 ];
-const DROP="#302339",LEVEL="#a54d00";
+const DROP="#302339";
 const yen=n=>n.toLocaleString("ja-JP");
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
@@ -54,8 +53,6 @@ function DecisionFigure({map,grid,calculator,household}){
   },[stored,household,geometry]);
   const before=selection?readNet(grid,selection.from):null,after=selection?readNet(grid,selection.to):null;
   const drop=before!==null&&after!==null&&before>after?before-after:null;
-  const contour=useSalaryLevelContour(grid,drop!==null?before:null);
-  const levelPath=useMemo(()=>drop!==null&&contour.status==="ready"&&contour.levelYen===before?toPath(contour.segments,max):null,[drop,before,contour,max]);
   const detail=useMemo(()=>selection?describeBoundary(calculator,selection.from,selection.to):[],[calculator,selection]);
   function select(i,x,y){store({i,x,y,household});}
   function pointer(event){
@@ -85,26 +82,23 @@ function DecisionFigure({map,grid,calculator,household}){
   return <figure className="decision-figure" aria-label="夫婦の給与収入と制度の変更点">
     <ul className="decision-legend" aria-label="制度別の凡例">{SYSTEMS.map(s=><li key={s.id}><i style={{background:s.color,height:s.weight}}/>{s.label}</li>)}
       <li><i style={{background:DROP}}/>制度切替時の可処分所得の下落</li>
-      {drop!==null&&<li><i style={{height:0,borderTop:"3px dashed "+LEVEL}}/>下落前の可処分所得の同水準線</li>}
     </ul>
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label="横軸：世帯主の給与収入、縦軸：配偶者の給与収入（万円／年）" tabIndex={geometry.lines.length?0:undefined} onClick={pointer} onKeyDown={keyboard}>
-      <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。下落を選ぶと、その直前の可処分所得以上と未満の境界を表示します。</desc>
+      <desc>線をクリックするか矢印キーで選択すると、境界を挟む両給与点の変化が分かります。</desc>
       <SalaryPlaneAxes max={max}/>
       {geometry.systems.map(s=><path key={s.id} data-system={s.id} d={s.path} fill="none" stroke={s.color} strokeWidth={s.weight} vectorEffect="non-scaling-stroke"/>)}
       <path data-outcome="drop" d={geometry.dropPath} fill="none" stroke={DROP} strokeWidth="1.4" vectorEffect="non-scaling-stroke"/>
-      {levelPath&&<path data-outcome="level" d={levelPath} fill="none" stroke={LEVEL} strokeWidth="2.5" strokeDasharray="6 3" vectorEffect="non-scaling-stroke"/>}
       {selection&&<circle aria-hidden="true" cx={xPlot((selection.from[0]+selection.to[0])/2,max)} cy={yPlot((selection.from[1]+selection.to[1])/2,max)} r="5" fill="white" stroke={DROP} strokeWidth="2" pointerEvents="none"/>}
     </svg>
-    <figcaption aria-live="polite">{!geometry.lines.length?"この条件では対象制度の切り替わりはありません。":!selection?"下落線を選ぶと、下落前の可処分所得の同水準線を表示します。":<>
+    <figcaption aria-live="polite">{!geometry.lines.length?"この条件では対象制度の切り替わりはありません。":!selection?null:<>
       <div>（世帯主, 配偶者）{coords(selection.from)}→{coords(selection.to)}万円
         {detail.map(s=><span key={s.id}><i style={{background:s.color}}/>{s.label}：{s.before} → {s.after}</span>)}</div>
-      {drop!==null&&<><div>下落前 {yen(before)}円 → 下落後 {yen(after)}円　<strong>下落幅 {yen(drop)}円</strong></div>
-        <div>同水準線：可処分所得 {yen(before)}円以上と未満の境界{contour.status==="computing"?"（計算中）":contour.status==="error"?"（計算できませんでした）":""}</div></>}
+      {drop!==null&&<div>下落前 {yen(before)}円 → 下落後 {yen(after)}円　<strong>下落幅 {yen(drop)}円</strong></div>}
     </>}</figcaption>
   </figure>;
 }
 
-/** 同じ1万円格子を3D・差額図と共有。表示する同水準線は下落箇所を選んだ後だけ算定する。 */
+/** 3D・差額図と同じ1万円格子から、制度の切替点と下落額を表示する。 */
 export default function SalaryDecisionMapPage({datasetState:state,calculator,inputs}){
   const household=useMemo(()=>JSON.stringify(inputs)||"",[inputs]);
   if(!state)return null;
